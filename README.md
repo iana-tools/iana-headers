@@ -1,4 +1,4 @@
-# Project Name: IANA Header Generator for Internet Protocol Standards
+# IANA Header Generator for Internet Protocol Standards
 
 ## Table of Contents
 - [Project Description](#project-description)

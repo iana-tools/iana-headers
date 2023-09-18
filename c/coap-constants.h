@@ -141,3 +141,9 @@ typedef enum {
   /* image/svg+xml; Ref: [https://www.w3.org/TR/SVG/mimereg.html] */
   IMAGE_SVG_XML = 30000
 } coap_content_format_t;
+
+typedef enum {
+} coap_signaling_code_t;
+
+typedef enum {
+} coap_signaling_option_t;

@@ -10,6 +10,7 @@ iana_coap_input_file_path = './c/coap-constants.h'
 iana_coap_content_format_cache_file = "./coap/cache/content_formats.csv"
 iana_coap_content_format_csv_url = "https://www.iana.org/assignments/core-parameters/content-formats.csv"
 iana_coap_content_format_source = "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats"
+iana_coap_content_format_c_typedef_name = "coap_content_format_t"
 
 default_coap_header_c = """
 #define COAP_CODE(CLASS, CODE) ((CLASS<<5)|(CODE))
@@ -21,6 +22,12 @@ typedef enum {
 
 typedef enum {
 } coap_content_format_t;
+
+typedef enum {
+} coap_signaling_code_t;
+
+typedef enum {
+} coap_signaling_option_t;
 """
 
 ###############################################################################
@@ -59,6 +66,17 @@ def read_or_download_csv(csv_url: str, cache_file: str):
 
     print(f"Downloading CSV file... ({csv_url}, {cache_file})")
     return download_csv(csv_url, cache_file)
+
+
+###############################################################################
+# C Code Generation Utilities
+
+def search_and_replace_c_typedef_enum(document_content, typename, enum_content):
+    pattern = fr'typedef enum \{{([^}}]*)\}} {typename};'
+    replacement = f'typedef enum {{\n{enum_content}\n}} {typename};'
+    updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
+    return updated_document_content
+
 
 ###############################################################################
 # Content Format Generation
@@ -149,7 +167,7 @@ def iana_coap_content_format_c_header_content(coap_content_content_format):
         c_header_content += c_header_line
     return c_header_content
 
-def iana_coap_content_format_header_update(iana_coap_input_file_path):
+def iana_coap_content_format_c_typedef_enum_update(header_file_content: str) -> str:
     # Load latest IANA registrations
     csv_content = read_or_download_csv(iana_coap_content_format_csv_url, iana_coap_content_format_cache_file)
 
@@ -163,30 +181,27 @@ def iana_coap_content_format_header_update(iana_coap_input_file_path):
     c_header_content = iana_coap_content_format_c_header_content(coap_content_content_format)
 
     # Search for coap_content_format_t and replace with new content
-    with open(iana_coap_input_file_path, 'r') as file:
-        c_code = file.read()
-
-    pattern = r'typedef enum \{([^}]*)\} coap_content_format_t;'
-    replacement = f'typedef enum {{\n{c_header_content}\n}} coap_content_format_t;'
-    c_code_updated = re.sub(pattern, replacement, c_code, flags=re.DOTALL)
-
-    with open(iana_coap_input_file_path, 'w+') as file:
-        file.write(c_code_updated)
-
+    return search_and_replace_c_typedef_enum(header_file_content, iana_coap_content_format_c_typedef_name, c_header_content)
 
 ###############################################################################
 # Create Header
 
-def main():
+def iana_coap_c_header_update(iana_coap_input_file_path: str):
     # If file doesn't exist yet then write a new file
     if not os.path.exists(iana_coap_input_file_path):
         with open(iana_coap_input_file_path, 'w+') as file:
             file.write(default_coap_header_c)
-
-    iana_coap_content_format_header_update(iana_coap_input_file_path)
-
-    # All done!
+    # Update Header
+    with open(iana_coap_input_file_path, 'r') as file:
+        header_file_content = file.read()
+    header_file_content = iana_coap_content_format_c_typedef_enum_update(header_file_content)
+    with open(iana_coap_input_file_path, 'w') as file:
+        file.write(header_file_content)
+    # Indicate header has been synced
     print(f"C header file '{iana_coap_input_file_path}' updated successfully.")
+
+def main():
+    iana_coap_c_header_update(iana_coap_input_file_path)
 
 if __name__ == "__main__":
     main()

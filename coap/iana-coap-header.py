@@ -6,7 +6,10 @@ import re
 import email, time
 
 spacing_string = "  "
-iana_coap_input_file_path = './c/coap-constants.h'
+
+iana_coap_c_header_file_path = './c/coap-constants.h'
+
+
 iana_coap_content_format_cache_file = "./coap/cache/content_formats.csv"
 iana_coap_content_format_csv_url = "https://www.iana.org/assignments/core-parameters/content-formats.csv"
 iana_coap_content_format_source = "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats"
@@ -139,7 +142,7 @@ def extract_enum_values_from_c_code(c_code: str) -> str:
 
 def coap_content_formats_existing_header_update(coap_content_content_format):
     existing_enum_name = {}
-    with open(iana_coap_input_file_path, 'r') as file:
+    with open(iana_coap_c_header_file_path, 'r') as file:
         c_code = file.read()
         existing_enum_name = extract_enum_values_from_c_code(c_code)
         for id_value, row in sorted(existing_enum_name.items()):
@@ -186,22 +189,22 @@ def iana_coap_content_format_c_typedef_enum_update(header_file_content: str) -> 
 ###############################################################################
 # Create Header
 
-def iana_coap_c_header_update(iana_coap_input_file_path: str):
+def iana_coap_c_header_update(iana_coap_c_header_file_path: str):
     # If file doesn't exist yet then write a new file
-    if not os.path.exists(iana_coap_input_file_path):
-        with open(iana_coap_input_file_path, 'w+') as file:
+    if not os.path.exists(iana_coap_c_header_file_path):
+        with open(iana_coap_c_header_file_path, 'w+') as file:
             file.write(default_coap_header_c)
     # Update Header
-    with open(iana_coap_input_file_path, 'r') as file:
+    with open(iana_coap_c_header_file_path, 'r') as file:
         header_file_content = file.read()
     header_file_content = iana_coap_content_format_c_typedef_enum_update(header_file_content)
-    with open(iana_coap_input_file_path, 'w') as file:
+    with open(iana_coap_c_header_file_path, 'w') as file:
         file.write(header_file_content)
     # Indicate header has been synced
-    print(f"C header file '{iana_coap_input_file_path}' updated successfully.")
+    print(f"C header file '{iana_coap_c_header_file_path}' updated successfully.")
 
 def main():
-    iana_coap_c_header_update(iana_coap_input_file_path)
+    iana_coap_c_header_update(iana_coap_c_header_file_path)
 
 if __name__ == "__main__":
     main()

@@ -365,7 +365,7 @@ def iana_coap_content_formats_c_enum_name_generate(content_type: str, content_co
     if content_coding:
         content_type += "_" + content_coding
     # Convert non alphanumeric characters into variable name friendly underscore
-    c_enum_name = re.sub(r'[^a-zA-Z0-9_]', '_', content_type)
+    c_enum_name = "COAP_CONTENT_FORMAT_"+re.sub(r'[^a-zA-Z0-9_]', '_', content_type)
     c_enum_name = c_enum_name.strip('_')
     c_enum_name = c_enum_name.upper()
     return c_enum_name

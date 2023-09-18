@@ -1,5 +1,7 @@
 
-#define COAP_CODE(CLASS, CODE) ((CLASS<<5)|(CODE))
+#define COAP_CODE(CLASS, SUBCLASS) ((((CLASS)&0x07U)<<5)|((SUBCLASS)&0x1FU))
+#define COAP_GET_CODE_CLASS(CODE) (((CODE)>>5U)&0x07U)
+#define COAP_GET_CODE_SUBCLASS(CODE) ((CODE)&0x1FU)
 typedef enum {
 } coap_code_t;
 

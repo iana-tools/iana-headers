@@ -9,13 +9,17 @@ spacing_string = "  "
 
 iana_coap_c_header_file_path = './c/coap-constants.h'
 
-iana_coap_content_format_cache_file = "./coap/cache/content_formats.csv"
-iana_coap_content_format_csv_url = "https://www.iana.org/assignments/core-parameters/content-formats.csv"
-iana_coap_content_format_source = "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats"
-iana_coap_content_format_c_typedef_name = "coap_content_format_t"
+iana_coap_content_format_settings = {
+   "cache_file"     : "./coap/cache/content_formats.csv",
+   "csv_url"        : "https://www.iana.org/assignments/core-parameters/content-formats.csv",
+   "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats",
+   "c_typedef_name" : "coap_content_format_t",
+}
 
 default_coap_header_c = """
-#define COAP_CODE(CLASS, CODE) ((CLASS<<5)|(CODE))
+#define COAP_CODE(CLASS, SUBCLASS) ((((CLASS)&0x07U)<<5)|((SUBCLASS)&0x1FU))
+#define COAP_GET_CODE_CLASS(CODE) (((CODE)>>5U)&0x07U)
+#define COAP_GET_CODE_SUBCLASS(CODE) ((CODE)&0x1FU)
 typedef enum {
 } coap_code_t;
 
@@ -171,7 +175,7 @@ def iana_coap_content_format_c_header_content(coap_content_content_format, coap_
 
 def iana_coap_content_format_c_typedef_enum_update(header_file_content: str) -> str:
     # Load latest IANA registrations
-    csv_content = read_or_download_csv(iana_coap_content_format_csv_url, iana_coap_content_format_cache_file)
+    csv_content = read_or_download_csv(iana_coap_content_format_settings["csv_url"], iana_coap_content_format_settings["cache_file"])
 
     # Parse and process IANA registration into enums
     coap_content_content_format = coap_content_formats_parse_csv(csv_content)
@@ -180,10 +184,10 @@ def iana_coap_content_format_c_typedef_enum_update(header_file_content: str) -> 
     coap_content_content_format = coap_content_formats_existing_header_update(coap_content_content_format)
 
     # Generate enumeration header content
-    c_header_content = iana_coap_content_format_c_header_content(coap_content_content_format, iana_coap_content_format_source)
+    c_header_content = iana_coap_content_format_c_header_content(coap_content_content_format, iana_coap_content_format_settings["source"])
 
     # Search for coap_content_format_t and replace with new content
-    return search_and_replace_c_typedef_enum(header_file_content, iana_coap_content_format_c_typedef_name, c_header_content)
+    return search_and_replace_c_typedef_enum(header_file_content, iana_coap_content_format_settings["c_typedef_name"], c_header_content)
 
 ###############################################################################
 # Create Header

@@ -69,10 +69,12 @@ typedef enum {
 } coap_content_format_t;
 """
 
+
 ###############################################################################
 # Download Handler
 
 def download_csv(csv_url: str, cache_file: str):
+    print(f"Downloading CSV file {csv_url} to {cache_file}")
     response = requests.get(csv_url)
     if response.status_code != 200:
         raise Exception(f"Failed to fetch CSV content from {csv_url}")
@@ -85,6 +87,7 @@ def read_or_download_csv(csv_url: str, cache_file: str):
     """
     Load latest IANA registrations
     """
+    print(f"Checking {csv_url} (cache:{cache_file})")
     if os.path.exists(cache_file):
         # Cache file already exist. Check if outdated
         response = requests.head(csv_url)
@@ -105,8 +108,6 @@ def read_or_download_csv(csv_url: str, cache_file: str):
             print("cannot find last modified date time...")
     else:
         print("cache file not found...")
-
-    print(f"Downloading CSV file... ({csv_url}, {cache_file})")
     return download_csv(csv_url, cache_file)
 
 

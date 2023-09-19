@@ -229,13 +229,102 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, max_words_without_a
         semantic_str = semantic_str.strip()
         return semantic_str.strip()
 
+    def variable_name_abbreviator(variable_name_list_input):
+        # Split the variable name into words and process each word
+        variable_name_list = [re.sub(r'\W+', '_', word.replace('+', 'PLUS')).strip('_') for word in variable_name_list_input.split()]
+
+        # Abbreviate most commonly recognised
+        very_common_word_abbreviations = {
+            "standard": "std",
+            "identifier": "id",
+            "message": "msg",
+            "configuration": "config",
+            "reference": "ref",
+            "referenced": "ref",
+            "previously": "prev",
+            # Add more abbreviations as needed
+        }
+        variable_name_list = [very_common_word_abbreviations.get(term.lower(), term) for term in variable_name_list]
+
+        # Calculate the total character count
+        descriptive_total_character_count = sum(len(term) for term in variable_name_list)
+        if descriptive_total_character_count >= 40:
+            # Apply lossy compression if variable name exceeds reasonable length
+            print(f"long semantic tag description detected ({' '.join(variable_name_list)})")
+            # Abbreviate common words
+            word_abbreviations = {
+                "number": "num",
+                "complex": "cplx",
+                "index": "idx",
+                "attribute": "attr",
+                "maximum": "max",
+                "minimum": "min",
+                "communication": "comm",
+                "protocol": "proto",
+                "information": "info",
+                "authentication": "auth",
+                "representation": "repr",
+                "algorithm": "algo",
+                "version": "ver",
+                "encoding": "enc",
+                "arguments": "arg",
+                "object": "obj",
+                "language": "lang",
+                "independent": "indep",
+                "alternatives": "alt",
+                "text": "txt",
+                "string": "str",
+                "integer": "int",
+                "signal": "sig",
+                "channel": "chn",
+                "structure": "strct",
+                "structures": "strct",
+                "attestation": "attest",
+                "identify": "ident",
+                "geographic": "geo",
+                "geographical": "geo",
+                "coordinate": "coord",
+                "included": "inc",
+                "value": "val",
+                "values": "vals",
+                "record": "rec",
+                "report": "rpt",
+                "definition": "def",
+                "addressed": "addr",
+                "capabilities": "cap",
+                "additional": "add",
+                "operation": "op",
+                "operations": "op",
+                "level": "lvl",
+                "levels": "lvls",
+                "encode": "enc",
+                "encoded": "enc",
+                "component": "comp",
+                "condition": "cond",
+                "database": "db",
+                "element": "elem",
+                "environment": "env",
+                "parameter": "param",
+                "variable": "var",
+                "variables": "var",
+                "resource": "res",
+                "exception": "excpt",
+                "instance": "inst",
+                "organization": "org",
+                "response": "resp",
+                "security": "sec",
+                # Add more abbreviations as needed
+            }
+            variable_name_list = [word_abbreviations.get(term.lower(), term) for term in variable_name_list]
+            # Remove common words that don't contribute to the name
+            common_words = ["algorithm", "and", "to", "a", "from", "the", "bare"]
+            variable_name_list = [term for term in variable_name_list if term.lower() not in common_words]
+            print(f"shrunken to ({' '.join(variable_name_list)})")
+
+        return "_".join(variable_name_list).upper()
+
     # Remove unnecessary '[' and '(' (if not at the beginning)
     semantics = clean_semantics(semantics)
-
-    # Clear any _ to space
-    semantics = re.sub(r'\_', ' ', semantics)
-    # Clear any - to space
-    semantics = re.sub(r'\-', ' ', semantics)
 
     # Remove descriptions after ':' (if present)
     semantics = semantics.split(':', 1)[0].strip()
@@ -243,101 +332,17 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, max_words_without_a
     # Remove descriptions after ';' (if present)
     semantics = semantics.split(';', 1)[0].strip()
 
-    # Split the semantics into words and process each word
-    descriptive_terms = [re.sub(r'\W+', '_', word.replace('+', 'PLUS')).strip('_') for word in semantics.split()]
+    # Clear any _ to space
+    semantics = re.sub(r'\_', ' ', semantics)
 
-    # Abbreviate most commonly recognised
-    very_common_word_abbreviations = {
-        "standard": "std",
-        "identifier": "id",
-        "message": "msg",
-        "configuration": "config",
-        "reference": "ref",
-        "referenced": "ref",
-        "previously": "prev",
-        # Add more abbreviations as needed
-    }
-    descriptive_terms = [very_common_word_abbreviations.get(term.lower(), term) for term in descriptive_terms]
-
-    # Calculate the total character count
-    descriptive_total_character_count = sum(len(term) for term in descriptive_terms)
-    if descriptive_total_character_count >= 40:
-        # Apply lossy compression if variable name exceeds reasonable length
-        print(f"long semantic tag description detected ({' '.join(descriptive_terms)})")
-        # Abbreviate common words
-        word_abbreviations = {
-            "number": "num",
-            "complex": "cplx",
-            "index": "idx",
-            "attribute": "attr",
-            "maximum": "max",
-            "minimum": "min",
-            "communication": "comm",
-            "protocol": "proto",
-            "information": "info",
-            "authentication": "auth",
-            "representation": "repr",
-            "algorithm": "algo",
-            "version": "ver",
-            "encoding": "enc",
-            "arguments": "arg",
-            "object": "obj",
-            "language": "lang",
-            "independent": "indep",
-            "alternatives": "alt",
-            "text": "txt",
-            "string": "str",
-            "integer": "int",
-            "signal": "sig",
-            "channel": "chn",
-            "structure": "strct",
-            "structures": "strct",
-            "attestation": "attest",
-            "identify": "ident",
-            "geographic": "geo",
-            "geographical": "geo",
-            "coordinate": "coord",
-            "included": "inc",
-            "value": "val",
-            "values": "vals",
-            "record": "rec",
-            "report": "rpt",
-            "definition": "def",
-            "addressed": "addr",
-            "capabilities": "cap",
-            "additional": "add",
-            "operation": "op",
-            "operations": "op",
-            "level": "lvl",
-            "levels": "lvls",
-            "encode": "enc",
-            "encoded": "enc",
-            "component": "comp",
-            "condition": "cond",
-            "database": "db",
-            "element": "elem",
-            "environment": "env",
-            "parameter": "param",
-            "variable": "var",
-            "variables": "var",
-            "resource": "res",
-            "exception": "excpt",
-            "instance": "inst",
-            "organization": "org",
-            "response": "resp",
-            "security": "sec",
-            # Add more abbreviations as needed
-        }
-        descriptive_terms = [word_abbreviations.get(term.lower(), term) for term in descriptive_terms]
-        # Remove common words that don't contribute to the name
-        common_words = ["algorithm", "and", "to", "a", "from", "the", "bare"]
-        descriptive_terms = [term for term in descriptive_terms if term.lower() not in common_words]
-        print(f"shrunken to ({' '.join(descriptive_terms)})")
+    # Clear any - to space
+    semantics = re.sub(r'\-', ' ', semantics)
 
     # Combine tag value and descriptive terms to form the enum name
     enum_name = f"CBOR_TAG_{tag_value}"
+    descriptive_terms = variable_name_abbreviator(semantics)
     if descriptive_terms:
-        enum_name += "_" + "_".join(descriptive_terms).upper()
+        enum_name += "_" + descriptive_terms
 
     # Cleanup
     # Replace multiple underscores with a single underscore

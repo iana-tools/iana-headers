@@ -45,7 +45,11 @@ This requires at least python 3.0 and `pip install requests`.
 ## Key Insight / Challenges
 
 * cbor semantic tags does not require submitters to give a name, so had to implement a heuristic that generates a name based on the semantic description field from the IANA cbor tag registry
+    - Such as ignoring content inside brackets like `Binary UUID ([RFC4122, Section 4.1.2])` which I rendered as `CBOR_TAG_37_BINARY_UUID`
+    - Ignoring sentences that reference some other standards via `define in` key phrase. e.g. `A collection of NCMS metadata elements. The key value pairs of the map are defined in AdatP-5636.4` should be rendered as `CBOR_TAG_42602_A_COLLECTION_OF_NCMS_METADATA_ELEMENTS`.
 * coap signalling option number can apply to multiple coap code, so cannot generate a single enum list for that IANA registry table. Need special handling
+* coap content format is based on MIME types so should take `+` and `/` into account as well as factor in the additional parameter fields. Added some special handling of certain parameters to avoid repeated words... 
+    - An example of special handling is this string `application/cose; cose-type="cose-encrypt0"; Ref: [RFC9052]` where naively stripping out the non variable friendly characters to `_` would lead to repeated `COSE` mentions, when infact we want something more like `COAP_CONTENT_FORMAT_APPLICATION_COSE_ENCRYPT0`
 
 
 ---

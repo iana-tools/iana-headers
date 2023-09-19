@@ -1,5 +1,7 @@
 # IANA Header Generator for Internet Protocol Standards
 
+**STATUS: WIP, looking for people to use and provide feedback so I can lock this list down**
+
 ## Table of Contents
 - [Project Description](#project-description)
 - [Intent](#intent)
@@ -12,6 +14,8 @@
 ## Project Description
 
 The IANA Header Generator a Python script designed to automate the generation of C headers for various Internet protocol standards using data from the Internet Assigned Numbers Authority (IANA). This script can be applied to generate headers for protocols such as CoAP (Constrained Application Protocol), CBOR (Concise Binary Object Representation) (WIP) and others.
+
+For practical usage in real projects, the code generator is smart enough to recognise if you already defined an enumerated value and your value naming will take precidence.
 
 ### Intent
 
@@ -34,6 +38,15 @@ Upon successful execution, the script will display a message indicating that the
 ## Requirements
 
 This requires at least python 3.0 and `pip install requests`.
+
+
+---
+
+## Key Insight / Challenges
+
+* cbor semantic tags does not require submitters to give a name, so had to implement a heuristic that generates a name based on the semantic description field from the IANA cbor tag registry
+* coap signalling option number can apply to multiple coap code, so cannot generate a single enum list for that IANA registry table. Need special handling
+
 
 ---
 

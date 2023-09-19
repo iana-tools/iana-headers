@@ -144,17 +144,17 @@ def search_and_replace_c_typedef_enum(document_content, typename, c_enum_content
     updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
     return updated_document_content
 
-def override_enum_from_existing_typedef_enum(header_file_content, coap_content_format, c_typedef_name: str):
+def override_enum_from_existing_typedef_enum(header_file_content, c_enum_list, c_typedef_name: str):
     """
     Check for existing enum so we do not break it
     """
     existing_enum_name = extract_enum_values_from_c_code(header_file_content, c_typedef_name)
     for id_value, row in sorted(existing_enum_name.items()):
-        if id_value in coap_content_format: # Override
-            coap_content_format[id_value]["c_enum_name"] = existing_enum_name[id_value]
+        if id_value in c_enum_list: # Override
+            c_enum_list[id_value]["c_enum_name"] = existing_enum_name[id_value]
         else: # Add
-            coap_content_format[id_value] = {"c_enum_name" : existing_enum_name[id_value]}
-    return coap_content_format
+            c_enum_list[id_value] = {"c_enum_name" : existing_enum_name[id_value]}
+    return c_enum_list
 
 ###############################################################################
 # request response Generation
@@ -190,7 +190,7 @@ def iana_coap_request_response_c_enum_name_generate(code: str, description: str)
 def iana_coap_request_response_parse_csv(csv_content: str):
     csv_lines = csv_content.strip().split('\n')
     csv_reader = csv.reader(csv_lines)
-    coap_request_response_format = {}
+    coap_request_response_format_list = {}
     for row in csv_reader:
         code, description, reference = map(str.strip, row)
         if code.lower() == "code": # Skip first header
@@ -207,7 +207,7 @@ def iana_coap_request_response_parse_csv(csv_content: str):
         coap_code = iana_coap_code_class_subclass_to_integer(coap_class, coap_subclass)
 
         # record enum list
-        coap_request_response_format[coap_code] = {
+        coap_request_response_format_list[coap_code] = {
                 "c_enum_name": iana_coap_request_response_c_enum_name_generate(code, description),
                 "description": description,
                 "reference": reference,
@@ -215,11 +215,11 @@ def iana_coap_request_response_parse_csv(csv_content: str):
                 "coap_class": coap_class,
                 "coap_subclass": coap_subclass
             }
-    return coap_request_response_format
+    return coap_request_response_format_list
 
-def iana_coap_request_response_list_to_c_enum_list(coap_content_format):
+def iana_coap_request_response_list_to_c_enum_list(coap_content_format_list):
     c_enum_list = {}
-    for id_value, row in sorted(coap_content_format.items()):
+    for id_value, row in sorted(coap_content_format_list.items()):
         # Extract Fields
         c_enum_name = row.get("c_enum_name", None)
         coap_class = row.get("coap_class", None)
@@ -256,13 +256,13 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     coap_signaling_format = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["signaling_csv_url"], iana_coap_request_response_settings["signaling_cache_file"]))
 
     # Parse and process IANA registration into enums
-    coap_request_response_format = coap_request_format | coap_response_format | coap_signaling_format
+    coap_request_response_format_list = coap_request_format | coap_response_format | coap_signaling_format
 
     # Check for existing enum so we do not break it
-    coap_request_response_format = override_enum_from_existing_typedef_enum(header_file_content, coap_request_response_format, c_typedef_name)
+    coap_request_response_format_list = override_enum_from_existing_typedef_enum(header_file_content, coap_request_response_format_list, c_typedef_name)
 
     # Format to enum name, value and list
-    c_enum_list = iana_coap_request_response_list_to_c_enum_list(coap_request_response_format)
+    c_enum_list = iana_coap_request_response_list_to_c_enum_list(coap_request_response_format_list)
 
     # Generate enumeration header content
     c_enum_content = generate_c_enum_content(c_enum_content, c_enum_list)
@@ -290,7 +290,7 @@ def iana_coap_option_c_enum_name_generate(option_number: str, option_name: str):
 def iana_coap_option_parse_csv(csv_content: str):
     csv_lines = csv_content.strip().split('\n')
     csv_reader = csv.reader(csv_lines)
-    coap_option_format = {}
+    coap_option_format_list = {}
     for row in csv_reader:
         option_number, option_name, reference = map(str.strip, row)
         if option_number.lower() == "number": # Skip first header
@@ -300,12 +300,12 @@ def iana_coap_option_parse_csv(csv_content: str):
         if "-" in option_number: # usually indicates an unassigned or reserved range
             continue
         # record enum list
-        coap_option_format[int(option_number)] = {
+        coap_option_format_list[int(option_number)] = {
                 "c_enum_name": iana_coap_option_c_enum_name_generate(option_number, option_name),
                 "option_name": option_name,
                 "reference": reference
             }
-    return coap_option_format
+    return coap_option_format_list
 
 def iana_coap_option_list_to_c_enum_list(coap_content_format):
     c_enum_list = {}
@@ -380,7 +380,7 @@ def iana_coap_content_formats_parse_csv(csv_content: str):
     csv_lines = csv_content.strip().split('\n')
     csv_reader = csv.reader(csv_lines)
 
-    coap_content_format = {}
+    coap_content_format_list = {}
     for row in csv_reader:
         content_type, content_coding, id_value, reference = map(str.strip, row)
         if content_type.lower() == "content type": # Skip first header
@@ -389,13 +389,13 @@ def iana_coap_content_formats_parse_csv(csv_content: str):
             continue
         if "-" in id_value:
             continue
-        coap_content_format[int(id_value)] = {
+        coap_content_format_list[int(id_value)] = {
                 "c_enum_name": iana_coap_content_formats_c_enum_name_generate(content_type, content_coding),
                 "content_type": content_type,
                 "content_coding": content_coding,
                 "reference": reference
             }
-    return coap_content_format
+    return coap_content_format_list
 
 def iana_coap_content_formats_list_to_c_enum_list(coap_content_format):
     c_enum_list = {}
@@ -423,13 +423,13 @@ def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) ->
     csv_content = read_or_download_csv(iana_coap_content_format_settings["csv_url"], iana_coap_content_format_settings["cache_file"])
 
     # Parse and process IANA registration into enums
-    coap_content_format = iana_coap_content_formats_parse_csv(csv_content)
+    coap_content_format_list = iana_coap_content_formats_parse_csv(csv_content)
 
     # Check for existing enum so we do not break it
-    coap_content_format = override_enum_from_existing_typedef_enum(header_file_content, coap_content_format, iana_coap_content_format_settings["c_typedef_name"])
+    coap_content_format_list = override_enum_from_existing_typedef_enum(header_file_content, coap_content_format_list, iana_coap_content_format_settings["c_typedef_name"])
 
     # Format to enum name, value and list
-    c_enum_list = iana_coap_content_formats_list_to_c_enum_list(coap_content_format)
+    c_enum_list = iana_coap_content_formats_list_to_c_enum_list(coap_content_format_list)
 
     # Search for coap_content_format_t and replace with new content
     c_typedef_name = iana_coap_content_format_settings["c_typedef_name"]

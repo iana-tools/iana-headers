@@ -246,21 +246,30 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, max_words_without_a
     # Split the semantics into words and process each word
     descriptive_terms = [re.sub(r'\W+', '_', word.replace('+', 'PLUS')).strip('_') for word in semantics.split()]
 
+    # Abbreviate most commonly recognised
+    very_common_word_abbreviations = {
+        "standard": "std",
+        "identifier": "id",
+        "message": "msg",
+        "configuration": "config",
+        "reference": "ref",
+        "referenced": "ref",
+        "previously": "prev",
+        # Add more abbreviations as needed
+    }
+    descriptive_terms = [very_common_word_abbreviations.get(term.lower(), term) for term in descriptive_terms]
+
     # Calculate the total character count
     descriptive_total_character_count = sum(len(term) for term in descriptive_terms)
     if descriptive_total_character_count >= 40:
+        # Apply lossy compression if variable name exceeds reasonable length
         print(f"long semantic tag description detected ({' '.join(descriptive_terms)})")
         # Abbreviate common words
         word_abbreviations = {
-            "message": "msg",
-            "standard": "std",
-            "identifier": "id",
             "number": "num",
             "complex": "cplx",
-            "interleaved": "intlv",
             "index": "idx",
             "attribute": "attr",
-            "configuration": "config",
             "maximum": "max",
             "minimum": "min",
             "communication": "comm",
@@ -268,25 +277,20 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, max_words_without_a
             "information": "info",
             "authentication": "auth",
             "representation": "repr",
-            "resolution": "res",
-            "reference": "ref",
-            "referenced": "ref",
             "algorithm": "algo",
             "version": "ver",
-            "countersignature": "cnt_sig",
-            "conversion": "convrt",
-            "encoding": "encode",
+            "encoding": "enc",
             "arguments": "arg",
             "object": "obj",
             "language": "lang",
             "independent": "indep",
             "alternatives": "alt",
-            "previously": "prev",
             "text": "txt",
             "string": "str",
             "integer": "int",
             "signal": "sig",
             "channel": "chn",
+            "structure": "strct",
             "structures": "strct",
             "attestation": "attest",
             "identify": "ident",
@@ -297,18 +301,31 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, max_words_without_a
             "value": "val",
             "values": "vals",
             "record": "rec",
-            "structure": "strct",
             "report": "rpt",
             "definition": "def",
-            "evidence": "evid",
             "addressed": "addr",
             "capabilities": "cap",
             "additional": "add",
             "operation": "op",
             "operations": "op",
             "level": "lvl",
-            "indicate": "ind",
-            "indicates": "ind",
+            "levels": "lvls",
+            "encode": "enc",
+            "encoded": "enc",
+            "component": "comp",
+            "condition": "cond",
+            "database": "db",
+            "element": "elem",
+            "environment": "env",
+            "parameter": "param",
+            "variable": "var",
+            "variables": "var",
+            "resource": "res",
+            "exception": "excpt",
+            "instance": "inst",
+            "organization": "org",
+            "response": "resp",
+            "security": "sec",
             # Add more abbreviations as needed
         }
         descriptive_terms = [word_abbreviations.get(term.lower(), term) for term in descriptive_terms]
@@ -319,7 +336,6 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, max_words_without_a
 
     # Combine tag value and descriptive terms to form the enum name
     enum_name = f"CBOR_TAG_{tag_value}"
-
     if descriptive_terms:
         enum_name += "_" + "_".join(descriptive_terms).upper()
 

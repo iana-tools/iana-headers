@@ -30,11 +30,9 @@ iana_cbor_tag_settings = {
 }
 
 default_cbor_header_c = """
-typedef enum {
-} cbor_simple_value_t;
+// IANA CBOR Headers
+// Source: https://github.com/mofosyne/iana-headers
 
-typedef enum {
-} cbor_tag_t;
 """
 
 
@@ -82,23 +80,38 @@ def read_or_download_csv(csv_url: str, cache_file: str):
 ###############################################################################
 # C Code Generation Utilities
 
-def extract_enum_values_from_c_code(c_code: str, typedef_enum_name: str) -> str:
+def get_content_of_typedef_enum(c_code: str, typedef_enum_name: str) -> str:
     match = re.search(fr'typedef enum \{{([^}}]*)\}} {typedef_enum_name};', c_code, flags=re.DOTALL)
     if not match:
-        return {}
+        return None
+
+    return match.group(1)
+
+def extract_enum_values_from_typedef_enum(c_code: str, existing_enum_content: str) -> str:
+    matches = re.findall(r'(\w+)\s*=\s*(\d+)', existing_enum_content)
 
     enum_values = {}
-    enum_content = match.group(1)
-    matches = re.findall(r'(\w+)\s*=\s*(\d+)', enum_content)
-
     for match in matches:
         enum_name, enum_value = match
         enum_values[int(enum_value)] = enum_name
 
     return enum_values
 
-def generate_c_enum_content(head_comment, c_enum_list):
-    c_enum_content = head_comment
+def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef_name: str, c_enum_list):
+    """
+    Check for existing enum so we do not break it
+    """
+    existing_enum_content = get_content_of_typedef_enum(header_file_content, c_typedef_name)
+    existing_enum_name = extract_enum_values_from_typedef_enum(header_file_content, existing_enum_content)
+    for id_value, row in sorted(existing_enum_name.items()):
+        if id_value in c_enum_list: # Override
+            c_enum_list[id_value]["c_enum_name"] = existing_enum_name[id_value]
+        else: # Add
+            c_enum_list[id_value] = {"c_enum_name" : existing_enum_name[id_value]}
+    return c_enum_list
+
+def generate_c_enum_content(c_head_comment, c_enum_list):
+    c_enum_content = c_head_comment
     for id_value, row in sorted(c_enum_list.items()):
         if row["comment"]:
             c_enum_content += spacing_string + f'// {row.get("comment", "")}\n'
@@ -112,17 +125,21 @@ def search_and_replace_c_typedef_enum(document_content, typename, c_enum_content
     updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
     return updated_document_content
 
-def override_enum_from_existing_typedef_enum(header_file_content, c_enum_list, c_typedef_name: str):
-    """
-    Check for existing enum so we do not break it
-    """
-    existing_enum_name = extract_enum_values_from_c_code(header_file_content, c_typedef_name)
-    for id_value, row in sorted(existing_enum_name.items()):
-        if id_value in c_enum_list: # Override
-            c_enum_list[id_value]["c_enum_name"] = existing_enum_name[id_value]
-        else: # Add
-            c_enum_list[id_value] = {"c_enum_name" : existing_enum_name[id_value]}
-    return c_enum_list
+def update_c_typedef_enum(document_content, c_typedef_name, c_head_comment, c_enum_list):
+    # Check if already exist, if not then create one
+    if not get_content_of_typedef_enum(document_content, c_typedef_name):
+        document_content += f'typedef enum {{\n}} {c_typedef_name};\n\n'
+
+    # Old name takes priority for backwards compatibility (unless overridden)
+    c_enum_content = override_enum_from_existing_typedef_enum(document_content, c_typedef_name, c_enum_list)
+
+    # Generate enumeration header content
+    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list)
+
+    # Search for typedef enum name and replace with new content
+    updated_document_content = search_and_replace_c_typedef_enum(document_content, c_typedef_name, c_enum_content)
+
+    return updated_document_content
 
 
 ###############################################################################
@@ -162,9 +179,9 @@ def iana_cbor_simple_values_parse_csv(csv_content: str):
             }
     return cbor_simple_value_list
 
-def iana_cbor_simple_values_list_to_c_enum_list(cbor_simple_value):
+def iana_cbor_simple_values_list_to_c_enum_list(cbor_simple_value_list):
     c_enum_list = {}
-    for id_value, row in sorted(cbor_simple_value.items()):
+    for id_value, row in sorted(cbor_simple_value_list.items()):
         # Extract Fields
         c_enum_name = row.get("c_enum_name", None)
         cbor_simple_value = row.get("cbor_simple_value", None)
@@ -179,29 +196,25 @@ def iana_cbor_simple_values_list_to_c_enum_list(cbor_simple_value):
     return c_enum_list
 
 def iana_cbor_simple_values_c_typedef_enum_update(header_file_content: str) -> str:
-    # Generate head comment
     source_name = iana_cbor_simple_value_settings["name"]
     source_url = iana_cbor_simple_value_settings["source"]
+    c_typedef_name = iana_cbor_simple_value_settings["c_typedef_name"]
+    csv_url = iana_cbor_simple_value_settings["csv_url"]
+    cache_file = iana_cbor_simple_value_settings["cache_file"]
+
+    # Generate head comment
     c_head_comment = spacing_string + f"/* Autogenerated {source_name} (Source: {source_url}) */\n"
 
     # Load latest IANA registrations
-    csv_content = read_or_download_csv(iana_cbor_simple_value_settings["csv_url"], iana_cbor_simple_value_settings["cache_file"])
+    csv_content = read_or_download_csv(csv_url, cache_file)
 
     # Parse and process IANA registration into enums
     cbor_simple_value_list = iana_cbor_simple_values_parse_csv(csv_content)
 
-    # Check for existing enum so we do not break it
-    cbor_simple_value_list = override_enum_from_existing_typedef_enum(header_file_content, cbor_simple_value_list, iana_cbor_simple_value_settings["c_typedef_name"])
-
     # Format to enum name, value and list
     c_enum_list = iana_cbor_simple_values_list_to_c_enum_list(cbor_simple_value_list)
 
-    # Generate enumeration header content
-    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list)
-
-    # Search for typedef enum name and replace with new content
-    c_typedef_name = iana_cbor_simple_value_settings["c_typedef_name"]
-    return search_and_replace_c_typedef_enum(header_file_content, c_typedef_name, c_enum_content)
+    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list)
 
 
 ###############################################################################
@@ -397,6 +410,7 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
     # Generate head comment
     source_name = iana_cbor_tag_settings["name"]
     source_url = iana_cbor_tag_settings["source"]
+    c_typedef_name = iana_cbor_tag_settings["c_typedef_name"]
     c_head_comment = spacing_string + f"/* Autogenerated {source_name} (Source: {source_url}) */\n"
 
     # Load latest IANA registrations
@@ -405,18 +419,10 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
     # Parse and process IANA registration into enums
     cbor_tag_list = iana_cbor_tag_parse_csv(csv_content)
 
-    # Check for existing enum so we do not break it
-    cbor_tag_list = override_enum_from_existing_typedef_enum(header_file_content, cbor_tag_list, iana_cbor_tag_settings["c_typedef_name"])
-
     # Format to enum name, value and list
     c_enum_list = iana_cbor_tag_list_to_c_enum_list(cbor_tag_list)
 
-    # Generate enumeration header content
-    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list)
-
-    # Search for typedef enum name and replace with new content
-    c_typedef_name = iana_cbor_tag_settings["c_typedef_name"]
-    return search_and_replace_c_typedef_enum(header_file_content, c_typedef_name, c_enum_content)
+    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list)
 
 
 ###############################################################################

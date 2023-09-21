@@ -204,10 +204,12 @@ def iana_coap_request_response_c_enum_name_generate(code: str, description: str)
 
 def iana_coap_request_response_parse_csv(csv_content: str):
     csv_lines = csv_content.strip().split('\n')
-    csv_reader = csv.reader(csv_lines)
+    csv_reader = csv.DictReader(csv_lines)
     coap_request_response_format_list = {}
     for row in csv_reader:
-        code, description, reference = map(str.strip, row)
+        code = row["Code"]
+        description = row.get("Name") or row.get("Description")
+        reference = row["Reference"]
         if code.lower() == "code": # Skip first header
             continue
         if not code or description.lower() == "unassigned":
@@ -298,10 +300,12 @@ def iana_coap_option_c_enum_name_generate(option_number: str, option_name: str):
 
 def iana_coap_option_parse_csv(csv_content: str):
     csv_lines = csv_content.strip().split('\n')
-    csv_reader = csv.reader(csv_lines)
+    csv_reader = csv.DictReader(csv_lines)
     coap_option_format_list = {}
     for row in csv_reader:
-        option_number, option_name, reference = map(str.strip, row)
+        option_number = row["Number"]
+        option_name = row["Name"]
+        reference = row["Reference"]
         if option_number.lower() == "number": # Skip first header
             continue
         if not option_number or option_name.lower() == "unassigned" or option_name.lower() == "reserved":
@@ -379,11 +383,13 @@ def iana_coap_content_formats_parse_csv(csv_content: str):
     Parse and process IANA registration into enums
     """
     csv_lines = csv_content.strip().split('\n')
-    csv_reader = csv.reader(csv_lines)
-
+    csv_reader = csv.DictReader(csv_lines)
     coap_content_format_list = {}
     for row in csv_reader:
-        content_type, content_coding, id_value, reference = map(str.strip, row)
+        content_type = row["Content Type"]
+        content_coding = row["Content Coding"]
+        id_value = row["ID"]
+        reference = row["Reference"]
         if content_type.lower() == "content type": # Skip first header
             continue
         if not content_type or not id_value or content_type.lower() == "unassigned" or "reserve" in content_type.lower():
@@ -455,12 +461,14 @@ def iana_coap_signaling_option_number_parse_csv(csv_content: str):
     """
     Parse and process IANA registration into enums
     """
-    signaling_option_number_format_list = {}
-
     csv_lines = csv_content.strip().split('\n')
-    csv_reader = csv.reader(csv_lines)
+    csv_reader = csv.DictReader(csv_lines)
+    signaling_option_number_format_list = {}
     for row in csv_reader:
-        code_application, id_value, name_value, reference = map(str.strip, row)
+        code_application = row["Applies to"]
+        id_value = row["Number"]
+        name_value = row["Name"]
+        reference = row["Reference"]
         if code_application.lower() == "applies to": # Skip first header
             continue
         if not code_application or not id_value or "unassigned" in name_value.lower() or "reserve" in name_value.lower():
@@ -478,10 +486,13 @@ def iana_coap_signaling_option_number_parse_csv(csv_content: str):
                 }
 
     for coap_code, signaling_option_number_entry in signaling_option_number_format_list.items():
-        code_application, id_value, name_value, reference = map(str.strip, row)
         csv_lines = csv_content.strip().split('\n')
-        csv_reader = csv.reader(csv_lines)
-        for row in csv_reader:
+        csv_reader = csv.DictReader(csv_lines)
+        for row in csv_reader: 
+            code_application = row["Applies to"]
+            id_value = row["Number"]
+            name_value = row["Name"]
+            reference = row["Reference"]
             if "all" in code_application or "7.xx" in code_application:
                 if coap_code not in signaling_option_number_format_list:
                     signaling_option_number_format_list[coap_code] = {} #???

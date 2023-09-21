@@ -161,10 +161,12 @@ def iana_cbor_simple_values_parse_csv(csv_content: str):
     Parse and process IANA registration into enums
     """
     csv_lines = csv_content.strip().split('\n')
-    csv_reader = csv.reader(csv_lines)
+    csv_reader = csv.DictReader(csv_lines)
     cbor_simple_value_list = {}
     for row in csv_reader:
-        cbor_simple_value, semantics, reference = map(str.strip, row)
+        cbor_simple_value = row["Value"]
+        semantics = row["Semantics"]
+        reference = row["Reference"]
         if cbor_simple_value.lower() == "value": # Skip first header
             continue
         if not cbor_simple_value or semantics.lower() == "unassigned" or semantics.lower() == "reserved":
@@ -370,10 +372,14 @@ def iana_cbor_tag_parse_csv(csv_content: str):
     Parse and process IANA registration into enums
     """
     csv_lines = csv_content.strip().split('\n')
-    csv_reader = csv.reader(csv_lines)
+    csv_reader = csv.DictReader(csv_lines)
     cbor_tag_list = {}
     for row in csv_reader:
-        cbor_tag, data_item, semantics, reference, template = map(str.strip, row)
+        cbor_tag = row["Tag"]
+        data_item = row["Data Item"]
+        semantics = row["Semantics"]
+        reference = row["Reference"]
+        template = row["Template"]
         if cbor_tag.lower() == "tag": # Skip first header
             continue
         if not cbor_tag or "unassigned" in data_item.lower() or "reserved" in semantics.lower():

@@ -46,9 +46,8 @@ iana_coap_content_format_settings = {
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats",
 }
 
-# NOTE: Not in use yet as I cannot decide how to deal with this coap signalling option, since a signalling option number can apply to multiple coap code
-iana_coap_option_numbers_settings = {
-    "c_typedef_name" : "coap_option_numbers_t",
+iana_coap_signaling_option_numbers_settings = {
+    "c_typedef_name" : "option_number_t",
     "name"           : "IANA CoAP Option Numbers",
     "cache_file"     : "./coap/cache/signaling-option-numbers.csv",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv",
@@ -435,6 +434,109 @@ def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) ->
     # Generate enumeration header content
     return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list)
 
+
+###############################################################################
+# Content Format Generation
+def iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value: str):
+    """
+    This generates a c enum name based on coap content type and content coding value
+    """
+    # Do not include comments indicated by messages within `(...)`
+    name_value = re.sub(r'\s+\(.*\)', '', name_value)
+    # Convert '+' into '_PLUS_' as it
+    name_value = re.sub(r'\+', r'_PLUS_', name_value)
+    # Convert non alphanumeric characters into variable name friendly underscore
+    c_enum_name = "COAP_CODE_"+re.sub(r'[^a-zA-Z0-9_]', '_', coap_code)+"_OPTION_NUMBER_"+re.sub(r'[^a-zA-Z0-9_]', '_', name_value)
+    c_enum_name = c_enum_name.strip('_')
+    c_enum_name = c_enum_name.upper()
+    return c_enum_name
+
+def iana_coap_signaling_option_number_parse_csv(csv_content: str):
+    """
+    Parse and process IANA registration into enums
+    """
+    signaling_option_number_format_list = {}
+
+    csv_lines = csv_content.strip().split('\n')
+    csv_reader = csv.reader(csv_lines)
+    for row in csv_reader:
+        code_application, id_value, name_value, reference = map(str.strip, row)
+        if code_application.lower() == "applies to": # Skip first header
+            continue
+        if not code_application or not id_value or "unassigned" in name_value.lower() or "reserve" in name_value.lower():
+            continue
+        if "all" in code_application or "7.xx" in code_application:
+            continue
+        for coap_code in code_application.split(","):
+            coap_code = coap_code.strip()
+            if coap_code not in signaling_option_number_format_list:
+                signaling_option_number_format_list[coap_code] = {} #???
+            signaling_option_number_format_list[coap_code][int(id_value)] = {
+                    "c_enum_name": iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value),
+                    "name": name_value,
+                    "reference": reference
+                }
+
+    for coap_code, signaling_option_number_entry in signaling_option_number_format_list.items():
+        code_application, id_value, name_value, reference = map(str.strip, row)
+        csv_lines = csv_content.strip().split('\n')
+        csv_reader = csv.reader(csv_lines)
+        for row in csv_reader:
+            if "all" in code_application or "7.xx" in code_application:
+                if coap_code not in signaling_option_number_format_list:
+                    signaling_option_number_format_list[coap_code] = {} #???
+                signaling_option_number_format_list[coap_code][int(id_value)] = {
+                        "c_enum_name": iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value),
+                        "name": name_value,
+                        "reference": reference
+                    }
+                    
+
+    return signaling_option_number_format_list
+
+def iana_coap_signaling_option_number_list_to_c_enum_list(coap_content_format):
+    c_enum_list = {}
+    for id_value, row in sorted(coap_content_format.items()):
+        # Extract Fields
+        c_enum_name = row.get("c_enum_name", None)
+        name = row.get("name", None)
+        reference = row.get("reference", None)
+        # Render C header entry
+        c_comment_line = None
+        if name or reference:
+            c_comment_line = '; '.join(filter(None, [name, f'Ref: {reference}']))
+        # Add to enum list
+        c_enum_list[id_value] = {"c_enum_name": c_enum_name, "comment": c_comment_line}
+    return c_enum_list
+
+def iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content: str) -> str:
+    source_name = iana_coap_signaling_option_numbers_settings["name"]
+    source_url = iana_coap_signaling_option_numbers_settings["source"]
+    c_typedef_name = iana_coap_signaling_option_numbers_settings["c_typedef_name"]
+
+
+    # Load latest IANA registrations
+    csv_content = read_or_download_csv(iana_coap_signaling_option_numbers_settings["csv_url"], iana_coap_signaling_option_numbers_settings["cache_file"])
+
+    # Parse and process IANA registration into enums
+    signaling_option_number_format_list = iana_coap_signaling_option_number_parse_csv(csv_content)
+
+    for coap_code, format_list_entry in signaling_option_number_format_list.items():
+        # Generate typedef enum name
+        coap_code_var_name = re.sub(r'[^a-zA-Z0-9_]', '_', coap_code)
+        typedef_enum_name = f"coap_code_{coap_code_var_name}_{c_typedef_name}"
+
+        # Generate head comment
+        c_head_comment = spacing_string + f"/* Autogenerated {source_name} for {coap_code} (Source: {source_url}) */\n"
+
+        # Format to enum name, value and list
+        c_enum_list = iana_coap_signaling_option_number_list_to_c_enum_list(format_list_entry)
+
+        # Generate enumeration header content
+        header_file_content = update_c_typedef_enum(header_file_content, typedef_enum_name, c_head_comment, c_enum_list)
+
+    return header_file_content
+
 ###############################################################################
 # Create Header
 
@@ -452,6 +554,7 @@ def iana_coap_c_header_update(header_filepath: str):
     header_file_content = iana_coap_request_response_c_typedef_enum_update(header_file_content)
     header_file_content = iana_coap_option_c_typedef_enum_update(header_file_content)
     header_file_content = iana_coap_content_formats_c_typedef_enum_update(header_file_content)
+    header_file_content = iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content)
 
     # Write new header content
     with open(header_filepath, 'w') as file:

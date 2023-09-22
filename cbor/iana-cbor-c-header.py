@@ -110,12 +110,36 @@ def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef
             c_enum_list[id_value] = {"c_enum_name" : existing_enum_name[id_value]}
     return c_enum_list
 
-def generate_c_enum_content(c_head_comment, c_enum_list):
+def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None):
+    c_range_marker_index = 0
+    def range_marker_render(c_range_marker, id_value=None):
+        nonlocal c_range_marker_index
+        if c_range_marker is None:
+            return ''
+
+        range_marker_content = ''
+        while c_range_marker_index < len(c_range_marker):
+            start_range = c_range_marker[c_range_marker_index].get("start") 
+            end_range = c_range_marker[c_range_marker_index].get("end") 
+            range_comment = c_range_marker[c_range_marker_index].get("description")
+            if id_value is None or start_range <= id_value:
+                range_marker_content += '\n' + spacing_string + f'/* {start_range}-{end_range} : {range_comment} */\n'
+                c_range_marker_index += 1
+                continue
+            break
+
+        return range_marker_content
+
     c_enum_content = c_head_comment
+
     for id_value, row in sorted(c_enum_list.items()):
+        c_enum_content += range_marker_render(c_range_marker, id_value)
         if row["comment"]:
             c_enum_content += spacing_string + f'// {row.get("comment", "")}\n'
-        c_enum_content += spacing_string + f'{row.get("c_enum_name", "")} = {id_value}' + (',\n' if id_value != sorted(c_enum_list)[-1] else '')
+        c_enum_content += spacing_string + f'{row.get("c_enum_name", "")} = {id_value}' + (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
+
+    c_enum_content += range_marker_render(c_range_marker)
+
     return c_enum_content
 
 def search_and_replace_c_typedef_enum(document_content, typename, c_enum_content):
@@ -125,7 +149,7 @@ def search_and_replace_c_typedef_enum(document_content, typename, c_enum_content
     updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
     return updated_document_content
 
-def update_c_typedef_enum(document_content, c_typedef_name, c_head_comment, c_enum_list):
+def update_c_typedef_enum(document_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker = None):
     # Check if already exist, if not then create one
     if not get_content_of_typedef_enum(document_content, c_typedef_name):
         document_content += f'typedef enum {{\n}} {c_typedef_name};\n\n'
@@ -134,7 +158,7 @@ def update_c_typedef_enum(document_content, c_typedef_name, c_head_comment, c_en
     c_enum_content = override_enum_from_existing_typedef_enum(document_content, c_typedef_name, c_enum_list)
 
     # Generate enumeration header content
-    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list)
+    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker)
 
     # Search for typedef enum name and replace with new content
     updated_document_content = search_and_replace_c_typedef_enum(document_content, c_typedef_name, c_enum_content)
@@ -216,7 +240,11 @@ def iana_cbor_simple_values_c_typedef_enum_update(header_file_content: str) -> s
     # Format to enum name, value and list
     c_enum_list = iana_cbor_simple_values_list_to_c_enum_list(cbor_simple_value_list)
 
-    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list)
+    c_range_marker = [
+        {"start":0, "end":19, "description":"Standards Action"},
+        {"start":32, "end":255, "description":"Specification Required"}
+        ]
+    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker)
 
 
 ###############################################################################
@@ -428,7 +456,12 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
     # Format to enum name, value and list
     c_enum_list = iana_cbor_tag_list_to_c_enum_list(cbor_tag_list)
 
-    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list)
+    c_range_marker = [
+        {"start":0, "end":23, "description":"Standards Action"},
+        {"start":24, "end":32767, "description":"Specification Required"},
+        {"start":32768, "end":18446744073709551615, "description":"First Come First Served"}
+        ]
+    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker)
 
 
 ###############################################################################

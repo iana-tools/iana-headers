@@ -139,12 +139,36 @@ def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef
             c_enum_list[id_value] = {"c_enum_name" : existing_enum_name[id_value]}
     return c_enum_list
 
-def generate_c_enum_content(c_head_comment, c_enum_list):
+def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None):
+    c_range_marker_index = 0
+    def range_marker_render(c_range_marker, id_value=None):
+        nonlocal c_range_marker_index
+        if c_range_marker is None:
+            return ''
+
+        range_marker_content = ''
+        while c_range_marker_index < len(c_range_marker):
+            start_range = c_range_marker[c_range_marker_index].get("start") 
+            end_range = c_range_marker[c_range_marker_index].get("end") 
+            range_comment = c_range_marker[c_range_marker_index].get("description")
+            if id_value is None or start_range <= id_value:
+                range_marker_content += '\n' + spacing_string + f'/* {start_range}-{end_range} : {range_comment} */\n'
+                c_range_marker_index += 1
+                continue
+            break
+
+        return range_marker_content
+
     c_enum_content = c_head_comment
+
     for id_value, row in sorted(c_enum_list.items()):
+        c_enum_content += range_marker_render(c_range_marker, id_value)
         if row["comment"]:
             c_enum_content += spacing_string + f'// {row.get("comment", "")}\n'
-        c_enum_content += spacing_string + f'{row.get("c_enum_name", "")} = {id_value}' + (',\n' if id_value != sorted(c_enum_list)[-1] else '')
+        c_enum_content += spacing_string + f'{row.get("c_enum_name", "")} = {id_value}' + (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
+
+    c_enum_content += range_marker_render(c_range_marker)
+
     return c_enum_content
 
 def search_and_replace_c_typedef_enum(document_content, typename, c_enum_content):
@@ -154,7 +178,7 @@ def search_and_replace_c_typedef_enum(document_content, typename, c_enum_content
     updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
     return updated_document_content
 
-def update_c_typedef_enum(document_content, c_typedef_name, c_head_comment, c_enum_list):
+def update_c_typedef_enum(document_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker = None):
     # Check if already exist, if not then create one
     if not get_content_of_typedef_enum(document_content, c_typedef_name):
         document_content += f'typedef enum {{\n}} {c_typedef_name};\n\n'
@@ -163,7 +187,7 @@ def update_c_typedef_enum(document_content, c_typedef_name, c_head_comment, c_en
     c_enum_content = override_enum_from_existing_typedef_enum(document_content, c_typedef_name, c_enum_list)
 
     # Generate enumeration header content
-    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list)
+    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker)
 
     # Search for typedef enum name and replace with new content
     updated_document_content = search_and_replace_c_typedef_enum(document_content, c_typedef_name, c_enum_content)
@@ -268,17 +292,32 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     c_head_comment += spacing_string + f"   */\n"
 
     # Load latest IANA registrations
+    coap_empty_format = {0:{
+                "c_enum_name": iana_coap_request_response_c_enum_name_generate("0.00", "Empty Message"),
+                "description": "Empty Message",
+                "reference": "[RFC7252, section 4.1]",
+                "coap_code_full": "0.00",
+                "coap_class": 0,
+                "coap_subclass": 0
+            }}
     coap_request_format = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["request_csv_url"], iana_coap_request_response_settings["request_cache_file"]))
     coap_response_format = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["response_csv_url"], iana_coap_request_response_settings["response_cache_file"]))
     coap_signaling_format = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["signaling_csv_url"], iana_coap_request_response_settings["signaling_cache_file"]))
 
     # Parse and process IANA registration into enums
-    coap_request_response_format_list = coap_request_format | coap_response_format | coap_signaling_format
+    coap_request_response_format_list = coap_empty_format | coap_request_format | coap_response_format | coap_signaling_format
 
     # Format to enum name, value and list
     c_enum_list = iana_coap_request_response_list_to_c_enum_list(coap_request_response_format_list)
 
-    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list)
+    c_range_marker = [
+        {"start":0, "end":0, "description":"Indicates an Empty message. [RFC7252, section 4.1]"},
+        {"start":iana_coap_code_class_subclass_to_integer(0,1), "end":iana_coap_code_class_subclass_to_integer(0,31), "description":"Indicates a request. [RFC7252, section 12.1.1]"},
+        {"start":iana_coap_code_class_subclass_to_integer(1,0), "end":iana_coap_code_class_subclass_to_integer(1,31), "description":"Reserved [RFC7252]"},
+        {"start":iana_coap_code_class_subclass_to_integer(2,0), "end":iana_coap_code_class_subclass_to_integer(5,31), "description":"Indicates a response. [RFC7252, section 12.1.2]"},
+        {"start":iana_coap_code_class_subclass_to_integer(6,0), "end":iana_coap_code_class_subclass_to_integer(7,31), "description":"Reserved [RFC7252]"},
+        ]
+    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker)
 
 
 
@@ -349,7 +388,13 @@ def iana_coap_option_c_typedef_enum_update(header_file_content: str) -> str:
     # Format to enum name, value and list
     c_enum_list = iana_coap_option_list_to_c_enum_list(coap_option_format)
 
-    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list)
+    c_range_marker = [
+        {"start":0, "end":255, "description":"IETF Review or IESG Approval"},
+        {"start":256, "end":2047, "description":"Specification Required"},
+        {"start":2048, "end":64999, "description":"Expert Review"},
+        {"start":65000, "end":65535, "description":"Experimental use (no operational use)"},
+        ]
+    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker)
 
 
 ###############################################################################
@@ -438,7 +483,13 @@ def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) ->
     c_enum_list = iana_coap_content_formats_list_to_c_enum_list(coap_content_format_list)
 
     # Generate enumeration header content
-    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list)
+    c_range_marker = [
+        {"start":0, "end":255, "description":"Expert Review"},
+        {"start":256, "end":9999, "description":"IETF Review or IESG Approval"},
+        {"start":10000, "end":64999, "description":"First Come First Served"},
+        {"start":65000, "end":65535, "description":"Experimental use (no operational use)"},
+        ]
+    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker)
 
 
 ###############################################################################
@@ -524,7 +575,6 @@ def iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content:
     source_name = iana_coap_signaling_option_numbers_settings["name"]
     source_url = iana_coap_signaling_option_numbers_settings["source"]
     c_typedef_name = iana_coap_signaling_option_numbers_settings["c_typedef_name"]
-
 
     # Load latest IANA registrations
     csv_content = read_or_download_csv(iana_coap_signaling_option_numbers_settings["csv_url"], iana_coap_signaling_option_numbers_settings["cache_file"])

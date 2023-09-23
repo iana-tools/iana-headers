@@ -128,9 +128,9 @@ def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef
     existing_enum_name = extract_enum_values_from_typedef_enum(header_file_content, existing_enum_content)
     for id_value, row in sorted(existing_enum_name.items()):
         if id_value in c_enum_list: # Override
-            c_enum_list[id_value]["c_enum_name"] = existing_enum_name[id_value]
+            c_enum_list[id_value]["enum_name"] = existing_enum_name[id_value]
         else: # Add
-            c_enum_list[id_value] = {"c_enum_name" : existing_enum_name[id_value]}
+            c_enum_list[id_value] = {"enum_name" : existing_enum_name[id_value]}
     return c_enum_list
 
 def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None):
@@ -159,7 +159,7 @@ def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None):
         c_enum_content += range_marker_render(c_range_marker, id_value)
         if row["comment"]:
             c_enum_content += spacing_string + f'// {row.get("comment", "")}\n'
-        c_enum_content += spacing_string + f'{row.get("c_enum_name", "")} = {id_value}' + (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
+        c_enum_content += spacing_string + f'{row.get("enum_name", "")} = {id_value}' + (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
 
     c_enum_content += range_marker_render(c_range_marker)
 
@@ -209,7 +209,7 @@ def iana_cbor_simple_values_parse_csv(csv_content: str):
     """
     csv_lines = csv_content.strip().split('\n')
     csv_reader = csv.DictReader(csv_lines)
-    cbor_simple_value_list = {}
+    enum_list = {}
     for row in csv_reader:
         cbor_simple_value = row["Value"]
         semantics = row["Semantics"]
@@ -220,29 +220,11 @@ def iana_cbor_simple_values_parse_csv(csv_content: str):
             continue
         if "-" in cbor_simple_value: # is a range of value
             continue
-        cbor_simple_value_list[int(cbor_simple_value)] = {
-                "c_enum_name": iana_cbor_simple_values_c_enum_name_generate(cbor_simple_value, semantics),
-                "cbor_simple_value": cbor_simple_value,
-                "semantics": semantics,
-                "reference": reference
-            }
-    return cbor_simple_value_list
-
-def iana_cbor_simple_values_list_to_c_enum_list(cbor_simple_value_list):
-    c_enum_list = {}
-    for id_value, row in sorted(cbor_simple_value_list.items()):
-        # Extract Fields
-        c_enum_name = row.get("c_enum_name", None)
-        cbor_simple_value = row.get("cbor_simple_value", None)
-        semantics = row.get("semantics", None)
-        reference = row.get("reference", None)
-        # Render C header entry
-        c_comment_line = None
-        if semantics or reference:
-            c_comment_line = '; '.join(filter(None, [semantics, f'Ref: {reference}']))
         # Add to enum list
-        c_enum_list[id_value] = {"c_enum_name": c_enum_name, "comment": c_comment_line}
-    return c_enum_list
+        comment = '; '.join(filter(None, [semantics, f'Ref: {reference}']))
+        enum_name = iana_cbor_simple_values_c_enum_name_generate(cbor_simple_value, semantics)
+        enum_list[int(cbor_simple_value)] = {"enum_name": enum_name, "comment": comment}
+    return enum_list
 
 def iana_cbor_simple_values_c_typedef_enum_update(header_file_content: str) -> str:
     source_name = iana_cbor_simple_value_settings["name"]
@@ -258,11 +240,9 @@ def iana_cbor_simple_values_c_typedef_enum_update(header_file_content: str) -> s
     csv_content = read_or_download_csv(csv_url, cache_file)
 
     # Parse and process IANA registration into enums
-    cbor_simple_value_list = iana_cbor_simple_values_parse_csv(csv_content)
+    c_enum_list = iana_cbor_simple_values_parse_csv(csv_content)
 
-    # Format to enum name, value and list
-    c_enum_list = iana_cbor_simple_values_list_to_c_enum_list(cbor_simple_value_list)
-
+    # Generate enumeration header content
     c_range_marker = [
         {"start":0, "end":19, "description":"Standards Action"},
         {"start":32, "end":255, "description":"Specification Required"}
@@ -424,7 +404,7 @@ def iana_cbor_tag_parse_csv(csv_content: str):
     """
     csv_lines = csv_content.strip().split('\n')
     csv_reader = csv.DictReader(csv_lines)
-    cbor_tag_list = {}
+    c_enum_list = {}
     for row in csv_reader:
         cbor_tag = row["Tag"]
         data_item = row["Data Item"]
@@ -437,30 +417,10 @@ def iana_cbor_tag_parse_csv(csv_content: str):
             continue
         if "-" in cbor_tag: # is a range of value
             continue
-        cbor_tag_list[int(cbor_tag)] = {
-                "c_enum_name": iana_cbor_tag_c_enum_name_generate(cbor_tag, semantics),
-                "cbor_tag": cbor_tag,
-                "data_item": data_item,
-                "semantics": semantics,
-                "reference": reference,
-                "template": template
-            }
-    return cbor_tag_list
-
-def iana_cbor_tag_list_to_c_enum_list(cbor_tag):
-    c_enum_list = {}
-    for id_value, row in sorted(cbor_tag.items()):
-        # Extract Fields
-        c_enum_name = row.get("c_enum_name", None)
-        cbor_tag = row.get("cbor_tag", None)
-        semantics = row.get("semantics", None)
-        reference = row.get("reference", None)
-        # Render C header entry
-        c_comment_line = None
-        if semantics or reference:
-            c_comment_line = '; '.join(filter(None, [semantics, f'Ref: {reference}']))
         # Add to enum list
-        c_enum_list[id_value] = {"c_enum_name": c_enum_name, "comment": c_comment_line}
+        enum_name = iana_cbor_tag_c_enum_name_generate(cbor_tag, semantics)
+        comment = '; '.join(filter(None, [semantics, f'Ref: {reference}']))
+        c_enum_list[int(cbor_tag)] = {"enum_name": enum_name, "comment": comment}
     return c_enum_list
 
 def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
@@ -474,11 +434,9 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
     csv_content = read_or_download_csv(iana_cbor_tag_settings["csv_url"], iana_cbor_tag_settings["cache_file"])
 
     # Parse and process IANA registration into enums
-    cbor_tag_list = iana_cbor_tag_parse_csv(csv_content)
+    c_enum_list = iana_cbor_tag_parse_csv(csv_content)
 
-    # Format to enum name, value and list
-    c_enum_list = iana_cbor_tag_list_to_c_enum_list(cbor_tag_list)
-
+    # Generate enumeration header content
     c_range_marker = [
         {"start":0, "end":23, "description":"Standards Action"},
         {"start":24, "end":32767, "description":"Specification Required"},

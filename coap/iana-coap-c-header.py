@@ -3,7 +3,7 @@
 '''
 MIT License
 
-Copyright (c) (Year), (Name of copyright holder)
+Copyright (c) 2023, Brian Khuu
 All rights reserved.
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -27,6 +27,8 @@ SOFTWARE.
 
 """
 # IANA CoAP C Header Generator
+
+https://github.com/mofosyne/iana-headers
 
 Script Description:
 

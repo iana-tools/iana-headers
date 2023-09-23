@@ -1,0 +1,7 @@
+{
+    "iana_http_status_code_settings": {
+        "title"          : "IANA HTTP Status Code",
+        "csv_url"        : "https://www.iana.org/assignments/http-status-codes/http-status-codes-1.csv",
+        "source_url"     : "https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml#http-status-codes-1"
+    }
+}

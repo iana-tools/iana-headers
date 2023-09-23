@@ -8,6 +8,7 @@ import email, time
 spacing_string = "  "
 
 iana_coap_c_header_file_path = './c/coap-constants.h'
+iana_cache_dir_path = './cache/'
 
 # NOTE: If you want to add support for other languages, best to refactor these settings as an external json file.
 #       Then just copy this file and rename it as iana-coap-<language>-header.py
@@ -17,15 +18,12 @@ iana_coap_request_response_settings = {
     "c_typedef_name"              : "coap_code_t",
     "name"                        : "IANA CoAP Request/Response",
     # Method
-    "request_cache_file"          : "./cache/method-codes.csv",
     "request_csv_url"             : "https://www.iana.org/assignments/core-parameters/method-codes.csv",
     "request_source"              : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#method-codes",
     # Response
-    "response_cache_file"         : "./cache/response-codes.csv",
     "response_csv_url"            : "https://www.iana.org/assignments/core-parameters/response-codes.csv",
     "response_source"             : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#response-codes",
     # Signaling Codes
-    "signaling_cache_file"        : "./cache/signaling-codes.csv",
     "signaling_csv_url"           : "https://www.iana.org/assignments/core-parameters/signaling-codes.csv",
     "signaling_source"            : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-codes",
 }
@@ -33,7 +31,6 @@ iana_coap_request_response_settings = {
 iana_coap_option_settings = {
     "c_typedef_name" : "coap_option_t",
     "name"           : "IANA CoAP Content-Formats",
-    "cache_file"     : "./cache/option-numbers.csv",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#option-numbers",
 }
@@ -41,7 +38,6 @@ iana_coap_option_settings = {
 iana_coap_content_format_settings = {
     "c_typedef_name" : "coap_content_format_t",
     "name"           : "IANA CoAP Content-Formats",
-    "cache_file"     : "./cache/content_formats.csv",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/content-formats.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats",
 }
@@ -49,7 +45,6 @@ iana_coap_content_format_settings = {
 iana_coap_signaling_option_numbers_settings = {
     "c_typedef_name" : "option_number_t",
     "name"           : "IANA CoAP Option Numbers",
-    "cache_file"     : "./cache/signaling-option-numbers.csv",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers",
 }
@@ -297,9 +292,19 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
                 "enum_name": iana_coap_request_response_c_enum_name_generate("0.00", "Empty Message"),
                 "comment": empty_enum_comment_line
             }}
-    coap_request_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["request_csv_url"], iana_coap_request_response_settings["request_cache_file"]))
-    coap_response_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["response_csv_url"], iana_coap_request_response_settings["response_cache_file"]))
-    coap_signaling_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["signaling_csv_url"], iana_coap_request_response_settings["signaling_cache_file"]))
+
+    request_csv_file_url = iana_coap_request_response_settings["request_csv_url"]
+    request_cache_file_path = iana_cache_dir_path + os.path.basename(request_csv_file_url)
+    coap_request_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(request_csv_file_url, request_cache_file_path))
+
+    response_csv_file_url = iana_coap_request_response_settings["response_csv_url"]
+    response_cache_file_path = iana_cache_dir_path + os.path.basename(response_csv_file_url)
+    coap_response_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(response_csv_file_url, response_cache_file_path))
+
+    signaling_csv_file_url = iana_coap_request_response_settings["signaling_csv_url"]
+    signaling_cache_file_path = iana_cache_dir_path + os.path.basename(signaling_csv_file_url)
+    coap_signaling_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(signaling_csv_file_url, signaling_cache_file_path))
+    
     enum_list = coap_empty_enum_list | coap_request_enum_list | coap_response_enum_list | coap_signaling_enum_list
 
     # Generate enumeration header content
@@ -354,14 +359,16 @@ def iana_coap_option_parse_csv(csv_content: str):
 
 def iana_coap_option_c_typedef_enum_update(header_file_content: str) -> str:
     c_typedef_name = iana_coap_option_settings["c_typedef_name"]
-
-    # Generate head comment
     source_name = iana_coap_option_settings["name"]
     source_url = iana_coap_option_settings["source"]
+    csv_file_url = iana_coap_option_settings["csv_url"]
+
+    # Generate head comment
     c_head_comment = spacing_string + f"/* Autogenerated {source_name} (Source: {source_url}) */\n"
 
     # Load latest IANA registrations
-    enum_list = iana_coap_option_parse_csv(read_or_download_csv(iana_coap_option_settings["csv_url"], iana_coap_option_settings["cache_file"]))
+    cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
+    enum_list = iana_coap_option_parse_csv(read_or_download_csv(csv_file_url, cache_file_path))
 
     c_range_marker = [
         {"start":0, "end":255, "description":"IETF Review or IESG Approval"},
@@ -432,7 +439,9 @@ def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) ->
     c_head_comment = spacing_string + f"/* Autogenerated {source_name} (Source: {source_url}) */\n"
 
     # Load latest IANA registrations
-    csv_content = read_or_download_csv(iana_coap_content_format_settings["csv_url"], iana_coap_content_format_settings["cache_file"])
+    csv_file_url = iana_coap_content_format_settings["csv_url"]
+    cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
+    csv_content = read_or_download_csv(csv_file_url, cache_file_path)
 
     # Parse and process IANA registration into enums
     enum_list = iana_coap_content_formats_parse_csv(csv_content)
@@ -513,9 +522,11 @@ def iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content:
     source_name = iana_coap_signaling_option_numbers_settings["name"]
     source_url = iana_coap_signaling_option_numbers_settings["source"]
     c_typedef_name = iana_coap_signaling_option_numbers_settings["c_typedef_name"]
+    csv_file_url = iana_coap_signaling_option_numbers_settings["csv_url"]
+    cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
 
     # Load latest IANA registrations
-    csv_content = read_or_download_csv(iana_coap_signaling_option_numbers_settings["csv_url"], iana_coap_signaling_option_numbers_settings["cache_file"])
+    csv_content = read_or_download_csv(csv_file_url, cache_file_path)
 
     # Parse and process IANA registration into enums
     signaling_option_number_format_list = iana_coap_signaling_option_number_parse_csv(csv_content)

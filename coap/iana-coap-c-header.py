@@ -321,6 +321,10 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     enum_list = coap_empty_enum_list | coap_request_enum_list | coap_response_enum_list | coap_signaling_enum_list
 
     # Generate enumeration header content
+    # This is specified by https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#codes
+    #     however this range marker is intentionally hardcoded to keep this script simple.
+    #     This is because it is unlikely this would change in a while and if we do, then this script will
+    #     need reworking anyway.
     c_range_marker = [
         {"start":0, "end":0, "description":"Indicates an Empty message. [RFC7252, section 4.1]"},
         {"start":iana_coap_code_class_subclass_to_integer(0,1), "end":iana_coap_code_class_subclass_to_integer(0,31), "description":"Indicates a request. [RFC7252, section 12.1.1]"},

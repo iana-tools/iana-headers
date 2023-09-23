@@ -53,10 +53,10 @@ iana_coap_signaling_option_numbers_settings = {
 try:
     with open('iana-coap-sources.json', 'r') as config_file:
         config = json.load(config_file)
-        iana_coap_request_response_settings = config.get('iana_coap_request_response_settings', {})
-        iana_coap_option_settings = config.get('iana_coap_option_settings', {})
-        iana_coap_content_format_settings = config.get('iana_coap_content_format_settings', {})
-        iana_coap_signaling_option_numbers_settings = config.get('iana_coap_signaling_option_numbers_settings', {})
+        iana_coap_request_response_settings.update(config.get('iana_coap_request_response_settings', {}))
+        iana_coap_option_settings.update(config.get('iana_coap_option_settings', {}))
+        iana_coap_content_format_settings.update(config.get('iana_coap_content_format_settings', {}))
+        iana_coap_signaling_option_numbers_settings.update(config.get('iana_coap_signaling_option_numbers_settings', {}))
         print("Info: IANA Source Settings Config File loaded")
 except FileNotFoundError:
     # Handle the case where the JSON file doesn't exist

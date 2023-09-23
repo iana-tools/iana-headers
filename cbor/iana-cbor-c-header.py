@@ -32,8 +32,8 @@ iana_cbor_tag_settings = {
 try:
     with open('iana-cbor-sources.json', 'r') as config_file:
         config = json.load(config_file)
-        iana_cbor_simple_value_settings = config.get('iana_cbor_simple_value_settings', {})
-        iana_cbor_tag_settings = config.get('iana_cbor_tag_settings', {})
+        iana_cbor_simple_value_settings.update(config.get('iana_cbor_simple_value_settings', {}))
+        iana_cbor_tag_settings.update(config.get('iana_cbor_tag_settings', {}))
         print("Info: IANA Source Settings Config File loaded")
 except FileNotFoundError:
     # Handle the case where the JSON file doesn't exist

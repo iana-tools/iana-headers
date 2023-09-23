@@ -54,7 +54,7 @@ iana_cache_dir_path = './cache/'
 # Default Source
 # This is because this script should be as standalone as possible and the url is unlikely to change
 iana_http_status_code_settings = {
-    "name"           : "http_status_codes",
+    "name"           : "http_status_code",
     "title"          : "IANA HTTP Status Code",
     "csv_url"        : "https://www.iana.org/assignments/http-status-codes/http-status-codes-1.csv",
     "source_url"     : "https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml#http-status-codes-1",

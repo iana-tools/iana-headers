@@ -19,12 +19,6 @@ For practical usage in real projects, the code generator is smart enough to reco
 
 ### Intent
 
-The primary intent of this Python program is to:
-
-1. Download the latest registry data from the IANA website for a specified Internet protocol standard.
-2. Parse the downloaded data and convert it into C enumeration values suitable for inclusion in C programs.
-3. Generate or update a C header file, preserving any existing values, and ensuring consistency with the IANA registry.
-
 When triggered the script performs the following actions:
 
 - Download the latest registry data from IANA for the specified Internet protocol standard if it is outdated or missing in the cache.

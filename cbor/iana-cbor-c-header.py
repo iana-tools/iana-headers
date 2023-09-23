@@ -3,17 +3,17 @@ import requests
 import csv
 import os
 import re
-import email, time
+import email
+import time
+import json
 
 spacing_string = "  "
 
 iana_cbor_c_header_file_path = './c/cbor-constants.h'
 iana_cache_dir_path = './cache/'
 
-# NOTE: If you want to add support for other languages, best to refactor these settings as an external json file.
-#       Then just copy this file and rename it as iana-cbor-<language>-header.py
-#       This is so that other developers could just copy the relevant python script for their language
-
+# Default Source
+# This is because this script should be as standalone as possible and the url is unlikely to change
 iana_cbor_simple_value_settings = {
     "c_typedef_name" : "cbor_simple_value_t",
     "name"           : "IANA CBOR Content-Formats",
@@ -27,6 +27,17 @@ iana_cbor_tag_settings = {
     "csv_url"        : "https://www.iana.org/assignments/cbor-tags/tags.csv",
     "source"         : "https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml#tags",
 }
+
+# Load the iana data sources from the JSON file if avaliable
+try:
+    with open('iana-cbor-sources.json', 'r') as config_file:
+        config = json.load(config_file)
+        iana_cbor_simple_value_settings = config.get('iana_cbor_simple_value_settings', {})
+        iana_cbor_tag_settings = config.get('iana_cbor_tag_settings', {})
+        print("Info: IANA Source Settings Config File loaded")
+except FileNotFoundError:
+    # Handle the case where the JSON file doesn't exist
+    print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
 
 default_cbor_header_c = """
 // IANA CBOR Headers

@@ -3,17 +3,17 @@ import requests
 import csv
 import os
 import re
-import email, time
+import email
+import time
+import json
 
 spacing_string = "  "
 
 iana_coap_c_header_file_path = './c/coap-constants.h'
 iana_cache_dir_path = './cache/'
 
-# NOTE: If you want to add support for other languages, best to refactor these settings as an external json file.
-#       Then just copy this file and rename it as iana-coap-<language>-header.py
-#       This is so that other developers could just copy the relevant python script for their language
-
+# Default Source
+# This is because this script should be as standalone as possible and the url is unlikely to change
 iana_coap_request_response_settings = {
     "c_typedef_name"              : "coap_code_t",
     "name"                        : "IANA CoAP Request/Response",
@@ -48,6 +48,19 @@ iana_coap_signaling_option_numbers_settings = {
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers",
 }
+
+# Load the iana data sources from the JSON file if avaliable
+try:
+    with open('iana-coap-sources.json', 'r') as config_file:
+        config = json.load(config_file)
+        iana_coap_request_response_settings = config.get('iana_coap_request_response_settings', {})
+        iana_coap_option_settings = config.get('iana_coap_option_settings', {})
+        iana_coap_content_format_settings = config.get('iana_coap_content_format_settings', {})
+        iana_coap_signaling_option_numbers_settings = config.get('iana_coap_signaling_option_numbers_settings', {})
+        print("Info: IANA Source Settings Config File loaded")
+except FileNotFoundError:
+    # Handle the case where the JSON file doesn't exist
+    print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
 
 default_cbor_header_c = """
 // IANA CoAP Headers

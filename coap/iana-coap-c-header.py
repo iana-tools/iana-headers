@@ -17,15 +17,15 @@ iana_coap_request_response_settings = {
     "c_typedef_name"              : "coap_code_t",
     "name"                        : "IANA CoAP Request/Response",
     # Method
-    "request_cache_file"          : "./coap/cache/method-codes.csv",
+    "request_cache_file"          : "./cache/method-codes.csv",
     "request_csv_url"             : "https://www.iana.org/assignments/core-parameters/method-codes.csv",
     "request_source"              : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#method-codes",
     # Response
-    "response_cache_file"         : "./coap/cache/response-codes.csv",
+    "response_cache_file"         : "./cache/response-codes.csv",
     "response_csv_url"            : "https://www.iana.org/assignments/core-parameters/response-codes.csv",
     "response_source"             : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#response-codes",
     # Signaling Codes
-    "signaling_cache_file"        : "./coap/cache/signaling-codes.csv",
+    "signaling_cache_file"        : "./cache/signaling-codes.csv",
     "signaling_csv_url"           : "https://www.iana.org/assignments/core-parameters/signaling-codes.csv",
     "signaling_source"            : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-codes",
 }
@@ -33,7 +33,7 @@ iana_coap_request_response_settings = {
 iana_coap_option_settings = {
     "c_typedef_name" : "coap_option_t",
     "name"           : "IANA CoAP Content-Formats",
-    "cache_file"     : "./coap/cache/option-numbers.csv",
+    "cache_file"     : "./cache/option-numbers.csv",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#option-numbers",
 }
@@ -41,7 +41,7 @@ iana_coap_option_settings = {
 iana_coap_content_format_settings = {
     "c_typedef_name" : "coap_content_format_t",
     "name"           : "IANA CoAP Content-Formats",
-    "cache_file"     : "./coap/cache/content_formats.csv",
+    "cache_file"     : "./cache/content_formats.csv",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/content-formats.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats",
 }
@@ -49,7 +49,7 @@ iana_coap_content_format_settings = {
 iana_coap_signaling_option_numbers_settings = {
     "c_typedef_name" : "option_number_t",
     "name"           : "IANA CoAP Option Numbers",
-    "cache_file"     : "./coap/cache/signaling-option-numbers.csv",
+    "cache_file"     : "./cache/signaling-option-numbers.csv",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers",
 }
@@ -627,6 +627,7 @@ def iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content:
 
 def iana_coap_c_header_update(header_filepath: str):
     # If file doesn't exist yet then write a new file
+    os.makedirs(os.path.dirname(header_filepath), exist_ok=True)
     if not os.path.exists(header_filepath):
         with open(header_filepath, 'w+') as file:
             file.write(default_cbor_header_c)

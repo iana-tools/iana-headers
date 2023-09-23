@@ -16,7 +16,7 @@ iana_cbor_c_header_file_path = './c/cbor-constants.h'
 iana_cbor_simple_value_settings = {
     "c_typedef_name" : "cbor_simple_value_t",
     "name"           : "IANA CBOR Content-Formats",
-    "cache_file"     : "./cbor/cache/cbor-simple-values.csv",
+    "cache_file"     : "./cache/cbor-simple-values.csv",
     "csv_url"        : "https://www.iana.org/assignments/cbor-simple-values/simple.csv",
     "source"         : "https://www.iana.org/assignments/cbor-simple-values/cbor-simple-values.xhtml#simple",
 }
@@ -24,7 +24,7 @@ iana_cbor_simple_value_settings = {
 iana_cbor_tag_settings = {
     "c_typedef_name" : "cbor_tag_t",
     "name"           : "IANA CBOR Tags",
-    "cache_file"     : "./cbor/cache/tags.csv",
+    "cache_file"     : "./cache/tags.csv",
     "csv_url"        : "https://www.iana.org/assignments/cbor-tags/tags.csv",
     "source"         : "https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml#tags",
 }
@@ -493,6 +493,7 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
 
 def iana_cbor_c_header_update(header_filepath: str):
     # If file doesn't exist yet then write a new file
+    os.makedirs(os.path.dirname(header_filepath), exist_ok=True)
     if not os.path.exists(header_filepath):
         with open(header_filepath, 'w+') as file:
             file.write(default_cbor_header_c)

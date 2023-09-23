@@ -252,7 +252,7 @@ def iana_coap_request_response_c_enum_name_generate(code: str, description: str)
 def iana_coap_request_response_parse_csv(csv_content: str):
     csv_lines = csv_content.strip().split('\n')
     csv_reader = csv.DictReader(csv_lines)
-    coap_request_response_format_list = {}
+    enum_list = {}
     for row in csv_reader:
         code = row["Code"]
         description = row.get("Name") or row.get("Description")
@@ -270,34 +270,11 @@ def iana_coap_request_response_parse_csv(csv_content: str):
         coap_subclass = int(coap_code_splitted_str[1])
         coap_code = iana_coap_code_class_subclass_to_integer(coap_class, coap_subclass)
 
-        # record enum list
-        coap_request_response_format_list[coap_code] = {
-                "enum_name": iana_coap_request_response_c_enum_name_generate(code, description),
-                "description": description,
-                "reference": reference,
-                "coap_code_full": code,
-                "coap_class": coap_class,
-                "coap_subclass": coap_subclass
-            }
-    return coap_request_response_format_list
-
-def iana_coap_request_response_list_to_c_enum_list(coap_content_format_list):
-    c_enum_list = {}
-    for id_value, row in sorted(coap_content_format_list.items()):
-        # Extract Fields
-        c_enum_name = row.get("enum_name", None)
-        coap_class = row.get("coap_class", None)
-        coap_code_full = row.get("coap_code_full", None)
-        coap_subclass = row.get("coap_subclass", None)
-        description = row.get("description", None)
-        reference = row.get("reference", None)
-        # Render C header entry
-        c_comment_line = None
-        if description:
-            c_comment_line = '; '.join(filter(None, [f"code: {coap_code_full}", f"{iana_coap_class_to_str(coap_class)}: {description}",  f'Ref: {reference}']))
         # Add to enum list
-        c_enum_list[int(id_value)] = {"enum_name": c_enum_name, "comment": c_comment_line}
-    return c_enum_list
+        enum_name = iana_coap_request_response_c_enum_name_generate(code, description)
+        comment_line = '; '.join(filter(None, [f"code: {code}", f"{iana_coap_class_to_str(coap_class)}: {description}",  f'Ref: {reference}']))
+        enum_list[int(coap_code)] = {"enum_name": enum_name, "comment": comment_line}
+    return enum_list
 
 def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -> str:
     c_typedef_name = iana_coap_request_response_settings["c_typedef_name"]
@@ -315,24 +292,17 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     c_head_comment += spacing_string + f"   */\n"
 
     # Load latest IANA registrations
-    coap_empty_format = {0:{
+    empty_enum_comment_line = '; '.join(filter(None, [f"code: 0.00", f"{iana_coap_class_to_str(0)}: Empty Message", f'Ref: [RFC7252, section 4.1]']))
+    coap_empty_enum_list = {0:{
                 "enum_name": iana_coap_request_response_c_enum_name_generate("0.00", "Empty Message"),
-                "description": "Empty Message",
-                "reference": "[RFC7252, section 4.1]",
-                "coap_code_full": "0.00",
-                "coap_class": 0,
-                "coap_subclass": 0
+                "comment": empty_enum_comment_line
             }}
-    coap_request_format = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["request_csv_url"], iana_coap_request_response_settings["request_cache_file"]))
-    coap_response_format = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["response_csv_url"], iana_coap_request_response_settings["response_cache_file"]))
-    coap_signaling_format = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["signaling_csv_url"], iana_coap_request_response_settings["signaling_cache_file"]))
+    coap_request_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["request_csv_url"], iana_coap_request_response_settings["request_cache_file"]))
+    coap_response_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["response_csv_url"], iana_coap_request_response_settings["response_cache_file"]))
+    coap_signaling_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(iana_coap_request_response_settings["signaling_csv_url"], iana_coap_request_response_settings["signaling_cache_file"]))
+    enum_list = coap_empty_enum_list | coap_request_enum_list | coap_response_enum_list | coap_signaling_enum_list
 
-    # Parse and process IANA registration into enums
-    coap_request_response_format_list = coap_empty_format | coap_request_format | coap_response_format | coap_signaling_format
-
-    # Format to enum name, value and list
-    c_enum_list = iana_coap_request_response_list_to_c_enum_list(coap_request_response_format_list)
-
+    # Generate enumeration header content
     c_range_marker = [
         {"start":0, "end":0, "description":"Indicates an Empty message. [RFC7252, section 4.1]"},
         {"start":iana_coap_code_class_subclass_to_integer(0,1), "end":iana_coap_code_class_subclass_to_integer(0,31), "description":"Indicates a request. [RFC7252, section 12.1.1]"},
@@ -340,7 +310,7 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
         {"start":iana_coap_code_class_subclass_to_integer(2,0), "end":iana_coap_code_class_subclass_to_integer(5,31), "description":"Indicates a response. [RFC7252, section 12.1.2]"},
         {"start":iana_coap_code_class_subclass_to_integer(6,0), "end":iana_coap_code_class_subclass_to_integer(7,31), "description":"Reserved [RFC7252]"},
         ]
-    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker)
+    return update_c_typedef_enum(header_file_content, c_typedef_name, c_head_comment, enum_list, c_range_marker)
 
 
 

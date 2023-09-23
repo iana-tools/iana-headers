@@ -68,42 +68,66 @@ default_cbor_header_c = """
 ###############################################################################
 # Download Handler
 
-def download_csv(csv_url: str, cache_file: str):
-    print(f"Downloading CSV file {csv_url} to {cache_file}")
-    response = requests.get(csv_url)
-    if response.status_code != 200:
-        raise Exception(f"Failed to fetch CSV content from {csv_url}")
-    csv_content = response.text
-    with open(cache_file, "w", encoding="utf-8") as file:
-        file.write(csv_content)
-    return csv_content
-
 def read_or_download_csv(csv_url: str, cache_file: str):
     """
     Load latest IANA registrations
     """
+    def download_csv(csv_url: str, cache_file: str):
+        print(f"Downloading CSV file {csv_url} to {cache_file}")
+        response = requests.get(csv_url)
+        if response.status_code != 200:
+            raise Exception(f"Failed to fetch CSV content from {csv_url} got http status code {str(response.status_code)}")
+        csv_content = response.text
+        os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+        with open(cache_file, "w", encoding="utf-8") as file:
+            file.write(csv_content)
+        return csv_content
+    def read_cache_csv(cache_file: str):
+        """
+        No change detected. Use cached file
+        """
+        print("Read cache...")
+        with open(cache_file, "r", encoding="utf-8") as file:
+            return file.read()
+        raise Exception(f"Cache file not found {cache_file}")
+
     print(f"Checking {csv_url} (cache:{cache_file})")
-    if os.path.exists(cache_file):
+
+    try:
+        if not os.path.exists(cache_file):
+            print("cache file not found...")
+            return download_csv(csv_url, cache_file)
+
         # Cache file already exist. Check if outdated
         response = requests.head(csv_url)
-        if 'last-modified' in response.headers:
-            remote_last_modified = response.headers['last-modified']
-            remote_timestamp = time.mktime(email.utils.parsedate_to_datetime(remote_last_modified).timetuple())
-            cached_timestamp = os.path.getmtime(cache_file)
-            print(f"remote last modified: {remote_timestamp}")
-            print(f"cached last modified: {cached_timestamp}")
-            if remote_timestamp <= cached_timestamp:
-                # No change detected. Use cached file
-                with open(cache_file, "r", encoding="utf-8") as file:
-                    csv_content = file.read()
-                print("Using cache...")
-                return csv_content
-            print("Outdated cache...")
-        else:
+
+        # Check if last modified is still present
+        if 'last-modified' not in response.headers:
             print("cannot find last modified date time...")
-    else:
-        print("cache file not found...")
-    return download_csv(csv_url, cache_file)
+            return read_cache_csv(cache_file)
+
+        # Get cache and remote timestamp
+        remote_last_modified = response.headers['last-modified']
+        remote_timestamp = time.mktime(email.utils.parsedate_to_datetime(remote_last_modified).timetuple())
+        cached_timestamp = os.path.getmtime(cache_file)
+        print(f"remote last modified: {remote_timestamp}")
+        print(f"cached last modified: {cached_timestamp}")
+
+        # Check if cache is still valid
+        if remote_timestamp <= cached_timestamp:
+            print("Cache still valid...")
+            return read_cache_csv(cache_file)
+
+        print("Outdated cache...")
+        return download_csv(csv_url, cache_file)
+    except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError) as err:
+        print(f"An error occurred: {err}")
+        if os.path.exists(cache_file):
+            return read_cache_csv(cache_file)
+        else:
+            raise Exception(f"Cache file not found")
+    except Exception as e:
+        raise Exception(f"An unexpected error occurred: {e}")
 
 
 ###############################################################################

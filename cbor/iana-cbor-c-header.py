@@ -111,20 +111,19 @@ def get_content_of_typedef_enum(c_code: str, typedef_enum_name: str) -> str:
 
     return match.group(1)
 
-def extract_enum_values_from_typedef_enum(c_code: str, existing_enum_content: str) -> str:
-    matches = re.findall(r'(\w+)\s*=\s*(\d+)', existing_enum_content)
-
-    enum_values = {}
-    for match in matches:
-        enum_name, enum_value = match
-        enum_values[int(enum_value)] = enum_name
-
-    return enum_values
-
 def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef_name: str, c_enum_list):
     """
     Check for existing enum so we do not break it
     """
+    def extract_enum_values_from_typedef_enum(c_code: str, existing_enum_content: str) -> str:
+        matches = re.findall(r'(\w+)\s*=\s*(\d+)', existing_enum_content)
+
+        enum_values = {}
+        for match in matches:
+            enum_name, enum_value = match
+            enum_values[int(enum_value)] = enum_name
+
+        return enum_values
     existing_enum_content = get_content_of_typedef_enum(header_file_content, c_typedef_name)
     existing_enum_name = extract_enum_values_from_typedef_enum(header_file_content, existing_enum_content)
     for id_value, row in sorted(existing_enum_name.items()):
@@ -166,14 +165,14 @@ def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None):
 
     return c_enum_content
 
-def search_and_replace_c_typedef_enum(document_content, typename, c_enum_content):
-    # Search and replace
-    pattern = fr'typedef enum \{{([^}}]*)\}} {typename};'
-    replacement = f'typedef enum {{\n{c_enum_content}\n}} {typename};'
-    updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
-    return updated_document_content
-
 def update_c_typedef_enum(document_content, c_typedef_name, c_head_comment, c_enum_list, c_range_marker = None):
+    def search_and_replace_c_typedef_enum(document_content, typename, c_enum_content):
+        # Search and replace
+        pattern = fr'typedef enum \{{([^}}]*)\}} {typename};'
+        replacement = f'typedef enum {{\n{c_enum_content}\n}} {typename};'
+        updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
+        return updated_document_content
+
     # Check if already exist, if not then create one
     if not get_content_of_typedef_enum(document_content, c_typedef_name):
         document_content += f'typedef enum {{\n}} {c_typedef_name};\n\n'

@@ -1,14 +1,12 @@
 {
     "iana_cbor_simple_value_settings": {
-        "c_typedef_name": "cbor_simple_value_t",
-        "name": "IANA CBOR Content-Formats",
+        "title": "IANA CBOR Content-Formats",
         "csv_url": "https://www.iana.org/assignments/cbor-simple-values/simple.csv",
-        "source": "https://www.iana.org/assignments/cbor-simple-values/cbor-simple-values.xhtml#simple"
+        "source_url": "https://www.iana.org/assignments/cbor-simple-values/cbor-simple-values.xhtml#simple"
     },
     "iana_cbor_tag_settings": {
-        "c_typedef_name": "cbor_tag_t",
-        "name": "IANA CBOR Tags",
+        "title": "IANA CBOR Tags",
         "csv_url": "https://www.iana.org/assignments/cbor-tags/tags.csv",
-        "source": "https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml#tags"
+        "source_url": "https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml#tags"
     }
 }

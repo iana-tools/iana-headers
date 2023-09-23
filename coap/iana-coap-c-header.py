@@ -15,8 +15,8 @@ iana_cache_dir_path = './cache/'
 # Default Source
 # This is because this script should be as standalone as possible and the url is unlikely to change
 iana_coap_request_response_settings = {
-    "c_typedef_name"              : "coap_code_t",
-    "name"                        : "IANA CoAP Request/Response",
+    "name"                        : "coap_code",
+    "title"                       : "IANA CoAP Request/Response",
     # Method
     "request_csv_url"             : "https://www.iana.org/assignments/core-parameters/method-codes.csv",
     "request_source"              : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#method-codes",
@@ -29,22 +29,22 @@ iana_coap_request_response_settings = {
 }
 
 iana_coap_option_settings = {
-    "c_typedef_name" : "coap_option_t",
-    "name"           : "IANA CoAP Content-Formats",
+    "name"           : "coap_option",
+    "title"          : "IANA CoAP Content-Formats",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#option-numbers",
 }
 
 iana_coap_content_format_settings = {
-    "c_typedef_name" : "coap_content_format_t",
-    "name"           : "IANA CoAP Content-Formats",
+    "name"           : "coap_content_format",
+    "title"          : "IANA CoAP Content-Formats",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/content-formats.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats",
 }
 
 iana_coap_signaling_option_numbers_settings = {
-    "c_typedef_name" : "option_number_t",
-    "name"           : "IANA CoAP Option Numbers",
+    "name"           : "option_number",
+    "title"          : "IANA CoAP Option Numbers",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers",
 }
@@ -244,20 +244,18 @@ def iana_coap_class_to_str(coap_class):
         return "Signaling Code"
     return "?"
 
-def iana_coap_request_response_c_enum_name_generate(code: str, description: str):
+def iana_coap_request_response_c_enum_name_generate(code: str, description: str, typedef_enum_name: str):
     """
     This generates a c enum name based on coap content type and content coding value
     """
     # Do not include comments indicated by messages within `(...)`
     description = re.sub(r'\s+\(.*\)', '', description).strip(' ')
-    c_enum_name = f"COAP_CODE_{code}_{description}"
+    c_enum_name = f"{typedef_enum_name.upper()}_{code}_{description}"
     # Convert non alphanumeric characters into variable name friendly underscore
-    c_enum_name = re.sub(r'[^a-zA-Z0-9_]', '_', c_enum_name)
-    c_enum_name = c_enum_name.strip('_')
-    c_enum_name = c_enum_name.upper()
+    c_enum_name = re.sub(r'[^a-zA-Z0-9_]', '_', c_enum_name).strip('_').upper()
     return c_enum_name
 
-def iana_coap_request_response_parse_csv(csv_content: str):
+def iana_coap_request_response_parse_csv(csv_content: str, typedef_enum_name: str):
     csv_lines = csv_content.strip().split('\n')
     csv_reader = csv.DictReader(csv_lines)
     enum_list = {}
@@ -279,17 +277,20 @@ def iana_coap_request_response_parse_csv(csv_content: str):
         coap_code = iana_coap_code_class_subclass_to_integer(coap_class, coap_subclass)
 
         # Add to enum list
-        enum_name = iana_coap_request_response_c_enum_name_generate(code, description)
+        enum_name = iana_coap_request_response_c_enum_name_generate(code, description, typedef_enum_name)
         comment_line = '; '.join(filter(None, [f"code: {code}", f"{iana_coap_class_to_str(coap_class)}: {description}",  f'Ref: {reference}']))
         enum_list[int(coap_code)] = {"enum_name": enum_name, "comment": comment_line}
     return enum_list
 
 def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -> str:
-    c_typedef_name = iana_coap_request_response_settings["c_typedef_name"]
+    typedef_enum_name = iana_coap_request_response_settings["name"]
     c_head_comment = ""
 
+    # Generate typedef name
+    c_typedef_name = f"{typedef_enum_name}_t"
+
     # Generate head comment
-    source_name = iana_coap_request_response_settings["name"]
+    source_name = iana_coap_request_response_settings["title"]
     request_source_url = iana_coap_request_response_settings["request_source"]
     response_source_url = iana_coap_request_response_settings["response_source"]
     signaling_source_url = iana_coap_request_response_settings["signaling_source"]
@@ -302,21 +303,21 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     # Load latest IANA registrations
     empty_enum_comment_line = '; '.join(filter(None, [f"code: 0.00", f"{iana_coap_class_to_str(0)}: Empty Message", f'Ref: [RFC7252, section 4.1]']))
     coap_empty_enum_list = {0:{
-                "enum_name": iana_coap_request_response_c_enum_name_generate("0.00", "Empty Message"),
+                "enum_name": iana_coap_request_response_c_enum_name_generate("0.00", "Empty Message", typedef_enum_name),
                 "comment": empty_enum_comment_line
             }}
 
     request_csv_file_url = iana_coap_request_response_settings["request_csv_url"]
     request_cache_file_path = iana_cache_dir_path + os.path.basename(request_csv_file_url)
-    coap_request_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(request_csv_file_url, request_cache_file_path))
+    coap_request_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(request_csv_file_url, request_cache_file_path), typedef_enum_name)
 
     response_csv_file_url = iana_coap_request_response_settings["response_csv_url"]
     response_cache_file_path = iana_cache_dir_path + os.path.basename(response_csv_file_url)
-    coap_response_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(response_csv_file_url, response_cache_file_path))
+    coap_response_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(response_csv_file_url, response_cache_file_path), typedef_enum_name)
 
     signaling_csv_file_url = iana_coap_request_response_settings["signaling_csv_url"]
     signaling_cache_file_path = iana_cache_dir_path + os.path.basename(signaling_csv_file_url)
-    coap_signaling_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(signaling_csv_file_url, signaling_cache_file_path))
+    coap_signaling_enum_list = iana_coap_request_response_parse_csv(read_or_download_csv(signaling_csv_file_url, signaling_cache_file_path), typedef_enum_name)
     
     enum_list = coap_empty_enum_list | coap_request_enum_list | coap_response_enum_list | coap_signaling_enum_list
 
@@ -339,20 +340,18 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
 ###############################################################################
 # CoAP Option Number Generation
 
-def iana_coap_option_enum_name_generate(option_number: str, option_name: str):
+def iana_coap_option_enum_name_generate(option_number: str, option_name: str, typedef_enum_name: str):
     """
     This generates a c enum name based on coap content type and content coding value
     """
     # Do not include comments indicated by messages within `(...)`
     option_name = re.sub(r'\s+\(.*\)', '', option_name).strip(' ')
-    c_enum_name = f"COAP_OPTION_{option_name}"
+    c_enum_name = f"{typedef_enum_name.upper()}_{option_name}"
     # Convert non alphanumeric characters into variable name friendly underscore
-    c_enum_name = re.sub(r'[^a-zA-Z0-9_]', '_', c_enum_name)
-    c_enum_name = c_enum_name.strip('_')
-    c_enum_name = c_enum_name.upper()
+    c_enum_name = re.sub(r'[^a-zA-Z0-9_]', '_', c_enum_name).strip('_').upper()
     return c_enum_name
 
-def iana_coap_option_parse_csv(csv_content: str):
+def iana_coap_option_parse_csv(csv_content: str, typedef_enum_name: str):
     csv_lines = csv_content.strip().split('\n')
     csv_reader = csv.DictReader(csv_lines)
     enum_list = {}
@@ -368,24 +367,27 @@ def iana_coap_option_parse_csv(csv_content: str):
             continue
 
         # Add to enum list
-        enum_name = iana_coap_option_enum_name_generate(option_number, option_name)
+        enum_name = iana_coap_option_enum_name_generate(option_number, option_name, typedef_enum_name)
         comment_line = '; '.join(filter(None, [f"{option_name}",  f'Ref: {reference}']))
         enum_list[int(option_number)] = {"enum_name": enum_name, "comment": comment_line}
 
     return enum_list
 
 def iana_coap_option_c_typedef_enum_update(header_file_content: str) -> str:
-    c_typedef_name = iana_coap_option_settings["c_typedef_name"]
-    source_name = iana_coap_option_settings["name"]
+    typedef_enum_name = iana_coap_option_settings["name"]
+    source_name = iana_coap_option_settings["title"]
     source_url = iana_coap_option_settings["source"]
     csv_file_url = iana_coap_option_settings["csv_url"]
+
+    # Generate typedef name
+    c_typedef_name = f"{typedef_enum_name}_t"
 
     # Generate head comment
     c_head_comment = spacing_string + f"/* Autogenerated {source_name} (Source: {source_url}) */\n"
 
     # Load latest IANA registrations
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
-    enum_list = iana_coap_option_parse_csv(read_or_download_csv(csv_file_url, cache_file_path))
+    enum_list = iana_coap_option_parse_csv(read_or_download_csv(csv_file_url, cache_file_path), typedef_enum_name)
 
     c_range_marker = [
         {"start":0, "end":255, "description":"IETF Review or IESG Approval"},
@@ -398,7 +400,7 @@ def iana_coap_option_c_typedef_enum_update(header_file_content: str) -> str:
 
 ###############################################################################
 # Content Format Generation
-def iana_coap_content_formats_c_enum_name_generate(content_type: str, content_coding: str):
+def iana_coap_content_formats_c_enum_name_generate(content_type: str, content_coding: str, typedef_enum_name: str):
     """
     This generates a c enum name based on coap content type and content coding value
     """
@@ -417,12 +419,12 @@ def iana_coap_content_formats_c_enum_name_generate(content_type: str, content_co
     # Convert '+' into '_PLUS_' as it
     content_type = re.sub(r'\+', r'_PLUS_', content_type)
     # Convert non alphanumeric characters into variable name friendly underscore
-    c_enum_name = "COAP_CONTENT_FORMAT_"+re.sub(r'[^a-zA-Z0-9_]', '_', content_type)
-    c_enum_name = c_enum_name.strip('_')
-    c_enum_name = c_enum_name.upper()
-    return c_enum_name
+    content_type = re.sub(r'[^a-zA-Z0-9_]', '_', content_type)
+    content_type = content_type.strip('_')
+    content_type = content_type.upper()
+    return f"{typedef_enum_name.upper()}_{content_type}"
 
-def iana_coap_content_formats_parse_csv(csv_content: str):
+def iana_coap_content_formats_parse_csv(csv_content: str, typedef_enum_name: str):
     """
     Parse and process IANA registration into enums
     """
@@ -442,15 +444,18 @@ def iana_coap_content_formats_parse_csv(csv_content: str):
             continue
 
         # Add to enum list
-        enum_name = iana_coap_content_formats_c_enum_name_generate(content_type, content_coding)
+        enum_name = iana_coap_content_formats_c_enum_name_generate(content_type, content_coding, typedef_enum_name)
         comment = '; '.join(filter(None, [content_type, content_coding, f'Ref: {reference}']))
         enum_list[int(id_value)] = {"enum_name": enum_name, "comment": comment}
     return enum_list
 
 def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) -> str:
-    source_name = iana_coap_content_format_settings["name"]
+    source_name = iana_coap_content_format_settings["title"]
     source_url = iana_coap_content_format_settings["source"]
-    c_typedef_name = iana_coap_content_format_settings["c_typedef_name"]
+    typedef_enum_name = iana_coap_content_format_settings["name"]
+
+    # Generate typedef name
+    c_typedef_name = f"{typedef_enum_name}_t"
 
     # Generate head comment
     c_head_comment = spacing_string + f"/* Autogenerated {source_name} (Source: {source_url}) */\n"
@@ -461,7 +466,7 @@ def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) ->
     csv_content = read_or_download_csv(csv_file_url, cache_file_path)
 
     # Parse and process IANA registration into enums
-    enum_list = iana_coap_content_formats_parse_csv(csv_content)
+    enum_list = iana_coap_content_formats_parse_csv(csv_content, typedef_enum_name)
 
     # Generate enumeration header content
     c_range_marker = [
@@ -475,7 +480,7 @@ def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) ->
 
 ###############################################################################
 # Content Format Generation
-def iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value: str):
+def iana_coap_signaling_option_number_c_enum_name_generate(coap_code: str, name_value: str, typedef_enum_name: str):
     """
     This generates a c enum name based on coap content type and content coding value
     """
@@ -484,12 +489,11 @@ def iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value
     # Convert '+' into '_PLUS_' as it
     name_value = re.sub(r'\+', r'_PLUS_', name_value)
     # Convert non alphanumeric characters into variable name friendly underscore
-    c_enum_name = "COAP_CODE_"+re.sub(r'[^a-zA-Z0-9_]', '_', coap_code)+"_OPTION_NUMBER_"+re.sub(r'[^a-zA-Z0-9_]', '_', name_value)
-    c_enum_name = c_enum_name.strip('_')
-    c_enum_name = c_enum_name.upper()
-    return c_enum_name
+    coap_code_cleaned = re.sub(r'[^a-zA-Z0-9_]', '_', coap_code).strip('_').upper()
+    name_value_cleaned = re.sub(r'[^a-zA-Z0-9_]', '_', name_value).strip('_').upper()
+    return f"COAP_CODE_{coap_code_cleaned}_{typedef_enum_name.upper()}_{name_value_cleaned}"
 
-def iana_coap_signaling_option_number_parse_csv(csv_content: str):
+def iana_coap_signaling_option_number_parse_csv(csv_content: str, typedef_enum_name: str):
     """
     Parse and process IANA registration into enums
     """
@@ -510,7 +514,7 @@ def iana_coap_signaling_option_number_parse_csv(csv_content: str):
             coap_code = coap_code.strip()
             if coap_code not in signaling_option_number_format_list:
                 signaling_option_number_format_list[coap_code] = {} #???
-            enum_name = iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value)
+            enum_name = iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value, typedef_enum_name)
             # Render C header entry
             c_comment_line = '; '.join(filter(None, [name_value, f'Ref: {reference}']))
             # Add to enum list
@@ -527,7 +531,7 @@ def iana_coap_signaling_option_number_parse_csv(csv_content: str):
             if "all" in code_application or "7.xx" in code_application:
                 if coap_code not in signaling_option_number_format_list:
                     signaling_option_number_format_list[coap_code] = {} #???
-                enum_name = iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value)
+                enum_name = iana_coap_signaling_option_number_c_enum_name_generate(coap_code, name_value, typedef_enum_name)
                 # Render C header entry
                 c_comment_line = '; '.join(filter(None, [name_value, f'Ref: {reference}']))
                 # Add to enum list
@@ -536,17 +540,20 @@ def iana_coap_signaling_option_number_parse_csv(csv_content: str):
     return signaling_option_number_format_list
 
 def iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content: str) -> str:
-    source_name = iana_coap_signaling_option_numbers_settings["name"]
+    source_name = iana_coap_signaling_option_numbers_settings["title"]
     source_url = iana_coap_signaling_option_numbers_settings["source"]
-    c_typedef_name = iana_coap_signaling_option_numbers_settings["c_typedef_name"]
+    typedef_enum_name = iana_coap_signaling_option_numbers_settings["name"]
     csv_file_url = iana_coap_signaling_option_numbers_settings["csv_url"]
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
+
+    # Generate typedef name
+    c_typedef_name = f"{typedef_enum_name}_t"
 
     # Load latest IANA registrations
     csv_content = read_or_download_csv(csv_file_url, cache_file_path)
 
     # Parse and process IANA registration into enums
-    signaling_option_number_format_list = iana_coap_signaling_option_number_parse_csv(csv_content)
+    signaling_option_number_format_list = iana_coap_signaling_option_number_parse_csv(csv_content, typedef_enum_name)
 
     for coap_code, enum_list in signaling_option_number_format_list.items():
         # Generate typedef enum name

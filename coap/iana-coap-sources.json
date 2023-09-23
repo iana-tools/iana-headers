@@ -1,7 +1,6 @@
 {
     "iana_coap_request_response_settings": {
-        "c_typedef_name": "coap_code_t",
-        "name": "IANA CoAP Request/Response",
+        "title": "IANA CoAP Request/Response",
         "request_csv_url": "https://www.iana.org/assignments/core-parameters/method-codes.csv",
         "request_source": "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#method-codes",
         "response_csv_url": "https://www.iana.org/assignments/core-parameters/response-codes.csv",
@@ -10,20 +9,17 @@
         "signaling_source": "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-codes"
     },
     "iana_coap_option_settings": {
-        "c_typedef_name": "coap_option_t",
-        "name": "IANA CoAP Content-Formats",
+        "title": "IANA CoAP Content-Formats",
         "csv_url": "https://www.iana.org/assignments/core-parameters/option-numbers.csv",
         "source": "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#option-numbers"
     },
     "iana_coap_content_format_settings": {
-        "c_typedef_name": "coap_content_format_t",
-        "name": "IANA CoAP Content-Formats",
+        "title": "IANA CoAP Content-Formats",
         "csv_url": "https://www.iana.org/assignments/core-parameters/content-formats.csv",
         "source": "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats"
     },
     "iana_coap_signaling_option_numbers_settings": {
-        "c_typedef_name": "option_number_t",
-        "name": "IANA CoAP Option Numbers",
+        "title": "IANA CoAP Option Numbers",
         "csv_url": "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv",
         "source": "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers"
     }

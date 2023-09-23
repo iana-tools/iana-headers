@@ -231,7 +231,7 @@ def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None):
 
     for id_value, row in sorted(c_enum_list.items()):
         c_enum_content += range_marker_render(c_range_marker, id_value)
-        if row["comment"]:
+        if "comment" in row:
             c_enum_content += spacing_string + f'// {row.get("comment", "")}\n'
         c_enum_content += spacing_string + f'{row.get("enum_name", "")} = {id_value}' + (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
 

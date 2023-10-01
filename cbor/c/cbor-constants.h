@@ -304,8 +304,6 @@ typedef enum cbor_tag_t {
   CBOR_TAG_60001_TAGGED_CBOR_ARRAY_CONTAINS_ATTEST_EVIDENCE_DATA_WITH_AN_INTEL_TEE_RPT = 60001,
   // The tagged CBOR array contains attestation evidence data with an Intel SGX report.; Ref: [Shanwei_Cen]
   CBOR_TAG_60002_TAGGED_CBOR_ARRAY_CONTAINS_ATTEST_EVIDENCE_DATA_WITH_AN_INTEL_SGX_RPT = 60002,
-  // always invalid; see Section 10.1; Ref: [draft-bormann-cbor-notable-tags-02]
-  CBOR_TAG_65535_ALWAYS_INVALID = 65535,
   // RAINS Message; Ref: [https://britram.github.io/rains-prototype][Brian_Trammell]
   CBOR_TAG_15309736_RAINS_MSG = 15309736,
   // A CBOR encoded Openswan configuration file, as stored on disk forunit test cases.; Ref: [Michael_Richardson][Samir_Hussain]
@@ -316,11 +314,7 @@ typedef enum cbor_tag_t {
   CBOR_TAG_1701996915_ARRAY_OF_CONTENT_ADDR_BLOCKS_ERIS_READ_CAP = 1701996915,
   // ERIS-FS image header; Ref: [Endo_Renberg]
   CBOR_TAG_1701996916_ERIS_FS_IMAGE_HEADER = 1701996916,
-  // always invalid; see Section 10.1; Ref: [draft-bormann-cbor-notable-tags-02]
-  CBOR_TAG_4294967295_ALWAYS_INVALID = 4294967295,
   // Intel FPGA SPDM Manifest; Ref: [Andrew_Draper]
-  CBOR_TAG_4294967296_INTEL_FPGA_SPDM_MANIFEST = 4294967296,
-  // always invalid; Section 10.1; Ref: [draft-bormann-cbor-notable-tags-02]
-  CBOR_TAG_18446744073709551615_ALWAYS_INVALID = 18446744073709551615
+  CBOR_TAG_4294967296_INTEL_FPGA_SPDM_MANIFEST = 4294967296
 } cbor_tag_t;
 

@@ -513,7 +513,7 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
     if tiny_cbor_style_override:
         # Combine tag value and descriptive terms to form the enum name
         if typedef_enum_name.endswith("Tags"):
-            enum_name += typedef_enum_name[:-3]
+            enum_name += typedef_enum_name[:-4]
         else:
             enum_name += typedef_enum_name
         enum_name += variable_name_abbreviator(semantics, camel_case=True)
@@ -596,7 +596,7 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
     # Note: Not convinced this is a good idea, so is restricted to tiny cbor compatibility mode
     if tiny_cbor_style_override:
         c_macro_list = {}
-        for id_value, row in sorted(c_enum_list.items()):
+        for id_value, row in c_enum_list.items():
             c_macro_list[row["enum_name"]] = {"value": row["enum_name"]}
         header_file_content = update_c_const_macro(header_file_content, "cbor known tag feature flag", "/* #define the constants so we can check with #ifdef */\n", c_macro_list)
 

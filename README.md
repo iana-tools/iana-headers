@@ -45,6 +45,13 @@ This requires at least python 3.0 and `pip install requests`.
 * coap content format is based on MIME types so should take `+` and `/` into account as well as factor in the additional parameter fields. Added some special handling of certain parameters to avoid repeated words... 
     - An example of special handling is this string `application/cose; cose-type="cose-encrypt0"; Ref: [RFC9052]` where naively stripping out the non variable friendly characters to `_` would lead to repeated `COSE` mentions, when infact we want something more like `COAP_CONTENT_FORMAT_APPLICATION_COSE_ENCRYPT0`
 
+---
+
+# This Project Default Code Style Justification
+
+* Why Screaming Snake Case for typedef enum and other macro constants
+    - It's easier for non english people to read compared to other options like Camel Case
+        - Supporting Sources. In "460: I Don’t Care What Your Math Says" one of the speaker highlighted the difficulties of readig camel case in for non english speakers [460: I Don’t Care What Your Math Says : Transcript] (https://embedded.fm/transcripts/460)
 
 ---
 

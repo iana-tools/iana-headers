@@ -47,7 +47,7 @@ This requires at least python 3.0 and `pip install requests`.
 
 ---
 
-# This Project Default Code Style Justification
+## This Project Default Code Style Justification
 
 * Why Screaming Snake Case for typedef enum and other macro constants
     - It's easier for non english people to read compared to other options like Camel Case

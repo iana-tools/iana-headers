@@ -91,6 +91,7 @@ default_cbor_header_c = """
 
 """
 
+depreciated_enum_support = True
 
 ###############################################################################
 # Download Handler
@@ -177,16 +178,31 @@ def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef
         enum_values = {}
         for match in matches:
             enum_name, enum_value = match
-            enum_values[int(enum_value)] = enum_name
+            if int(enum_value) in enum_values:
+                enum_values[int(enum_value)].append(enum_name)
+            else:
+                enum_values[int(enum_value)] = [enum_name]
 
         return enum_values
+
     existing_enum_content = get_content_of_typedef_enum(header_file_content, c_typedef_name)
-    existing_enum_name = extract_enum_values_from_typedef_enum(header_file_content, existing_enum_content)
-    for id_value, row in sorted(existing_enum_name.items()):
-        if id_value in c_enum_list: # Override
-            c_enum_list[id_value]["enum_name"] = existing_enum_name[id_value]
-        else: # Add
-            c_enum_list[id_value] = {"enum_name" : existing_enum_name[id_value]}
+    existing_enum_name_list = extract_enum_values_from_typedef_enum(header_file_content, existing_enum_content)
+    for id_value, existing_enum_name_list_entry in sorted(existing_enum_name_list.items()):
+        for existing_enum_name in existing_enum_name_list_entry:
+            # Check if we already have a generated value for this existing entry
+            if id_value in c_enum_list: # Override
+                expected_enum_name = c_enum_list[id_value]["enum_name"]
+                # Check if duplicated
+                if existing_enum_name != expected_enum_name:
+                    # Existing Enum Name Does Not Match With This Name
+                    if depreciated_enum_support:
+                        # Preserve But Mark As Depreciated / Backward Compatible
+                        c_enum_list[id_value]["depreciated_enum_name"] = existing_enum_name
+                    else:
+                        # Preserve But Override
+                        c_enum_list[id_value]["enum_name"] = existing_enum_name
+            else: # Add
+                c_enum_list[id_value] = {"enum_name" : existing_enum_name}
     return c_enum_list
 
 def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None):
@@ -215,7 +231,10 @@ def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None):
         c_enum_content += range_marker_render(c_range_marker, id_value)
         if "comment" in row:
             c_enum_content += spacing_string + f'// {row.get("comment", "")}\n'
-        c_enum_content += spacing_string + f'{row.get("enum_name", "")} = {id_value}' + (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
+        c_enum_content += spacing_string + f'{row.get("enum_name", "")} = {id_value}'
+        if "depreciated_enum_name" in row:
+            c_enum_content += ',\n' + spacing_string + f'{row.get("depreciated_enum_name", "")} = {id_value} /* depreciated but identifier kept for backwards compatibility */'
+        c_enum_content += (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
 
     c_enum_content += range_marker_render(c_range_marker)
 

@@ -2,9 +2,9 @@
 .PHONY: generate
 generate:
 	@echo "Generating Headers"
-	cd c; ./iana-coap-c-header.py
-	cd c; ./iana-cbor-c-header.py
-	cd c; ./iana-http-c-header.py
+	cd c; ./c_header_cbor.py
+	cd c; ./c_header_coap.py
+	cd c; ./c_header_http.py
 
 .PHONY: clean
 clean:

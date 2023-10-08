@@ -44,12 +44,12 @@ import os
 import re
 import email
 import time
-import json
+import tomllib
 
 spacing_string = "  "
 
-iana_http_c_header_file_path = './c/http-constants.h'
-iana_cache_dir_path = './cache/'
+iana_http_c_header_file_path = './src/http-constants.h'
+iana_cache_dir_path = './cache/http/'
 
 depreciated_enum_support = True
 
@@ -70,15 +70,15 @@ iana_http_field_name_settings = {
 }
 
 
-# Load the iana data sources from the JSON file if avaliable
+# Load the iana data sources from the toml file if avaliable
 try:
-    with open('iana-http-sources.json', 'r') as config_file:
-        config = json.load(config_file)
+    with open('../iana-sources.toml', 'rb') as config_file:
+        config = tomllib.load(config_file)
         iana_http_status_code_settings.update(config.get('iana_http_status_code_settings', {}))
         iana_http_field_name_settings.update(config.get('iana_http_field_name_settings', {}))
         print("Info: IANA Source Settings Config File loaded")
 except FileNotFoundError:
-    # Handle the case where the JSON file doesn't exist
+    # Handle the case where the toml file doesn't exist
     print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
 
 default_http_header_c = """

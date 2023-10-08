@@ -44,12 +44,12 @@ import os
 import re
 import email
 import time
-import json
+import tomllib
 
 spacing_string = "  "
 
-iana_coap_c_header_file_path = './c/coap-constants.h'
-iana_cache_dir_path = './cache/'
+iana_coap_c_header_file_path = './src/coap-constants.h'
+iana_cache_dir_path = './cache/coap/'
 
 depreciated_enum_support = True
 
@@ -90,17 +90,17 @@ iana_coap_signaling_option_numbers_settings = {
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers",
 }
 
-# Load the iana data sources from the JSON file if avaliable
+# Load the iana data sources from the toml file if avaliable
 try:
-    with open('iana-coap-sources.json', 'r') as config_file:
-        config = json.load(config_file)
+    with open('../iana-sources.toml', 'rb') as config_file:
+        config = tomllib.load(config_file)
         iana_coap_request_response_settings.update(config.get('iana_coap_request_response_settings', {}))
         iana_coap_option_settings.update(config.get('iana_coap_option_settings', {}))
         iana_coap_content_format_settings.update(config.get('iana_coap_content_format_settings', {}))
         iana_coap_signaling_option_numbers_settings.update(config.get('iana_coap_signaling_option_numbers_settings', {}))
         print("Info: IANA Source Settings Config File loaded")
 except FileNotFoundError:
-    # Handle the case where the JSON file doesn't exist
+    # Handle the case where the toml file doesn't exist
     print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
 
 default_cbor_header_c = """

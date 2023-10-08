@@ -31,7 +31,28 @@ Upon successful execution, the script will display a message indicating that the
 
 ## Requirements
 
-This requires at least python 3.0 and `pip install requests`.
+This requires at least python 3.11 and `pip install requests` because of the use of tomllib which is new to python 3.11.
+
+### Install latest python
+
+As of 2023-10-08 latest version of python is still 3.10.x .
+
+```bash
+# Add the deadsnakes PPA (provides Python 3.11)
+sudo add-apt-repository ppa:deadsnakes/ppa
+
+# Install Python 3.11
+sudo apt install python3.11
+
+# Find the path to Python 3.11 and store it in the py_loc variable
+py_loc=$(which python3.11)
+
+# Register Python 3.11 as an alternative for python3
+sudo update-alternatives --install /usr/bin/python3 python3 ${py_loc} 1
+
+# Switch to Python 3.11
+sudo update-alternatives --config python3
+```
 
 
 ---
@@ -52,6 +73,11 @@ This requires at least python 3.0 and `pip install requests`.
 * Why Screaming Snake Case for typedef enum and other macro constants
     - It's easier for non english people to read compared to other options like Camel Case
         - Supporting Sources. In "460: I Don’t Care What Your Math Says" one of the speaker highlighted the difficulties of readig camel case in for non english speakers [460: I Don’t Care What Your Math Says : Transcript] (https://embedded.fm/transcripts/460)
+
+## This Project Structure Justification
+
+* This project folder structure is arranged in terms of language family. Previously it was arranged in terms of protocol. However in practice I found that it's better arranging in language as a project is more likely to be using one language and toolset, but may use multiple different protocols.
+
 
 ---
 

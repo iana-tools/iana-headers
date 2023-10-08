@@ -44,12 +44,12 @@ import os
 import re
 import email
 import time
-import json
+import tomllib
 
 spacing_string = "  "
 
-iana_cbor_c_header_file_path = './c/cbor-constants.h'
-iana_cache_dir_path = './cache/'
+iana_cbor_c_header_file_path = './src/cbor-constants.h'
+iana_cache_dir_path = './cache/cbor/'
 
 # Override default to tiny cbor compatibility mode (History: https://github.com/intel/tinycbor/issues/240)
 tiny_cbor_style_override = False
@@ -74,15 +74,15 @@ if tiny_cbor_style_override:
     iana_cbor_simple_value_settings["name"] = "CborSimpleValue"
     iana_cbor_tag_settings["name"] = "CborKnownTags"
 
-# Load the iana data sources from the JSON file if avaliable
+# Load the iana data sources from the toml file if avaliable
 try:
-    with open('iana-cbor-sources.json', 'r') as config_file:
-        config = json.load(config_file)
+    with open('../iana-sources.toml', 'rb') as config_file:
+        config = tomllib.load(config_file)
         iana_cbor_simple_value_settings.update(config.get('iana_cbor_simple_value_settings', {}))
         iana_cbor_tag_settings.update(config.get('iana_cbor_tag_settings', {}))
         print("Info: IANA Source Settings Config File loaded")
 except FileNotFoundError:
-    # Handle the case where the JSON file doesn't exist
+    # Handle the case where the toml file doesn't exist
     print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
 
 default_cbor_header_c = """

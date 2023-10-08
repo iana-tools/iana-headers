@@ -53,10 +53,24 @@ spacing_string = "  "
 iana_coap_c_header_file_path = './src/coap-constants.h'
 iana_cache_dir_path = './cache/coap/'
 
+iana_coap_settings = {
+    "request_response" : {
+        "name" : "coap_code"
+    },
+    "option" : {
+        "name" : "coap_option"
+    },
+    "content_format" : {
+        "name" : "coap_content_format"
+    },
+    "signaling_option_numbers" : {
+        "name" : "option_number"
+    }
+}
+
 # Default Source
 # This is because this script should be as standalone as possible and the url is unlikely to change
-iana_coap_request_response_settings = {
-    "name"                        : "coap_code",
+iana_coap_request_response_source = {
     "title"                       : "IANA CoAP Request/Response",
     # Method
     "request_csv_url"             : "https://www.iana.org/assignments/core-parameters/method-codes.csv",
@@ -69,39 +83,58 @@ iana_coap_request_response_settings = {
     "signaling_source"            : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-codes",
 }
 
-iana_coap_option_settings = {
-    "name"           : "coap_option",
-    "title"          : "IANA CoAP Content-Formats",
+iana_coap_option_source = {
+    "title"          : "IANA CoAP Option Number",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#option-numbers",
 }
 
-iana_coap_content_format_settings = {
-    "name"           : "coap_content_format",
+iana_coap_content_format_source = {
     "title"          : "IANA CoAP Content-Formats",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/content-formats.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats",
 }
 
-iana_coap_signaling_option_numbers_settings = {
-    "name"           : "option_number",
-    "title"          : "IANA CoAP Option Numbers",
+iana_coap_signaling_option_numbers_source = {
+    "title"          : "IANA CoAP Signaling Option Numbers",
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers",
 }
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open('../iana-sources.toml', 'rb') as config_file:
-        config = tomllib.load(config_file)
-        iana_coap_request_response_settings.update(config.get('iana_coap_request_response_settings', {}))
-        iana_coap_option_settings.update(config.get('iana_coap_option_settings', {}))
-        iana_coap_content_format_settings.update(config.get('iana_coap_content_format_settings', {}))
-        iana_coap_signaling_option_numbers_settings.update(config.get('iana_coap_signaling_option_numbers_settings', {}))
-        print("Info: IANA Source Settings Config File loaded")
+    with open('../iana_sources.toml', 'rb') as source_file:
+        config = tomllib.load(source_file)
+        iana_coap_request_response_source.update(config.get('iana_coap_request_response_source', {}))
+        iana_coap_option_source.update(config.get('iana_coap_option_source', {}))
+        iana_coap_content_format_source.update(config.get('iana_coap_content_format_source', {}))
+        iana_coap_signaling_option_numbers_source.update(config.get('iana_coap_signaling_option_numbers_source', {}))
+        print("Info: IANA Source Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
-    print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
+    print("Warning: IANA Source Config File does not exist. Using default settings.")
+
+
+# Load settings
+try:
+    with open('../iana_settings.toml', 'rb') as config_file:
+        toml_data = tomllib.load(config_file)
+        coap_settings = toml_data['coap']
+
+        spacing_string = coap_settings.get('spacing_string', spacing_string)
+        iana_coap_c_header_file_path = coap_settings.get('generated_header_filepath')
+        iana_cache_dir_path = coap_settings.get('cache_directory_path')
+
+        iana_coap_settings["request_response"].update(coap_settings.get('request_response', {}))
+        iana_coap_settings["option"].update(coap_settings.get('option', {}))
+        iana_coap_settings["content_format"].update(coap_settings.get('content_format', {}))
+        iana_coap_settings["signaling_option_numbers"].update(coap_settings.get('signaling_option_numbers', {}))
+
+        print("Info: IANA Settings Config File loaded")
+except FileNotFoundError:
+    # Handle the case where the toml file doesn't exist
+    print("Warning: IANA Settings Config File does not exist. Using default settings.")
+
 
 default_cbor_header_c = """
 // IANA CoAP Headers
@@ -170,7 +203,7 @@ def iana_coap_request_response_parse_csv(csv_content: str, typedef_enum_name: st
     return enum_list
 
 def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -> str:
-    typedef_enum_name = iana_coap_request_response_settings["name"]
+    typedef_enum_name = iana_coap_settings["request_response"]["name"]
     c_head_comment = ""
 
     # Generate typedef name
@@ -178,10 +211,10 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     c_enum_name = c_typedef_name
 
     # Generate head comment
-    source_name = iana_coap_request_response_settings["title"]
-    request_source_url = iana_coap_request_response_settings["request_source"]
-    response_source_url = iana_coap_request_response_settings["response_source"]
-    signaling_source_url = iana_coap_request_response_settings["signaling_source"]
+    source_name = iana_coap_request_response_source["title"]
+    request_source_url = iana_coap_request_response_source["request_source"]
+    response_source_url = iana_coap_request_response_source["response_source"]
+    signaling_source_url = iana_coap_request_response_source["signaling_source"]
     c_head_comment += spacing_string + f"/* Autogenerated {source_name}\n"
     c_head_comment += spacing_string + f"   Request Source: {request_source_url}\n"
     c_head_comment += spacing_string + f"   Response Source: {response_source_url}\n"
@@ -195,15 +228,15 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
                 "comment": empty_enum_comment_line
             }}
 
-    request_csv_file_url = iana_coap_request_response_settings["request_csv_url"]
+    request_csv_file_url = iana_coap_request_response_source["request_csv_url"]
     request_cache_file_path = iana_cache_dir_path + os.path.basename(request_csv_file_url)
     coap_request_enum_list = iana_coap_request_response_parse_csv(utils.read_or_download_csv(request_csv_file_url, request_cache_file_path), typedef_enum_name)
 
-    response_csv_file_url = iana_coap_request_response_settings["response_csv_url"]
+    response_csv_file_url = iana_coap_request_response_source["response_csv_url"]
     response_cache_file_path = iana_cache_dir_path + os.path.basename(response_csv_file_url)
     coap_response_enum_list = iana_coap_request_response_parse_csv(utils.read_or_download_csv(response_csv_file_url, response_cache_file_path), typedef_enum_name)
 
-    signaling_csv_file_url = iana_coap_request_response_settings["signaling_csv_url"]
+    signaling_csv_file_url = iana_coap_request_response_source["signaling_csv_url"]
     signaling_cache_file_path = iana_cache_dir_path + os.path.basename(signaling_csv_file_url)
     coap_signaling_enum_list = iana_coap_request_response_parse_csv(utils.read_or_download_csv(signaling_csv_file_url, signaling_cache_file_path), typedef_enum_name)
     
@@ -262,10 +295,10 @@ def iana_coap_option_parse_csv(csv_content: str, typedef_enum_name: str):
     return enum_list
 
 def iana_coap_option_c_typedef_enum_update(header_file_content: str) -> str:
-    typedef_enum_name = iana_coap_option_settings["name"]
-    source_name = iana_coap_option_settings["title"]
-    source_url = iana_coap_option_settings["source"]
-    csv_file_url = iana_coap_option_settings["csv_url"]
+    typedef_enum_name = iana_coap_settings["option"]["name"]
+    source_name = iana_coap_option_source["title"]
+    source_url = iana_coap_option_source["source"]
+    csv_file_url = iana_coap_option_source["csv_url"]
 
     # Generate typedef name
     c_typedef_name = f"{typedef_enum_name}_t"
@@ -339,9 +372,9 @@ def iana_coap_content_formats_parse_csv(csv_content: str, typedef_enum_name: str
     return enum_list
 
 def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) -> str:
-    source_name = iana_coap_content_format_settings["title"]
-    source_url = iana_coap_content_format_settings["source"]
-    typedef_enum_name = iana_coap_content_format_settings["name"]
+    typedef_enum_name = iana_coap_settings["content_format"]["name"]
+    source_name = iana_coap_content_format_source["title"]
+    source_url = iana_coap_content_format_source["source"]
 
     # Generate typedef name
     c_typedef_name = f"{typedef_enum_name}_t"
@@ -351,7 +384,7 @@ def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) ->
     c_head_comment = spacing_string + f"/* Autogenerated {source_name} (Source: {source_url}) */\n"
 
     # Load latest IANA registrations
-    csv_file_url = iana_coap_content_format_settings["csv_url"]
+    csv_file_url = iana_coap_content_format_source["csv_url"]
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
     csv_content = utils.read_or_download_csv(csv_file_url, cache_file_path)
 
@@ -430,10 +463,10 @@ def iana_coap_signaling_option_number_parse_csv(csv_content: str, typedef_enum_n
     return signaling_option_number_format_list
 
 def iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content: str) -> str:
-    source_name = iana_coap_signaling_option_numbers_settings["title"]
-    source_url = iana_coap_signaling_option_numbers_settings["source"]
-    typedef_enum_name = iana_coap_signaling_option_numbers_settings["name"]
-    csv_file_url = iana_coap_signaling_option_numbers_settings["csv_url"]
+    typedef_enum_name = iana_coap_settings["signaling_option_numbers"]["name"]
+    source_name = iana_coap_signaling_option_numbers_source["title"]
+    source_url = iana_coap_signaling_option_numbers_source["source"]
+    csv_file_url = iana_coap_signaling_option_numbers_source["csv_url"]
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
 
     # Generate typedef name
@@ -452,7 +485,7 @@ def iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content:
         c_sub_enum_name = c_sub_typedef_name
 
         # Generate head comment
-        c_head_comment = spacing_string + f"/* Autogenerated {source_name} for {coap_code} (Source: {source_url}) */\n"
+        c_head_comment = spacing_string + f"/* Autogenerated {source_name} for CoAP Signaling Code {coap_code} (Source: {source_url}) */\n"
 
         # Generate enumeration header content
         header_file_content = utils.update_c_typedef_enum(header_file_content, c_sub_typedef_name, c_sub_enum_name, c_head_comment, enum_list)

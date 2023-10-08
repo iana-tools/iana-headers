@@ -53,17 +53,24 @@ spacing_string = "  "
 iana_http_c_header_file_path = './src/http-constants.h'
 iana_cache_dir_path = './cache/http/'
 
+iana_http_settings = {
+    "http_status_code" : {
+        "name" : "http_status_code"
+    },
+    "http_field_name" : {
+        "name" : "http_field_name"
+    }
+}
+
 # Default Source
 # This is because this script should be as standalone as possible and the url is unlikely to change
 iana_http_status_code_settings = {
-    "name"           : "http_status_code",
     "title"          : "IANA HTTP Status Code",
     "csv_url"        : "https://www.iana.org/assignments/http-status-codes/http-status-codes-1.csv",
     "source_url"     : "https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml#http-status-codes-1",
 }
 
 iana_http_field_name_settings = {
-    "name"           : "http_field_name",
     "title"          : "IANA HTTP Field Name",
     "csv_url"        : "https://www.iana.org/assignments/http-fields/field-names.csv",
     "source_url"     : "https://www.iana.org/assignments/http-fields/http-fields.xhtml#field-names",
@@ -72,14 +79,35 @@ iana_http_field_name_settings = {
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open('../iana-sources.toml', 'rb') as config_file:
-        config = tomllib.load(config_file)
+    with open('../iana_sources.toml', 'rb') as source_file:
+        config = tomllib.load(source_file)
         iana_http_status_code_settings.update(config.get('iana_http_status_code_settings', {}))
         iana_http_field_name_settings.update(config.get('iana_http_field_name_settings', {}))
         print("Info: IANA Source Settings Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
     print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
+
+
+# Load settings
+try:
+    with open('../iana_settings.toml', 'rb') as config_file:
+        toml_data = tomllib.load(config_file)
+        http_settings = toml_data['http']
+
+        spacing_string = http_settings.get('spacing_string', spacing_string)
+        iana_http_c_header_file_path = http_settings.get('generated_header_filepath')
+        iana_cache_dir_path = http_settings.get('cache_directory_path')
+
+        iana_http_settings["http_status_code"].update(http_settings.get('http_status_code', {}))
+        iana_http_settings["http_field_name"].update(http_settings.get('http_field_name', {}))
+
+        print("Info: IANA Settings Config File loaded")
+except FileNotFoundError:
+    # Handle the case where the toml file doesn't exist
+    print("Warning: IANA Settings Config File does not exist. Using default settings.")
+
+
 
 default_http_header_c = """
 // IANA HTTP Headers
@@ -123,7 +151,7 @@ def iana_http_status_codes_parse_csv(csv_content: str, typedef_enum_name: str):
     return enum_list
 
 def iana_http_status_codes_c_typedef_enum_update(header_file_content: str) -> str:
-    typedef_enum_name = iana_http_status_code_settings["name"]
+    typedef_enum_name = iana_http_settings["http_status_code"]["name"]
     source_name = iana_http_status_code_settings["title"] 
     source_url = iana_http_status_code_settings["source_url"]
     csv_file_url = iana_http_status_code_settings["csv_url"]
@@ -189,7 +217,7 @@ def iana_http_field_namess_parse_csv(csv_content: str, section_name: str):
     return c_macro_list
 
 def iana_http_field_names_c_const_macro_update(header_file_content: str) -> str:
-    section_name = iana_http_field_name_settings["name"]
+    section_name = iana_http_settings["http_field_name"]["name"]
     source_name = iana_http_field_name_settings["title"] 
     source_url = iana_http_field_name_settings["source_url"]
     csv_file_url = iana_http_field_name_settings["csv_url"]

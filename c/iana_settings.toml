@@ -1,0 +1,44 @@
+
+[cbor]
+spacing_string = "  "
+style_override = null
+generated_header_filepath = './src/cbor-constants.h'
+cache_directory_path = './cache/cbor/'
+
+[cbor.simple_value]
+name = "cbor_simple_value"
+
+[cbor.tag_source]
+name = "cbor_tag"
+
+
+[coap]
+spacing_string = "  "
+style_override = null
+generated_header_filepath = './src/coap-constants.h'
+cache_directory_path = './cache/coap/'
+
+[coap.request_response]
+name = "coap_code"
+
+[coap.option]
+name = "coap_option"
+
+[coap.content_format]
+name = "coap_content_format"
+
+[coap.signaling_option_numbers]
+name = "option_number"
+
+
+[http]
+spacing_string = "  "
+style_override = null
+generated_header_filepath = './src/http-constants.h'
+cache_directory_path = './cache/http/'
+
+[coap.http_status_code]
+name = "http_status_code"
+
+[coap.http_field_name]
+name = "http_field_name"

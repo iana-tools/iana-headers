@@ -49,24 +49,30 @@ import tomllib
 import iana_header_utils as utils
 
 spacing_string = "  "
-
 iana_cbor_c_header_file_path = './src/cbor-constants.h'
 iana_cache_dir_path = './cache/cbor/'
 
 # Override default to tiny cbor compatibility mode (History: https://github.com/intel/tinycbor/issues/240)
 tiny_cbor_style_override = False
 
+iana_cbor_settings = {
+    "simple_value" : {
+        "name" : "cbor_simple_value"
+    },
+    "tag_source" : {
+        "name" : "cbor_tag"
+    }
+}
+
 # Default Source
 # This is because this script should be as standalone as possible and the url is unlikely to change
-iana_cbor_simple_value_settings = {
-    "name"           : "cbor_simple_value",
+iana_cbor_simple_value_source = {
     "title"          : "IANA CBOR Content-Formats",
     "csv_url"        : "https://www.iana.org/assignments/cbor-simple-values/simple.csv",
     "source_url"     : "https://www.iana.org/assignments/cbor-simple-values/cbor-simple-values.xhtml#simple",
 }
 
-iana_cbor_tag_settings = {
-    "name"           : "cbor_tag",
+iana_cbor_tag_source = {
     "title"          : "IANA CBOR Tags",
     "csv_url"        : "https://www.iana.org/assignments/cbor-tags/tags.csv",
     "source_url"     : "https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml#tags",
@@ -74,19 +80,41 @@ iana_cbor_tag_settings = {
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open('../iana-sources.toml', 'rb') as config_file:
-        config = tomllib.load(config_file)
-        iana_cbor_simple_value_settings.update(config.get('iana_cbor_simple_value_settings', {}))
-        iana_cbor_tag_settings.update(config.get('iana_cbor_tag_settings', {}))
-        print("Info: IANA Source Settings Config File loaded")
+    with open('../iana_sources.toml', 'rb') as source_file:
+        config = tomllib.load(source_file)
+        iana_cbor_simple_value_source.update(config.get('iana_cbor_simple_value_source', {}))
+        iana_cbor_tag_source.update(config.get('iana_cbor_tag_source', {}))
+        print("Info: IANA Source Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
-    print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
+    print("Warning: IANA Source Config File does not exist. Using default settings.")
+
+
+# Load settings
+try:
+    with open('../iana_settings.toml', 'rb') as config_file:
+        toml_data = tomllib.load(config_file)
+        cbor_settings = toml_data['cbor']
+
+        spacing_string = cbor_settings.get('spacing_string', spacing_string)
+        iana_cbor_c_header_file_path = cbor_settings.get('generated_header_filepath')
+        iana_cache_dir_path = cbor_settings.get('cache_directory_path')
+
+        if cbor_settings.get('style_override', None) == "tiny_cbor":
+            tiny_cbor_style_override = True
+
+        iana_cbor_settings["simple_value"].update(cbor_settings.get('simple_value', {}))
+        iana_cbor_settings["tag_source"].update(cbor_settings.get('tag_source', {}))
+
+        print("Info: IANA Settings Config File loaded")
+except FileNotFoundError:
+    # Handle the case where the toml file doesn't exist
+    print("Warning: IANA Settings Config File does not exist. Using default settings.")
 
 
 if tiny_cbor_style_override:
-    iana_cbor_simple_value_settings["name"] = "CborSimpleValue"
-    iana_cbor_tag_settings["name"] = "CborKnownTags"
+    iana_cbor_settings["simple_value"]["name"] = "CborSimpleValue"
+    iana_cbor_settings["tag_source"]["name"] = "CborKnownTags"
 
 
 default_cbor_header_c = """
@@ -144,10 +172,10 @@ def iana_cbor_simple_values_parse_csv(csv_content: str, typedef_enum_name: str):
     return enum_list
 
 def iana_cbor_simple_values_c_typedef_enum_update(header_file_content: str) -> str:
-    typedef_enum_name = iana_cbor_simple_value_settings["name"]
-    source_name = iana_cbor_simple_value_settings["title"] 
-    source_url = iana_cbor_simple_value_settings["source_url"]
-    csv_file_url = iana_cbor_simple_value_settings["csv_url"]
+    typedef_enum_name = iana_cbor_settings["simple_value"]["name"]
+    source_name = iana_cbor_simple_value_source["title"] 
+    source_url = iana_cbor_simple_value_source["source_url"]
+    csv_file_url = iana_cbor_simple_value_source["csv_url"]
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
 
     # Generate typedef name
@@ -381,10 +409,10 @@ def iana_cbor_tag_parse_csv(csv_content: str, typedef_enum_name: str):
     return c_enum_list
 
 def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
-    typedef_enum_name = iana_cbor_tag_settings["name"]
-    source_name = iana_cbor_tag_settings["title"]
-    source_url = iana_cbor_tag_settings["source_url"]
-    csv_file_url = iana_cbor_tag_settings["csv_url"]
+    typedef_enum_name = iana_cbor_settings["tag_source"]["name"]
+    source_name = iana_cbor_tag_source["title"]
+    source_url = iana_cbor_tag_source["source_url"]
+    csv_file_url = iana_cbor_tag_source["csv_url"]
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
 
     # Generate typedef name

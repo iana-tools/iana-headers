@@ -152,7 +152,7 @@ def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None, 
 
     return c_enum_content
 
-def update_c_typedef_enum(document_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker = None):
+def update_c_typedef_enum(document_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker = None, spacing_string = "  "):
     def search_and_replace_c_typedef_enum(document_content, c_enum_content, typename, enumname = None):
         # Search and replace
         enumname = "" if enumname is None else (enumname + " ")
@@ -169,7 +169,7 @@ def update_c_typedef_enum(document_content, c_typedef_name, c_enum_name, c_head_
     c_enum_content = override_enum_from_existing_typedef_enum(document_content, c_typedef_name, c_enum_list)
 
     # Generate enumeration header content
-    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker)
+    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker, spacing_string=spacing_string)
 
     # Search for typedef enum name and replace with new content
     updated_document_content = search_and_replace_c_typedef_enum(document_content, c_enum_content, c_typedef_name, c_enum_name)

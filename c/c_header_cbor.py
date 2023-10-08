@@ -38,19 +38,21 @@ This Python script performs the following tasks:
 - Update or create the C header file with the generated enumeration values, preserving any existing values.
 """
 
-import requests
 import csv
 import os
 import re
-import email
-import time
 import tomllib
 
 import iana_header_utils as utils
 
+script_dir = os.path.dirname(__file__)
+
 spacing_string = "  "
 iana_cbor_c_header_file_path = './src/cbor-constants.h'
 iana_cache_dir_path = './cache/cbor/'
+
+iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml'")
+iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml'")
 
 # Override default to tiny cbor compatibility mode (History: https://github.com/intel/tinycbor/issues/240)
 tiny_cbor_style_override = False
@@ -80,19 +82,19 @@ iana_cbor_tag_source = {
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open('../iana_sources.toml', 'rb') as source_file:
+    with open(iana_source_filepath, 'rb') as source_file:
         config = tomllib.load(source_file)
         iana_cbor_simple_value_source.update(config.get('iana_cbor_simple_value_source', {}))
         iana_cbor_tag_source.update(config.get('iana_cbor_tag_source', {}))
         print("Info: IANA Source Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
-    print("Warning: IANA Source Config File does not exist. Using default settings.")
+    print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
 
 
 # Load settings
 try:
-    with open('../iana_settings.toml', 'rb') as config_file:
+    with open(iana_settings_filepath, 'rb') as config_file:
         toml_data = tomllib.load(config_file)
         cbor_settings = toml_data['cbor']
 
@@ -109,13 +111,17 @@ try:
         print("Info: IANA Settings Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
-    print("Warning: IANA Settings Config File does not exist. Using default settings.")
-
+    print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
 
 if tiny_cbor_style_override:
     iana_cbor_settings["simple_value"]["name"] = "CborSimpleValue"
     iana_cbor_settings["tag_source"]["name"] = "CborKnownTags"
 
+# Path is all relative to this script
+# Note: This approach was chosen to keep things simple, as each project would only have one header file)
+#       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
+iana_cbor_c_header_file_path = os.path.join(script_dir, iana_cbor_c_header_file_path)
+iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
 
 default_cbor_header_c = """
 // IANA CBOR Headers
@@ -200,7 +206,7 @@ def iana_cbor_simple_values_c_typedef_enum_update(header_file_content: str) -> s
         {"start":0, "end":19, "description":"Standards Action"},
         {"start":32, "end":255, "description":"Specification Required"}
         ]
-    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker)
+    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker, spacing_string=spacing_string)
 
 
 ###############################################################################
@@ -438,7 +444,7 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
         {"start":24, "end":32767, "description":"Specification Required"},
         {"start":32768, "end":18446744073709551615, "description":"First Come First Served"}
         ]
-    header_file_content = utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker)
+    header_file_content = utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker, spacing_string=spacing_string)
 
     # Generate constants for cbor tag feature flag
     # Note: Not convinced this is a good idea, so is restricted to tiny cbor compatibility mode

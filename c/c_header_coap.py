@@ -38,20 +38,22 @@ This Python script performs the following tasks:
 - Update or create the C header file with the generated enumeration values, preserving any existing values.
 """
 
-import requests
 import csv
 import os
 import re
-import email
-import time
 import tomllib
 
 import iana_header_utils as utils
+
+script_dir = os.path.dirname(__file__)
 
 spacing_string = "  "
 
 iana_coap_c_header_file_path = './src/coap-constants.h'
 iana_cache_dir_path = './cache/coap/'
+
+iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")
+iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml")
 
 iana_coap_settings = {
     "request_response" : {
@@ -103,7 +105,7 @@ iana_coap_signaling_option_numbers_source = {
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open('../iana_sources.toml', 'rb') as source_file:
+    with open(iana_source_filepath, 'rb') as source_file:
         config = tomllib.load(source_file)
         iana_coap_request_response_source.update(config.get('iana_coap_request_response_source', {}))
         iana_coap_option_source.update(config.get('iana_coap_option_source', {}))
@@ -112,12 +114,12 @@ try:
         print("Info: IANA Source Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
-    print("Warning: IANA Source Config File does not exist. Using default settings.")
+    print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
 
 
 # Load settings
 try:
-    with open('../iana_settings.toml', 'rb') as config_file:
+    with open(iana_settings_filepath, 'rb') as config_file:
         toml_data = tomllib.load(config_file)
         coap_settings = toml_data['coap']
 
@@ -130,13 +132,21 @@ try:
         iana_coap_settings["content_format"].update(coap_settings.get('content_format', {}))
         iana_coap_settings["signaling_option_numbers"].update(coap_settings.get('signaling_option_numbers', {}))
 
+        if coap_settings.get('style_override', None) == "contiki-ng":
+            style_override_contiki_ng = True
+
         print("Info: IANA Settings Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
-    print("Warning: IANA Settings Config File does not exist. Using default settings.")
+    print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
 
+# Path is all relative to this script
+# Note: This approach was chosen to keep things simple, as each project would only have one header file)
+#       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
+iana_coap_c_header_file_path = os.path.join(script_dir, iana_coap_c_header_file_path)
+iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
 
-default_cbor_header_c = """
+default_coap_header_c = """
 // IANA CoAP Headers
 // Source: https://github.com/mofosyne/iana-headers
 
@@ -254,7 +264,7 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
         {"start":iana_coap_code_class_subclass_to_integer(2,0), "end":iana_coap_code_class_subclass_to_integer(5,31), "description":"Indicates a response. [RFC7252, section 12.1.2]"},
         {"start":iana_coap_code_class_subclass_to_integer(6,0), "end":iana_coap_code_class_subclass_to_integer(7,31), "description":"Reserved [RFC7252]"},
         ]
-    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, enum_list, c_range_marker)
+    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, enum_list, c_range_marker, spacing_string=spacing_string)
 
 
 
@@ -317,7 +327,7 @@ def iana_coap_option_c_typedef_enum_update(header_file_content: str) -> str:
         {"start":2048, "end":64999, "description":"Expert Review"},
         {"start":65000, "end":65535, "description":"Experimental use (no operational use)"},
         ]
-    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, enum_list, c_range_marker)
+    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, enum_list, c_range_marker, spacing_string=spacing_string)
 
 
 ###############################################################################
@@ -398,7 +408,7 @@ def iana_coap_content_formats_c_typedef_enum_update(header_file_content: str) ->
         {"start":10000, "end":64999, "description":"First Come First Served"},
         {"start":65000, "end":65535, "description":"Experimental use (no operational use)"},
         ]
-    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, enum_list, c_range_marker)
+    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, enum_list, c_range_marker, spacing_string=spacing_string)
 
 
 ###############################################################################
@@ -488,7 +498,7 @@ def iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content:
         c_head_comment = spacing_string + f"/* Autogenerated {source_name} for CoAP Signaling Code {coap_code} (Source: {source_url}) */\n"
 
         # Generate enumeration header content
-        header_file_content = utils.update_c_typedef_enum(header_file_content, c_sub_typedef_name, c_sub_enum_name, c_head_comment, enum_list)
+        header_file_content = utils.update_c_typedef_enum(header_file_content, c_sub_typedef_name, c_sub_enum_name, c_head_comment, enum_list, spacing_string=spacing_string)
 
     return header_file_content
 
@@ -500,17 +510,19 @@ def iana_coap_c_header_update(header_filepath: str):
     os.makedirs(os.path.dirname(header_filepath), exist_ok=True)
     if not os.path.exists(header_filepath):
         with open(header_filepath, 'w+') as file:
-            file.write(default_cbor_header_c)
+            file.write(default_coap_header_c)
 
     # Get latest header content
     with open(header_filepath, 'r') as file:
         header_file_content = file.read()
 
     # Resync All Values
-    header_file_content = iana_coap_request_response_c_typedef_enum_update(header_file_content)
+    if not style_override_contiki_ng:
+        header_file_content = iana_coap_request_response_c_typedef_enum_update(header_file_content)
     header_file_content = iana_coap_option_c_typedef_enum_update(header_file_content)
     header_file_content = iana_coap_content_formats_c_typedef_enum_update(header_file_content)
-    header_file_content = iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content)
+    if not style_override_contiki_ng:
+        header_file_content = iana_coap_signaling_option_number_c_typedef_enum_update(header_file_content)
 
     # Write new header content
     with open(header_filepath, 'w') as file:

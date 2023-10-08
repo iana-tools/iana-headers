@@ -38,20 +38,22 @@ This Python script performs the following tasks:
 - Update or create the C header file with the generated enumeration values, preserving any existing values.
 """
 
-import requests
 import csv
 import os
 import re
-import email
-import time
 import tomllib
 
 import iana_header_utils as utils
+
+script_dir = os.path.dirname(__file__)
 
 spacing_string = "  "
 
 iana_http_c_header_file_path = './src/http-constants.h'
 iana_cache_dir_path = './cache/http/'
+
+iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")
+iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml")
 
 iana_http_settings = {
     "http_status_code" : {
@@ -79,19 +81,19 @@ iana_http_field_name_settings = {
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open('../iana_sources.toml', 'rb') as source_file:
+    with open(iana_source_filepath, 'rb') as source_file:
         config = tomllib.load(source_file)
         iana_http_status_code_settings.update(config.get('iana_http_status_code_settings', {}))
         iana_http_field_name_settings.update(config.get('iana_http_field_name_settings', {}))
         print("Info: IANA Source Settings Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
-    print("Warning: IANA Source Settings Config File does not exist. Using default settings.")
+    print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
 
 
 # Load settings
 try:
-    with open('../iana_settings.toml', 'rb') as config_file:
+    with open(iana_settings_filepath, 'rb') as config_file:
         toml_data = tomllib.load(config_file)
         http_settings = toml_data['http']
 
@@ -105,9 +107,13 @@ try:
         print("Info: IANA Settings Config File loaded")
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
-    print("Warning: IANA Settings Config File does not exist. Using default settings.")
+    print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
 
-
+# Path is all relative to this script
+# Note: This approach was chosen to keep things simple, as each project would only have one header file)
+#       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
+iana_http_c_header_file_path = os.path.join(script_dir, iana_http_c_header_file_path)
+iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
 
 default_http_header_c = """
 // IANA HTTP Headers
@@ -178,7 +184,7 @@ def iana_http_status_codes_c_typedef_enum_update(header_file_content: str) -> st
         {"start":400, "end":499, "description": "Client Error - The request contains bad syntax or cannot be fulfilled"},
         {"start":500, "end":599, "description": "Server Error - The server failed to fulfill an apparently valid request"},
         ]
-    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker)
+    return utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker, spacing_string=spacing_string)
 
 
 ###############################################################################

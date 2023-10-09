@@ -52,6 +52,8 @@ spacing_string = "  "
 iana_coap_c_header_file_path = './src/coap-constants.h'
 iana_cache_dir_path = './cache/coap/'
 
+style_override_contiki_ng = False
+
 iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")
 iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml")
 
@@ -348,8 +350,8 @@ def iana_coap_content_formats_c_enum_name_generate(content_type: str, content_co
     content_type = re.sub(r'([a-zA-Z0-9\-]+)/([a-zA-Z0-9\-\+\.]+); [a-zA-Z0-9\-]+=([^"]+)', r'\1_\2_\3', content_type)
     if content_coding:
         content_type += "_" + content_coding
-    # Convert '+' into '_PLUS_' as it
-    content_type = re.sub(r'\+', r'_PLUS_', content_type)
+    # Convert '+' into '_AS_' as it
+    content_type = re.sub(r'\+', r'_AS_', content_type)
     # Convert non alphanumeric characters into variable name friendly underscore
     content_type = re.sub(r'[^a-zA-Z0-9_]', '_', content_type)
     content_type = content_type.strip('_')
@@ -419,8 +421,8 @@ def iana_coap_signaling_option_number_c_enum_name_generate(coap_code: str, name_
     """
     # Do not include comments indicated by messages within `(...)`
     name_value = re.sub(r'\s+\(.*\)', '', name_value)
-    # Convert '+' into '_PLUS_' as it
-    name_value = re.sub(r'\+', r'_PLUS_', name_value)
+    # Convert '+' into '_AS_' as it
+    name_value = re.sub(r'\+', r'_AS_', name_value)
     # Convert non alphanumeric characters into variable name friendly underscore
     coap_code_cleaned = re.sub(r'[^a-zA-Z0-9_]', '_', coap_code).strip('_').upper()
     name_value_cleaned = re.sub(r'[^a-zA-Z0-9_]', '_', name_value).strip('_').upper()

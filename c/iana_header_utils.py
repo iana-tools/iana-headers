@@ -6,69 +6,48 @@ import requests
 
 
 ###############################################################################
-# Download Handler
+# CSV Handlers
 
-def read_or_download_csv(csv_url: str, cache_file: str):
+def _download_csv(csv_url: str, cache_file: str) -> str:
+    """Downloads CSV content from a URL and saves it to a cache file."""
+    response = requests.get(csv_url)
+    response.raise_for_status()
+
+    csv_content = response.text
+    os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+    with open(cache_file, "w", encoding="utf-8") as file:
+        file.write(csv_content)
+
+    return csv_content
+
+def _read_cache_csv(cache_file: str) -> str:
+    """Reads the cached CSV content from a file."""
+    with open(cache_file, "r", encoding="utf-8") as file:
+        return file.read()
+
+def read_or_download_csv(csv_url: str, cache_file: str) -> str:
     """
-    Load latest IANA registrations
+    Fetches CSV content either from a URL or from a cache file.
+
+    Will only download and overwrite the cache file if the remote file has changed since last download.
     """
-    def download_csv(csv_url: str, cache_file: str):
-        print(f"Downloading CSV file {csv_url} to {cache_file}")
-        response = requests.get(csv_url)
-        if response.status_code != 200:
-            raise Exception(f"Failed to fetch CSV content from {csv_url} got http status code {str(response.status_code)}")
-        csv_content = response.text
-        os.makedirs(os.path.dirname(cache_file), exist_ok=True)
-        with open(cache_file, "w", encoding="utf-8") as file:
-            file.write(csv_content)
-        return csv_content
-    def read_cache_csv(cache_file: str):
-        """
-        No change detected. Use cached file
-        """
-        print("Read cache...")
-        with open(cache_file, "r", encoding="utf-8") as file:
-            return file.read()
-        raise Exception(f"Cache file not found {cache_file}")
-
-    print(f"Checking {csv_url} (cache:{cache_file})")
-
     try:
-        if not os.path.exists(cache_file):
-            print("cache file not found...")
-            return download_csv(csv_url, cache_file)
-
-        # Cache file already exist. Check if outdated
         response = requests.head(csv_url)
+        if not os.path.exists(cache_file) or 'last-modified' not in response.headers:
+            return _download_csv(csv_url, cache_file)
 
-        # Check if last modified is still present
-        if 'last-modified' not in response.headers:
-            print("cannot find last modified date time...")
-            return read_cache_csv(cache_file)
-
-        # Get cache and remote timestamp
         remote_last_modified = response.headers['last-modified']
         remote_timestamp = time.mktime(email.utils.parsedate_to_datetime(remote_last_modified).timetuple())
         cached_timestamp = os.path.getmtime(cache_file)
-        print(f"remote last modified: {remote_timestamp}")
-        print(f"cached last modified: {cached_timestamp}")
+        if remote_timestamp > cached_timestamp:
+            return _download_csv(csv_url, cache_file)
+        
+        return _read_cache_csv(cache_file)
 
-        # Check if cache is still valid
-        if remote_timestamp <= cached_timestamp:
-            print("Cache still valid...")
-            return read_cache_csv(cache_file)
-
-        print("Outdated cache...")
-        return download_csv(csv_url, cache_file)
-    except (requests.exceptions.HTTPError, requests.exceptions.ConnectionError) as err:
-        print(f"An error occurred: {err}")
+    except requests.RequestException as err:
         if os.path.exists(cache_file):
-            return read_cache_csv(cache_file)
-        else:
-            raise Exception(f"Cache file not found")
-    except Exception as e:
-        raise Exception(f"An unexpected error occurred: {e}")
-
+            return _read_cache_csv(cache_file)
+        raise Exception("Error fetching CSV and no cache available.") from err
 
 ###############################################################################
 # C Code Generation Utilities

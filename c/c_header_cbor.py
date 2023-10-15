@@ -51,8 +51,8 @@ spacing_string = "  "
 iana_cbor_c_header_file_path = './src/cbor-constants.h'
 iana_cache_dir_path = './cache/cbor/'
 
-iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml'")
-iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml'")
+iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")
+iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml")
 
 # Override default to tiny cbor compatibility mode (History: https://github.com/intel/tinycbor/issues/240)
 tiny_cbor_style_override = False
@@ -112,10 +112,6 @@ try:
 except FileNotFoundError:
     # Handle the case where the toml file doesn't exist
     print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
-
-if tiny_cbor_style_override:
-    iana_cbor_settings["simple_value"]["name"] = "CborSimpleValue"
-    iana_cbor_settings["tag_source"]["name"] = "CborKnownTags"
 
 # Path is all relative to this script
 # Note: This approach was chosen to keep things simple, as each project would only have one header file)

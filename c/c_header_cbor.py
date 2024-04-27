@@ -213,7 +213,6 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
         # Handle special edge case e.g. `A confidentiality clearance. The key value pairs of the map are defined in ADatP-4774.4`
         # Handle special edge case e.g. `DDoS Open Threat Signaling (DOTS) signal channel object, as defined in [RFC9132]`
         semantic_str = re.sub(r'[.,].* defined in .*', '', semantic_str)
-        #semantic_str = re.sub(r', as defined in \[RFC\d+\]', '', semantic_str)
         # Handle special edge case e.g. `[COSE algorithm identifier, Base Hash value]`
         if (semantics[0] == '[' and semantics[-1] == ']') or (semantics[0] == '(' and semantics[-1] == ')') :
             semantic_str = semantic_str[1:-1]  # Remove the brackets
@@ -344,7 +343,8 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
     semantics = clean_semantics(semantics)
 
     # Remove descriptions after ':' (if present)
-    semantics = semantics.split(':', 1)[0].strip()
+    # Search for colons ':' that are not part of a URI notation
+    semantics = re.split(r'(?<!://)(?<!\w:)\s*:\s*(?!\w)', semantics)[0].strip()
 
     # Remove descriptions after ';' (if present)
     semantics = semantics.split(';', 1)[0].strip()

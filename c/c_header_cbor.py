@@ -41,7 +41,7 @@ This Python script performs the following tasks:
 import csv
 import os
 import re
-import tomllib
+import toml
 
 import iana_header_utils as utils
 
@@ -82,8 +82,8 @@ iana_cbor_tag_source = {
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open(iana_source_filepath, 'rb') as source_file:
-        config = tomllib.load(source_file)
+    with open(iana_source_filepath, 'r') as source_file:
+        config = toml.load(source_file)
         iana_cbor_simple_value_source.update(config.get('iana_cbor_simple_value_source', {}))
         iana_cbor_tag_source.update(config.get('iana_cbor_tag_source', {}))
         print("Info: IANA Source Config File loaded")
@@ -94,8 +94,8 @@ except FileNotFoundError:
 
 # Load settings
 try:
-    with open(iana_settings_filepath, 'rb') as config_file:
-        toml_data = tomllib.load(config_file)
+    with open(iana_settings_filepath, 'r') as config_file:
+        toml_data = toml.load(config_file)
         cbor_settings = toml_data['cbor']
 
         spacing_string = cbor_settings.get('spacing_string', spacing_string)

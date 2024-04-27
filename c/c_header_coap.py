@@ -41,7 +41,7 @@ This Python script performs the following tasks:
 import csv
 import os
 import re
-import tomllib
+import toml
 
 import iana_header_utils as utils
 
@@ -107,8 +107,8 @@ iana_coap_signaling_option_numbers_source = {
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open(iana_source_filepath, 'rb') as source_file:
-        config = tomllib.load(source_file)
+    with open(iana_source_filepath, 'r') as source_file:
+        config = toml.load(source_file)
         iana_coap_request_response_source.update(config.get('iana_coap_request_response_source', {}))
         iana_coap_option_source.update(config.get('iana_coap_option_source', {}))
         iana_coap_content_format_source.update(config.get('iana_coap_content_format_source', {}))
@@ -121,8 +121,8 @@ except FileNotFoundError:
 
 # Load settings
 try:
-    with open(iana_settings_filepath, 'rb') as config_file:
-        toml_data = tomllib.load(config_file)
+    with open(iana_settings_filepath, 'r') as config_file:
+        toml_data = toml.load(config_file)
         coap_settings = toml_data['coap']
 
         spacing_string = coap_settings.get('spacing_string', spacing_string)

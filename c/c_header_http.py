@@ -41,7 +41,7 @@ This Python script performs the following tasks:
 import csv
 import os
 import re
-import tomllib
+import toml
 
 import iana_header_utils as utils
 
@@ -81,8 +81,8 @@ iana_http_field_name_settings = {
 
 # Load the iana data sources from the toml file if avaliable
 try:
-    with open(iana_source_filepath, 'rb') as source_file:
-        config = tomllib.load(source_file)
+    with open(iana_source_filepath, 'r') as source_file:
+        config = toml.load(source_file)
         iana_http_status_code_settings.update(config.get('iana_http_status_code_settings', {}))
         iana_http_field_name_settings.update(config.get('iana_http_field_name_settings', {}))
         print("Info: IANA Source Settings Config File loaded")
@@ -93,8 +93,8 @@ except FileNotFoundError:
 
 # Load settings
 try:
-    with open(iana_settings_filepath, 'rb') as config_file:
-        toml_data = tomllib.load(config_file)
+    with open(iana_settings_filepath, 'r') as config_file:
+        toml_data = toml.load(config_file)
         http_settings = toml_data['http']
 
         spacing_string = http_settings.get('spacing_string', spacing_string)

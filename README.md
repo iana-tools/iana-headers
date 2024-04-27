@@ -6,6 +6,7 @@
 - [Project Description](#project-description)
 - [Intent](#intent)
 - [Requirements](#requirements)
+- [Usage](#usage)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -13,9 +14,9 @@
 
 ## Project Description
 
-The IANA Header Generator a Python script designed to automate the generation of C headers for various Internet protocol standards using data from the Internet Assigned Numbers Authority (IANA). This script can be applied to generate headers for protocols such as CoAP (Constrained Application Protocol), CBOR (Concise Binary Object Representation) (WIP) and others.
+The IANA Header Generator is a Python script designed to automate the generation of C headers for various Internet protocol standards using data from the Internet Assigned Numbers Authority (IANA). This script can be applied to generate headers for protocols such as CoAP (Constrained Application Protocol), CBOR (Concise Binary Object Representation) (WIP), and others.
 
-For practical usage in real projects, the code generator is smart enough to recognise if you already defined an enumerated value and your value naming will take precidence.
+For practical usage in real projects, the code generator is smart enough to recognize if you already defined an enumerated value and your value naming will take precedence.
 
 ### Intent
 
@@ -31,53 +32,43 @@ Upon successful execution, the script will display a message indicating that the
 
 ## Requirements
 
-This requires at least python 3.11 and `pip install requests` because of the use of tomllib which is new to python 3.11.
+This project requires Python 3.11 or higher and uses `pip` to manage dependencies.
 
-### Install latest python
+### Setting up the Environment
 
-As of 2023-10-08 latest version of python is still 3.10.x .
+To ensure a clean and isolated environment, it's recommended to use a virtual environment (venv). Follow these steps to set up the virtual environment:
 
 ```bash
-# Add the deadsnakes PPA (provides Python 3.11)
-sudo add-apt-repository ppa:deadsnakes/ppa
+# Create a virtual environment named 'venv'
+python3 -m venv venv
 
-# Install Python 3.11
-sudo apt install python3.11
-
-# Find the path to Python 3.11 and store it in the py_loc variable
-py_loc=$(which python3.11)
-
-# Register Python 3.11 as an alternative for python3
-sudo update-alternatives --install /usr/bin/python3 python3 ${py_loc} 1
-
-# Switch to Python 3.11
-sudo update-alternatives --config python3
+# Activate the virtual environment
+source venv/bin/activate
 ```
 
+### Installing Dependencies
+
+Once the virtual environment is activated, you can install the project dependencies using the provided `requirements.txt` file:
+
+```bash
+# Install dependencies using pip
+pip install -r requirements.txt
+```
+
+This will install all the required packages specified in the `requirements.txt` file within the virtual environment.
 
 ---
 
-## Key Insight / Challenges
+## Usage
 
-* cbor semantic tags does not require submitters to give a name, so had to implement a heuristic that generates a name based on the semantic description field from the IANA cbor tag registry
-    - Such as ignoring content inside brackets like `Binary UUID ([RFC4122, Section 4.1.2])` which I rendered as `CBOR_TAG_37_BINARY_UUID`
-    - Ignoring sentences that reference some other standards via `define in` key phrase. e.g. `A collection of NCMS metadata elements. The key value pairs of the map are defined in AdatP-5636.4` should be rendered as `CBOR_TAG_42602_A_COLLECTION_OF_NCMS_METADATA_ELEMENTS`.
-* coap signalling option number can apply to multiple coap code, so cannot generate a single enum list for that IANA registry table. Need special handling
-* coap content format is based on MIME types so should take `+` and `/` into account as well as factor in the additional parameter fields. Added some special handling of certain parameters to avoid repeated words... 
-    - An example of special handling is this string `application/cose; cose-type="cose-encrypt0"; Ref: [RFC9052]` where naively stripping out the non variable friendly characters to `_` would lead to repeated `COSE` mentions, when infact we want something more like `COAP_CONTENT_FORMAT_APPLICATION_COSE_ENCRYPT0`
+Alternatively, you can use the provided Makefile to manage the project. Here are some useful Makefile targets:
 
----
+- `install`: Create a virtual environment and install dependencies.
+- `update`: Update project dependencies.
+- `generate`: Generate headers.
+- `clean`: Clean generated files.
 
-## This Project Default Code Style Justification
-
-* Why Screaming Snake Case for typedef enum and other macro constants
-    - It's easier for non english people to read compared to other options like Camel Case
-        - Supporting Sources. In "460: I Don’t Care What Your Math Says" one of the speaker highlighted the difficulties of readig camel case in for non english speakers [460: I Don’t Care What Your Math Says : Transcript] (https://embedded.fm/transcripts/460)
-
-## This Project Structure Justification
-
-* This project folder structure is arranged in terms of language family. Previously it was arranged in terms of protocol. However in practice I found that it's better arranging in language as a project is more likely to be using one language and toolset, but may use multiple different protocols.
-
+To use the Makefile, simply run `make <target>` in your terminal.
 
 ---
 

@@ -76,7 +76,7 @@ typedef enum cbor_tag_t {
   CBOR_TAG_35_REGULAR_EXPRESSION = 35,
   // MIME message; see Section 3.4.5.3; Ref: [RFC8949]
   CBOR_TAG_36_MIME_MSG = 36,
-  // Binary UUID ([RFC4122, Section 4.1.2]); Ref: [https://github.com/lucas-clemente/cbor-specs/blob/master/uuid.md][Lucas_Clemente]
+  // Binary UUID ([RFC-ietf-uuidrev-rfc4122bis-14, Section 4]); Ref: [https://github.com/lucas-clemente/cbor-specs/blob/master/uuid.md][Lucas_Clemente]
   CBOR_TAG_37_BINARY_UUID = 37,
   // Language-tagged string; Ref: [RFC9290, Appendix A]
   CBOR_TAG_38_LANGUAGE_TAGGED_STRING = 38,
@@ -98,6 +98,8 @@ typedef enum cbor_tag_t {
   CBOR_TAG_46_YANG_INSTANCE_ID_DATATYPE = 46,
   // YANG Schema Item iDentifier (sid); see Section 3.2.; Ref: [RFC9254]
   CBOR_TAG_47_YANG_SCHEMA_ITEM_ID = 47,
+  // IEEE MAC Address; Ref: [RFC9542]
+  CBOR_TAG_48_IEEE_MAC_ADDRESS = 48,
   // IPv4, [prefixlen,IPv4], [IPv4,prefixpart]; Ref: [RFC9164]
   CBOR_TAG_52_IPV4 = 52,
   // IPv6, [prefixlen,IPv6], [IPv6,prefixpart]; Ref: [RFC9164]
@@ -222,11 +224,17 @@ typedef enum cbor_tag_t {
   CBOR_TAG_277_UNIVERSAL_GEO_AREA_DESCRIPTION_SHAPE = 277,
   // Universal Geographical Area Description (GAD) description of velocity; see Section 8; Ref: [TS 23.032][Mathew_Meins]
   CBOR_TAG_278_UNIVERSAL_GEO_AREA_DESCRIPTION_DESCRIPTION_OF_VELOCITY = 278,
-  // extended time; Ref: [draft-bormann-cbor-time-tag-01]
+  // spdm-toc-map; Ref: [TCG DICE Concise Evidence Binding for SPDM][TCG]
+  CBOR_TAG_570_SPDM_TOC_MAP = 570,
+  // concise-evidence-map; Ref: [TCG DICE Concise Evidence Binding for SPDM][TCG]
+  CBOR_TAG_571_CONCISE_EVIDENCE_MAP = 571,
+  // Detached EAT Bundle [RFC-ietf-rats-eat-25, Section 5]; Ref: [RFC-ietf-rats-eat-25]
+  CBOR_TAG_602_DETACHED_EAT_BUNDLE = 602,
+  // [RFC-ietf-cbor-time-tag-12] extended time; Ref: [RFC-ietf-cbor-time-tag-12]
   CBOR_TAG_1001_EXTENDED_TIME = 1001,
-  // duration; Ref: [draft-bormann-cbor-time-tag-01]
+  // [RFC-ietf-cbor-time-tag-12] duration; Ref: [RFC-ietf-cbor-time-tag-12]
   CBOR_TAG_1002_DURATION = 1002,
-  // period; Ref: [draft-bormann-cbor-time-tag-01]
+  // [RFC-ietf-cbor-time-tag-12] period; Ref: [RFC-ietf-cbor-time-tag-12]
   CBOR_TAG_1003_PERIOD = 1003,
   // [RFC3339] full-date string; Ref: [RFC8943]
   CBOR_TAG_1004_FULL_DATE_STRING = 1004,
@@ -234,6 +242,8 @@ typedef enum cbor_tag_t {
   CBOR_TAG_1010_OBJECT_TYPE_ID = 1010,
   // Multi-dimensional Array, column-major order; Ref: [RFC8746]
   CBOR_TAG_1040_MULTI_DIMENSIONAL_ARRAY_COLUMN_MAJOR_ORDER = 1040,
+  // IEEE OUI/CID; Ref: [RFC9542]
+  CBOR_TAG_1048_IEEE_OUI_CID = 1048,
   // [COSE algorithm identifier, Base Hash value]; Ref: [draft-bormann-cbor-notable-tags-09, Section 3.1.1]
   CBOR_TAG_18556_COSE_ALGORITHM_ID_BASE_HASH_VALUE = 18556,
   // I-Regexp; Ref: [draft-bormann-cbor-notable-tags-09, Section 2.1][draft-ietf-jsonpath-iregexp-08]
@@ -250,6 +260,80 @@ typedef enum cbor_tag_t {
   CBOR_TAG_32768_ID_FOR_A_FHIR_CONSTANT = 32768,
   // External reference; Ref: [https://gitlab.com/Hawk777/cbor-specs/-/blob/main/external-reference.md][Christopher_Head]
   CBOR_TAG_32769_EXTERNAL_REF = 32769,
+  // ur:known-value, Semantic signifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40000_UR_KNOWN_VALUE_SEMANTIC_SIGNIFIER = 40000,
+  // ur:digest, 32-byte SHA-256 digest; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40001_UR_DIGEST_32_BYTE_SHA_256_DIGEST = 40001,
+  // ur:encrypted, IETF ChaCha20-Poly1305 ([RFC8439]) encrypted message; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40002_UR_ENCRYPTED_IETF_CHACHA20_POLY1305_ENCRYPTED_MSG = 40002,
+  // ur:compressed, [RFC1951] DEFLATE-compressed message; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40003_UR_COMPRESSED_DEFLATE_COMPRESSED_MSG = 40003,
+  // ur:request, Transaction Request identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40004_UR_REQUEST_TRANSACTION_REQUEST_ID = 40004,
+  // ur:response, Transaction response identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40005_UR_RESPONSE_TRANSACTION_RESPONSE_ID = 40005,
+  // ur:function, Envelope expression function identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40006_UR_FUNCTION_ENVELOPE_EXPRESSION_FUNCTION_ID = 40006,
+  // ur:parameter, Envelope expression parameter identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40007_UR_PARAM_ENVELOPE_EXPRESSION_PARAM_ID = 40007,
+  // ur:placeholder, Envelope expression placeholder identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40008_UR_PLACEHOLDER_ENVELOPE_EXPRESSION_PLACEHOLDER_ID = 40008,
+  // ur:replacement, Envelope expression replacement identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40009_UR_REPLACEMENT_ENVELOPE_EXPRESSION_REPLACEMENT_ID = 40009,
+  // ur:agreement-private-key, Curve25519 private key for X25519 key agreement; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40010_UR_AGREEMENT_PRIVATE_KEY_CURVE25519_PRIVATE_KEY_FOR_X25519_KEY_AGREEMENT = 40010,
+  // ur:agreement-public-key, Curve25519 public key for X25519 key agreement; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40011_UR_AGREEMENT_PUBLIC_KEY_CURVE25519_PUBLIC_KEY_FOR_X25519_KEY_AGREEMENT = 40011,
+  // ur:arid, Apparently Random Identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40012_UR_ARID_APPARENTLY_RANDOM_ID = 40012,
+  // ur:nonce, Cryptographic nonce; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40014_UR_NONCE_CRYPTOGRAPHIC_NONCE = 40014,
+  // ur:password, Scrypt-hashed password; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40015_UR_PASSWORD_SCRYPT_HASHED_PASSWORD = 40015,
+  // ur:crypto-prvkeys, Private key base (key material); Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40016_UR_CRYPTO_PRVKEYS_PRIVATE_KEY_BASE = 40016,
+  // ur:crypto-pubkeys, Public key base (signing and agreement public key bundle); Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40017_UR_CRYPTO_PUBKEYS_PUBLIC_KEY_BASE = 40017,
+  // ur:salt, Random salt used for hash tree decorrelation; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40018_UR_SALT_RANDOM_SALT_USED_FOR_HASH_TREE_DECORRELATION = 40018,
+  // ur:crypto-sealed, Encrypted message and ephemeral public key; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40019_UR_CRYPTO_SEALED_ENCRYPTED_MSG_EPHEMERAL_PUBLIC_KEY = 40019,
+  // ur:signature, Cryptographic signature; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40020_UR_SIGNATURE_CRYPTOGRAPHIC_SIGNATURE = 40020,
+  // ur:signing-private-key, Cryptographic private key used for signing; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40021_UR_SIGNING_PRIVATE_KEY_CRYPTOGRAPHIC_PRIVATE_KEY_USED_FOR_SIGNING = 40021,
+  // ur:signing-public-key, Cryptographic public key used for signing; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40022_UR_SIGNING_PUBLIC_KEY_CRYPTOGRAPHIC_PUBLIC_KEY_USED_FOR_SIGNING = 40022,
+  // ur:crypto-key, Cryptographic key used for symmetric encryption; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40023_UR_CRYPTO_KEY_CRYPTOGRAPHIC_KEY_USED_FOR_SYMMETRIC_ENCRYPTION = 40023,
+  // ur:seed, Cryptographic seed; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40300_UR_SEED_CRYPTOGRAPHIC_SEED = 40300,
+  // ur:hdkey, Bitcoin BIP-32 HD key; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40303_UR_HDKEY_BITCOIN_BIP_32_HD_KEY = 40303,
+  // ur:keypath, Bitcoin BIP-32 key derivation path; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40304_UR_KEYPATH_BITCOIN_BIP_32_KEY_DERIVATION_PATH = 40304,
+  // ur:coin-info, Cryptographic asset and network specifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40305_UR_COIN_INFO_CRYPTOGRAPHIC_ASSET_NETWORK_SPECIFIER = 40305,
+  // ur:eckey, Bitcoin elliptic curve key (private or public); Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40306_UR_ECKEY_BITCOIN_ELLIPTIC_CURVE_KEY = 40306,
+  // ur:address, Cryptocurrency address; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40307_UR_ADDRESS_CRYPTOCURRENCY_ADDRESS = 40307,
+  // ur:output-descriptor, Bitcoin output descriptor; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40308_UR_OUTPUT_DESCRIPTOR_BITCOIN_OUTPUT_DESCRIPTOR = 40308,
+  // ur:sskr, Sharded Secret Key Reconstruction (SSKR) shear; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40309_UR_SSKR_SHARDED_SECRET_KEY_RECONSTRUCTION_SHEAR = 40309,
+  // ur:psbt, Partially Signed Bitcoin Transaction; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40310_UR_PSBT_PARTIALLY_SIGNED_BITCOIN_TRANSACTION = 40310,
+  // ur:account, Bitcoin output descriptor bundle; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40311_UR_ACCOUNT_BITCOIN_OUTPUT_DESCRIPTOR_BUNDLE = 40311,
+  // ur:ssh-private, Text format SSH private key; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40800_UR_SSH_PRIVATE_TEXT_FORMAT_SSH_PRIVATE_KEY = 40800,
+  // ur:ssh-public, Text format SSH public key; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40801_UR_SSH_PUBLIC_TEXT_FORMAT_SSH_PUBLIC_KEY = 40801,
+  // ur:ssh-signature, Text format SSH signature; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40802_UR_SSH_SIGNATURE_TEXT_FORMAT_SSH_SIGNATURE = 40802,
+  // ur:ssh-certificate, Text format SSH certificate; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_40803_UR_SSH_CERTIFICATE_TXT_FORMAT_SSH_CERTIFICATE = 40803,
   // A confidentiality clearance. The key value pairs of the map are defined in ADatP-4774.4; Ref: [Aidan_Murdock]
   CBOR_TAG_42600_A_CONFIDENTIALITY_CLEARANCE = 42600,
   // A metadata binding. The elements of the array are defined in AdatP-4778.5. The tag is also used as part of the magic number in on-disk detached and encapsulating bindings.; Ref: [Aidan_Murdock]
@@ -292,7 +376,7 @@ typedef enum cbor_tag_t {
   CBOR_TAG_55800_INDICATES_THAT_FILE_CONTAINS_CBOR_SEQUENCES = 55800,
   // indicates that the file starts with a CBOR-Labeled Non-CBOR Data label.; Ref: [RFC9277]
   CBOR_TAG_55801_INDICATES_THAT_FILE_STARTS_WITH_CBOR_LABELED_NON_CBOR_DATA_LABEL = 55801,
-  // Compressed byte string; Ref: [https://github.com/dectris/documentation/blob/main/cbor/dectris-compression-tag.md][Kal_Conley]
+  // Compressed byte string; Ref: [https://github.com/dectris/documentation/blob/main/cbor/dectris-compression-tag.md][Dirk_Boye]
   CBOR_TAG_56500_COMPRESSED_BYTE_STRING = 56500,
   // Identify and define a set of record structures (each a sequence of property names) that can be referenced as tags in the included value (and the scope for the record tag definitions); Ref: [https://github.com/kriszyp/cbor-records][Kris_Zyp]
   CBOR_TAG_57342_IDENT_DEFINE_SET_OF_REC_STRCT_THAT_CAN_BE_REF_AS_TAGS_IN_INC_VAL = 57342,

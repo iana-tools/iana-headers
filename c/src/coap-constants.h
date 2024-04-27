@@ -140,7 +140,7 @@ typedef enum coap_option_t {
   COAP_OPTION_Q_BLOCK1 = 19,
   // Location-Query; Ref: [RFC7252][RFC8613]
   COAP_OPTION_LOCATION_QUERY = 20,
-  // EDHOC (TEMPORARY - registered 2021-11-08, extension registered 2023-09-25, expires 2024-11-08); Ref: [draft-ietf-core-oscore-edhoc-08]
+  // EDHOC; Ref: [RFC-ietf-core-oscore-edhoc-11]
   COAP_OPTION_EDHOC = 21,
   // Block2; Ref: [RFC7959][RFC8323][RFC8613]
   COAP_OPTION_BLOCK2 = 23,
@@ -169,7 +169,9 @@ typedef enum coap_option_t {
   // OCF-Accept-Content-Format-Version; Ref: [Michael_Koster]
   COAP_OPTION_OCF_ACCEPT_CONTENT_FORMAT_VERSION = 2049,
   // OCF-Content-Format-Version; Ref: [Michael_Koster]
-  COAP_OPTION_OCF_CONTENT_FORMAT_VERSION = 2053
+  COAP_OPTION_OCF_CONTENT_FORMAT_VERSION = 2053,
+  // SCP82-Params; Ref: [GPC_SPE_207]
+  COAP_OPTION_SCP82_PARAMS = 2055
 
   /* 65000-65535 : Experimental use (no operational use) */
 } coap_option_t;
@@ -216,9 +218,9 @@ typedef enum coap_content_format_t {
   COAP_CONTENT_FORMAT_APPLICATION_MULTIPART_CORE = 62,
   // application/cbor-seq; Ref: [RFC8742]
   COAP_CONTENT_FORMAT_APPLICATION_CBOR_SEQ = 63,
-  // application/edhoc+cbor-seq; Ref: [RFC-ietf-lake-edhoc-22]
+  // application/edhoc+cbor-seq; Ref: [RFC9528]
   COAP_CONTENT_FORMAT_APPLICATION_EDHOC_AS_CBOR_SEQ = 64,
-  // application/cid-edhoc+cbor-seq; Ref: [RFC-ietf-lake-edhoc-22]
+  // application/cid-edhoc+cbor-seq; Ref: [RFC9528]
   COAP_CONTENT_FORMAT_APPLICATION_CID_EDHOC_AS_CBOR_SEQ = 65,
   // application/cose; cose-type="cose-encrypt"; Ref: [RFC9052]
   COAP_CONTENT_FORMAT_APPLICATION_COSE_ENCRYPT = 96,
@@ -252,8 +254,12 @@ typedef enum coap_content_format_t {
   COAP_CONTENT_FORMAT_APPLICATION_CONCISE_PROBLEM_DETAILS_AS_CBOR = 257,
   // application/swid+cbor; Ref: [RFC9393]
   COAP_CONTENT_FORMAT_APPLICATION_SWID_AS_CBOR = 258,
-  // application/pkixcmp; Ref: [RFC-ietf-ace-cmpv2-coap-transport-10][RFC4210]
+  // application/pkixcmp; Ref: [RFC9482][RFC4210]
   COAP_CONTENT_FORMAT_APPLICATION_PKIXCMP = 259,
+  // application/yang-sid+json; Ref: [RFC-ietf-core-sid-24]
+  COAP_CONTENT_FORMAT_APPLICATION_YANG_SID_AS_JSON = 260,
+  // application/ace-groupcomm+cbor; Ref: [RFC-ietf-ace-key-groupcomm-18]
+  COAP_CONTENT_FORMAT_APPLICATION_ACE_GROUPCOMM_AS_CBOR = 261,
   // application/dots+cbor; Ref: [RFC9132]
   COAP_CONTENT_FORMAT_APPLICATION_DOTS_AS_CBOR = 271,
   // application/missing-blocks+cbor-seq; Ref: [RFC9177]
@@ -290,8 +296,8 @@ typedef enum coap_content_format_t {
   COAP_CONTENT_FORMAT_APPLICATION_TD_AS_JSON = 432,
   // application/tm+json; Ref: ["Web of Things (WoT) Thing Description 1.1", April 2022]
   COAP_CONTENT_FORMAT_APPLICATION_TM_AS_JSON = 433,
-  // application/voucher-cose+cbor (TEMPORARY - registered 2022-04-12, extension registered 2023-04-04, expires 2024-04-12); Ref: [draft-ietf-anima-constrained-voucher-20]
-  COAP_CONTENT_FORMAT_APPLICATION_VOUCHER_COSE_AS_CBOR = 836,
+  // application/voucher+cose (TEMPORARY - registered 2022-04-12, extension registered 2024-03-01, expires 2025-04-12); Ref: [draft-ietf-anima-constrained-voucher-23]
+  COAP_CONTENT_FORMAT_APPLICATION_VOUCHER_AS_COSE = 836,
 
   /* 10000-64999 : First Come First Served */
   // application/vnd.ocf+cbor; Ref: [Michael_Koster]

@@ -96,7 +96,7 @@ def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef
                 c_enum_list[id_value] = {"enum_name" : existing_enum_name}
     return c_enum_list
 
-def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None, spacing_string = "  "):
+def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None, spacing_string = "  ", int_suffix = ""):
     c_range_marker_index = 0
     def range_marker_render(c_range_marker, id_value=None):
         nonlocal c_range_marker_index
@@ -122,16 +122,16 @@ def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None, 
         c_enum_content += range_marker_render(c_range_marker, id_value)
         if "comment" in row:
             c_enum_content += spacing_string + f'// {row.get("comment", "")}\n'
-        c_enum_content += spacing_string + f'{row.get("enum_name", "")} = {id_value}'
+        c_enum_content += spacing_string + f'{row.get("enum_name", "")} = {id_value}{int_suffix}'
         if "depreciated_enum_name" in row:
-            c_enum_content += ',\n' + spacing_string + f'{row.get("depreciated_enum_name", "")} = {id_value} /* depreciated but identifier kept for backwards compatibility */'
+            c_enum_content += ',\n' + spacing_string + f'{row.get("depreciated_enum_name", "")} = {id_value}{int_suffix} /* depreciated but identifier kept for backwards compatibility */'
         c_enum_content += (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
 
     c_enum_content += range_marker_render(c_range_marker)
 
     return c_enum_content
 
-def update_c_typedef_enum(document_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker = None, spacing_string = "  "):
+def update_c_typedef_enum(document_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker = None, spacing_string = "  ", int_suffix = ""):
     def search_and_replace_c_typedef_enum(document_content, c_enum_content, typename, enumname = None):
         # Search and replace
         enumname = "" if enumname is None else (enumname + " ")
@@ -148,7 +148,7 @@ def update_c_typedef_enum(document_content, c_typedef_name, c_enum_name, c_head_
     c_enum_content = override_enum_from_existing_typedef_enum(document_content, c_typedef_name, c_enum_list)
 
     # Generate enumeration header content
-    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker, spacing_string=spacing_string)
+    c_enum_content = generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker, spacing_string=spacing_string, int_suffix=int_suffix)
 
     # Search for typedef enum name and replace with new content
     updated_document_content = search_and_replace_c_typedef_enum(document_content, c_enum_content, c_typedef_name, c_enum_name)

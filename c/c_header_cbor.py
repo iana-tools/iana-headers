@@ -329,7 +329,7 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
             variable_name_list = [term for term in variable_name_list if term.lower() not in common_words]
             print(f"shrunken to ({' '.join(variable_name_list)})")
 
-        # Tiny Cbor Style Pascal Case Output
+        # Tiny CBOR Style Pascal Case Output
         if camel_case:
             capitalized_variable_name_list = [word.capitalize() for word in variable_name_list]
             pascal_case_str = ''.join(capitalized_variable_name_list)
@@ -358,16 +358,13 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
     enum_name = ""
     if tiny_cbor_style_override:
         # Combine tag value and descriptive terms to form the enum name
-        if typedef_enum_name.endswith("KnownTags"):
-            enum_name += typedef_enum_name[:-9]
-        else:
-            enum_name += typedef_enum_name
+        enum_name += typedef_enum_name[:-9] if typedef_enum_name.endswith("KnownTags") else typedef_enum_name
         enum_name += variable_name_abbreviator(semantics, camel_case=True)
         if typedef_enum_name.endswith("KnownTags"):
             enum_name += "Tag"
     else:
         # Combine tag value and descriptive terms to form the enum name
-        enum_name += f"{typedef_enum_name.upper()}_{tag_value}"
+        enum_name += f"{typedef_enum_name.upper()}"
         descriptive_terms = variable_name_abbreviator(semantics)
         if descriptive_terms:
             enum_name += "_" + descriptive_terms
@@ -397,13 +394,26 @@ def iana_cbor_tag_parse_csv(csv_content: str, typedef_enum_name: str):
         if cbor_tag.lower() == "tag": # Skip first header
             continue
         if not cbor_tag or "unassigned" in data_item.lower() or "reserved" in semantics.lower():
+            # Either single unassigned tag or a reserved tag
             continue
-        if "always invalid" in semantics.lower():
+        if "-" in cbor_tag: 
+            # Range of unassigned tags
+            continue
+        if  "65535" in cbor_tag:
+            # 16bit Max Invalid CBOR Tag Marker
             # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
             # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
-            continue
-        if "-" in cbor_tag: # is a range of value
-            continue
+            semantics = "invalid 16bit"
+        if "4294967295" in cbor_tag:
+            # 32bit Max Invalid CBOR Tag Marker
+            # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
+            # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
+            semantics = "invalid 32bit"
+        if "18446744073709551615" in cbor_tag:
+            # 64bit Max Invalid CBOR Tag Marker
+            # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
+            # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
+            semantics = "invalid 64bit"
         # Add to enum list
         enum_name = iana_cbor_tag_c_enum_name_generate(cbor_tag, semantics, typedef_enum_name)
         comment = '; '.join(filter(None, [semantics, f'Ref: {reference}']))
@@ -434,13 +444,35 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
     # Parse and process IANA registration into enums
     c_enum_list = iana_cbor_tag_parse_csv(csv_content, typedef_enum_name)
 
+    # Include invalid cbor tag flag
+    #invalid_tag_enum_name = ""
+    #if tiny_cbor_style_override:
+    #    # Combine tag value and descriptive terms to form the enum name
+    #    invalid_tag_enum_name += typedef_enum_name[:-9] if typedef_enum_name.endswith("KnownTags") else typedef_enum_name
+    #    invalid_tag_enum_name += "Invalid"
+    #    if typedef_enum_name.endswith("KnownTags"):
+    #        invalid_tag_enum_name += "Tag"
+    #else:
+    #    # Combine tag value and descriptive terms to form the enum name
+    #    invalid_tag_enum_name += f"{typedef_enum_name.upper()}_INVALID"
+    #c_enum_list[int(18446744073709551615)] = {"enum_name": invalid_tag_enum_name, "comment": comment}
+
+    # Check for duplicate enum names
+    enum_names = [entry["enum_name"] for entry in c_enum_list.values()]
+    duplicate_enum_names = set([name for name in enum_names if enum_names.count(name) > 1])
+    if duplicate_enum_names:
+        print(f"Warning: Duplicate enum names detected: {', '.join(duplicate_enum_names)}")
+        exit()
+
     # Generate enumeration header content
     c_range_marker = [
-        {"start":0, "end":23, "description":"Standards Action"},
-        {"start":24, "end":32767, "description":"Specification Required"},
-        {"start":32768, "end":18446744073709551615, "description":"First Come First Served"}
-        ]
-    header_file_content = utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker, spacing_string=spacing_string)
+        {"start": 0, "end": 23, "description": "Standards Action"},
+        {"start": 24, "end": 32767, "description": "Specification Required"},
+        {"start": 32768, "end": 65535, "description": "First Come First Served (16-bit)"},
+        {"start": 65536, "end": 4294967295, "description": "First Come First Served (32-bit)"},
+        {"start": 4294967296, "end": 18446744073709551615, "description": "First Come First Served (64-bit)"}
+    ]
+    header_file_content = utils.update_c_typedef_enum(header_file_content, c_typedef_name, c_enum_name, c_head_comment, c_enum_list, c_range_marker, spacing_string=spacing_string, int_suffix="ULL")
 
     # Generate constants for cbor tag feature flag
     # Note: Not convinced this is a good idea, so is restricted to tiny cbor compatibility mode

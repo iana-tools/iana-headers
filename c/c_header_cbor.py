@@ -48,7 +48,7 @@ import iana_header_utils as utils
 script_dir = os.path.dirname(__file__)
 
 spacing_string = "  "
-iana_cbor_c_header_file_path = './src/cbor-constants.h'
+iana_cbor_c_header_file_path = './src/cbor_constants.h'
 iana_cache_dir_path = './cache/cbor/'
 
 iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")

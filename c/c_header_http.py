@@ -48,7 +48,7 @@ script_dir = os.path.dirname(__file__)
 
 spacing_string = "  "
 
-iana_http_c_header_file_path = './src/http-constants.h'
+iana_http_c_header_file_path = './src/http_constants.h'
 iana_cache_dir_path = './cache/http/'
 
 iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")

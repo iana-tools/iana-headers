@@ -49,7 +49,7 @@ script_dir = os.path.dirname(__file__)
 
 spacing_string = "  "
 
-iana_coap_c_header_file_path = './src/coap-constants.h'
+iana_coap_c_header_file_path = './src/coap_constants.h'
 iana_cache_dir_path = './cache/coap/'
 
 style_override_contiki_ng = False

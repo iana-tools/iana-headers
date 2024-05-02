@@ -2,7 +2,7 @@
 [cbor]
 spacing_string = "  "
 style_override = ""
-generated_header_filepath = './src/cbor-constants.h'
+generated_header_filepath = './src/cbor_constants.h'
 cache_directory_path = './cache/cbor/'
 
 [cbor.simple_value]
@@ -15,7 +15,7 @@ name = "cbor_tag"
 [coap]
 spacing_string = "  "
 style_override = ""
-generated_header_filepath = './src/coap-constants.h'
+generated_header_filepath = './src/coap_constants.h'
 cache_directory_path = './cache/coap/'
 
 [coap.request_response]
@@ -34,7 +34,7 @@ name = "option_number"
 [http]
 spacing_string = "  "
 style_override = ""
-generated_header_filepath = './src/http-constants.h'
+generated_header_filepath = './src/http_constants.h'
 cache_directory_path = './cache/http/'
 
 [coap.http_status_code]

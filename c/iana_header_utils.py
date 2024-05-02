@@ -41,7 +41,7 @@ def read_or_download_csv(csv_url: str, cache_file: str) -> str:
         cached_timestamp = os.path.getmtime(cache_file)
         if remote_timestamp > cached_timestamp:
             return _download_csv(csv_url, cache_file)
-        
+
         return _read_cache_csv(cache_file)
 
     except requests.RequestException as err:
@@ -105,8 +105,8 @@ def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None, 
 
         range_marker_content = ''
         while c_range_marker_index < len(c_range_marker):
-            start_range = c_range_marker[c_range_marker_index].get("start") 
-            end_range = c_range_marker[c_range_marker_index].get("end") 
+            start_range = c_range_marker[c_range_marker_index].get("start")
+            end_range = c_range_marker[c_range_marker_index].get("end")
             range_comment = c_range_marker[c_range_marker_index].get("description")
             if id_value is None or start_range <= id_value:
                 range_marker_content += '\n' + spacing_string + f'/* {start_range}-{end_range} : {range_comment} */\n'

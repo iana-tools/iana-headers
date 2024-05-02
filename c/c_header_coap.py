@@ -231,10 +231,10 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     c_head_comment += spacing_string + f"   Request Source: {request_source_url}\n"
     c_head_comment += spacing_string + f"   Response Source: {response_source_url}\n"
     c_head_comment += spacing_string + f"   Signaling Source: {signaling_source_url}\n"
-    c_head_comment += spacing_string + f"   */\n"
+    c_head_comment += spacing_string +  "   */\n"
 
     # Load latest IANA registrations
-    empty_enum_comment_line = '; '.join(filter(None, [f"code: 0.00", f"{iana_coap_class_to_str(0)}: Empty Message", f'Ref: [RFC7252, section 4.1]']))
+    empty_enum_comment_line = '; '.join(filter(None, ["code: 0.00", f"{iana_coap_class_to_str(0)}: Empty Message", 'Ref: [RFC7252, section 4.1]']))
     coap_empty_enum_list = {0:{
                 "enum_name": iana_coap_request_response_c_enum_name_generate("0.00", "Empty Message", typedef_enum_name),
                 "comment": empty_enum_comment_line
@@ -251,7 +251,7 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     signaling_csv_file_url = iana_coap_request_response_source["signaling_csv_url"]
     signaling_cache_file_path = iana_cache_dir_path + os.path.basename(signaling_csv_file_url)
     coap_signaling_enum_list = iana_coap_request_response_parse_csv(utils.read_or_download_csv(signaling_csv_file_url, signaling_cache_file_path), typedef_enum_name)
-    
+
     enum_list = coap_empty_enum_list | coap_request_enum_list | coap_response_enum_list | coap_signaling_enum_list
 
     # Generate enumeration header content
@@ -442,7 +442,7 @@ def iana_coap_signaling_option_number_parse_csv(csv_content: str, typedef_enum_n
         reference = row["Reference"]
         if not code_application or not id_value or "unassigned" in name_value.lower() or "reserve" in name_value.lower():
             continue
-        if "all" in code_application or "7.xx" in code_application: 
+        if "all" in code_application or "7.xx" in code_application:
             # Will process later
             continue
         for coap_code in code_application.split(","):
@@ -458,7 +458,7 @@ def iana_coap_signaling_option_number_parse_csv(csv_content: str, typedef_enum_n
     for coap_code, signaling_option_number_entry in signaling_option_number_format_list.items():
         csv_lines = csv_content.strip().split('\n')
         csv_reader = csv.DictReader(csv_lines)
-        for row in csv_reader: 
+        for row in csv_reader:
             code_application = row["Applies to"]
             id_value = row["Number"]
             name_value = row["Name"]

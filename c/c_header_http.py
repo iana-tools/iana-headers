@@ -1,4 +1,10 @@
 #!/usr/bin/env python3
+import csv
+import os
+import re
+import toml
+
+import iana_header_utils as utils
 
 '''
 MIT License
@@ -37,13 +43,6 @@ This Python script performs the following tasks:
 - Parse the downloaded data and generate C enumeration values.
 - Update or create the C header file with the generated enumeration values, preserving any existing values.
 """
-
-import csv
-import os
-import re
-import toml
-
-import iana_header_utils as utils
 
 script_dir = os.path.dirname(__file__)
 
@@ -158,7 +157,7 @@ def iana_http_status_codes_parse_csv(csv_content: str, typedef_enum_name: str):
 
 def iana_http_status_codes_c_typedef_enum_update(header_file_content: str) -> str:
     typedef_enum_name = iana_http_settings["http_status_code"]["name"]
-    source_name = iana_http_status_code_settings["title"] 
+    source_name = iana_http_status_code_settings["title"]
     source_url = iana_http_status_code_settings["source_url"]
     csv_file_url = iana_http_status_code_settings["csv_url"]
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
@@ -224,7 +223,7 @@ def iana_http_field_namess_parse_csv(csv_content: str, section_name: str):
 
 def iana_http_field_names_c_const_macro_update(header_file_content: str) -> str:
     section_name = iana_http_settings["http_field_name"]["name"]
-    source_name = iana_http_field_name_settings["title"] 
+    source_name = iana_http_field_name_settings["title"]
     source_url = iana_http_field_name_settings["source_url"]
     csv_file_url = iana_http_field_name_settings["csv_url"]
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)

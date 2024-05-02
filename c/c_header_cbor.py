@@ -175,7 +175,7 @@ def iana_cbor_simple_values_parse_csv(csv_content: str, typedef_enum_name: str):
 
 def iana_cbor_simple_values_c_typedef_enum_update(header_file_content: str) -> str:
     typedef_enum_name = iana_cbor_settings["simple_value"]["name"]
-    source_name = iana_cbor_simple_value_source["title"] 
+    source_name = iana_cbor_simple_value_source["title"]
     source_url = iana_cbor_simple_value_source["source_url"]
     csv_file_url = iana_cbor_simple_value_source["csv_url"]
     cache_file_path = iana_cache_dir_path + os.path.basename(csv_file_url)
@@ -393,14 +393,14 @@ def iana_cbor_tag_parse_csv(csv_content: str, typedef_enum_name: str):
         data_item = row["Data Item"]
         semantics = row["Semantics"]
         reference = row["Reference"]
-        template = row["Template"]
+        template = row["Template"] # noqa: F841
         if cbor_tag.lower() == "tag": # Skip first header
             continue
         if not cbor_tag or "unassigned" in data_item.lower() or "reserved" in semantics.lower():
             continue
         if "always invalid" in semantics.lower():
             # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
-            # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation 
+            # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
             continue
         if "-" in cbor_tag: # is a range of value
             continue

@@ -30,9 +30,9 @@ update: venv
 .PHONY: generate
 generate: activate_venv
 	@echo "Generating Headers"
-	cd c; ./c_header_cbor.py
-	cd c; ./c_header_coap.py
-	cd c; ./c_header_http.py
+	cd c && ./c_header_cbor.py
+	cd c && ./c_header_coap.py
+	cd c && ./c_header_http.py
 
 # Clean
 .PHONY: clean

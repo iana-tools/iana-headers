@@ -1,38 +1,32 @@
-# Define the path to the virtual environment
-VENV := venv
-
 # Default target
-all: generate
-
-# Activate the virtual environment
-activate_venv:
-	@echo "Activating virtual environment"
-	. $(VENV)/bin/activate
+all: install generate
 
 # Create a virtual environment
 .PHONY: venv
 venv:
-	python3 -m venv $(VENV)
+	python3 -m venv venv
 
 # Install dependencies
 .PHONY: install
 install: venv
 	@echo "Installing dependencies"
-	$(VENV)/bin/pip install -r requirements.txt
+	. venv/bin/activate && venv/bin/pip install -r requirements.txt
 
 # Update dependencies
 .PHONY: update
 update: venv
 	@echo "Updating dependencies"
-	$(VENV)/bin/pip install --upgrade -r requirements.txt
+	. venv/bin/activate && venv/bin/pip install --upgrade -r requirements.txt
 
 # Generate headers
 .PHONY: generate
-generate: activate_venv
+generate: venv
 	@echo "Generating Headers"
-	cd c && ./c_header_cbor.py
-	cd c && ./c_header_coap.py
-	cd c && ./c_header_http.py
+	. venv/bin/activate && \
+	cd c && \
+	./c_header_cbor.py && \
+	./c_header_coap.py && \
+	./c_header_http.py
 
 # Clean
 .PHONY: clean

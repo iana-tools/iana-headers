@@ -396,7 +396,7 @@ def iana_cbor_tag_parse_csv(csv_content: str, typedef_enum_name: str):
         if not cbor_tag or "unassigned" in data_item.lower() or "reserved" in semantics.lower():
             # Either single unassigned tag or a reserved tag
             continue
-        if "-" in cbor_tag: 
+        if "-" in cbor_tag:
             # Range of unassigned tags
             continue
         if  "65535" in cbor_tag:

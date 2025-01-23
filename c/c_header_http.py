@@ -201,7 +201,7 @@ def iana_http_field_names_c_macro_name_generate(http_field_names: str, section_n
     c_enum_name = c_enum_name.upper()
     return c_enum_name
 
-def iana_http_field_namess_parse_csv(csv_content: str, section_name: str):
+def iana_http_field_names_parse_csv(csv_content: str, section_name: str):
     """
     Parse and process IANA registration into enums
     """
@@ -210,13 +210,13 @@ def iana_http_field_namess_parse_csv(csv_content: str, section_name: str):
     c_macro_list = {}
     for row in csv_reader:
         http_field_names = row["Field Name"]
-        template = row["Template"]
+        structured_type = row["Structured Type"]
         status = row["Status"]
         reference = row["Reference"]
         if not http_field_names:
             continue
         # Add to enum list
-        comment = '; '.join(filter(None, [http_field_names, template, status, f'Ref: {reference}']))
+        comment = '; '.join(filter(None, [http_field_names, structured_type, status, f'Ref: {reference}']))
         macro_name = iana_http_field_names_c_macro_name_generate(http_field_names, section_name)
         c_macro_list[macro_name] = {"value": f"\"{http_field_names}\"", "comment": comment}
     return c_macro_list
@@ -235,7 +235,7 @@ def iana_http_field_names_c_const_macro_update(header_file_content: str) -> str:
     csv_content = utils.read_or_download_csv(csv_file_url, cache_file_path)
 
     # Parse and process IANA registration into enums
-    c_macro_list = iana_http_field_namess_parse_csv(csv_content, section_name)
+    c_macro_list = iana_http_field_names_parse_csv(csv_content, section_name)
 
     # Generate enumeration header content
     return utils.update_c_const_macro(header_file_content, section_name, c_head_comment, c_macro_list)

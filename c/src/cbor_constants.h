@@ -76,7 +76,7 @@ typedef enum cbor_tag_t {
   CBOR_TAG_REGULAR_EXPRESSION = 35ULL,
   // MIME message; see Section 3.4.5.3; Ref: [RFC8949]
   CBOR_TAG_MIME_MSG = 36ULL,
-  // Binary UUID ([RFC-ietf-uuidrev-rfc4122bis-14, Section 4]); Ref: [https://github.com/lucas-clemente/cbor-specs/blob/master/uuid.md][Lucas_Clemente]
+  // Binary UUID ([RFC9562, Section 4]); Ref: [https://github.com/lucas-clemente/cbor-specs/blob/master/uuid.md][Lucas_Clemente]
   CBOR_TAG_BINARY_UUID = 37ULL,
   // Language-tagged string; Ref: [RFC9290, Appendix A]
   CBOR_TAG_LANGUAGE_TAGGED_STRING = 38ULL,
@@ -166,7 +166,7 @@ typedef enum cbor_tag_t {
   CBOR_TAG_ALTERNATIVES_AS_GIVEN_BY_THE_UINT_PLUS_128 = 101ULL,
   // Geographic Coordinates; Ref: [https://github.com/allthingstalk/cbor/blob/master/CBOR-Tag103-Geographic-Coordinates.md][Danilo_Vidovic]
   CBOR_TAG_GEOGRAPHIC_COORDINATES = 103ULL,
-  // Geographic Coordinate Reference System WKT or EPSG number; Ref: [draft-clarke-cbor-crs]
+  // Geographic Coordinate Reference System WKT or EPSG number; Ref: [draft-clarke-cbor-crs-01]
   CBOR_TAG_GEO_COORD_REF_SYSTEM_WKT_OR_EPSG_NUM = 104ULL,
   // relative object identifier (BER encoding); SDNV [RFC6256] sequence; Ref: [RFC9090]
   CBOR_TAG_RELATIVE_OBJECT_ID = 110ULL,
@@ -178,6 +178,8 @@ typedef enum cbor_tag_t {
   CBOR_TAG_INTERNET_OF_THINGS_DATA_POINT = 120ULL,
   // Gordian Envelope; Ref: [draft-mcnally-envelope-05]
   CBOR_TAG_GORDIAN_ENVELOPE = 200ULL,
+  // enclosed dCBOR; Ref: [draft-mcnally-deterministic-cbor-10]
+  CBOR_TAG_ENCLOSED_DCBOR = 201ULL,
   // mark value as having string references; Ref: [http://cbor.schmorp.de/stringref][Marc_A._Lehmann]
   CBOR_TAG_MARK_VALUE_AS_HAVING_STRING_REFERENCES = 256ULL,
   // Binary MIME message; Ref: [http://peteroupc.github.io/CBOR/binarymime.html][Peter_Occil]
@@ -224,17 +226,25 @@ typedef enum cbor_tag_t {
   CBOR_TAG_UNIVERSAL_GEO_AREA_DESCRIPTION_SHAPE = 277ULL,
   // Universal Geographical Area Description (GAD) description of velocity; see Section 8; Ref: [TS 23.032][Mathew_Meins]
   CBOR_TAG_UNIVERSAL_GEO_AREA_DESCRIPTION_DESCRIPTION_OF_VELOCITY = 278ULL,
+  // Coordinate Reference System Wrapper; Ref: [Fast and Readable Geographical Hashing (CTA-5009-A)][Consumer_Technology_Association]
+  CBOR_TAG_COORDINATE_REF_SYSTEM_WRAPPER = 279ULL,
+  // isolate shared values within this scope; Ref: [https://cbor.is4.site/sharedref-namespace][IS4]
+  CBOR_TAG_ISOLATE_SHARED_VALUES_WITHIN_THIS_SCOPE = 296ULL,
+  // Geohash String; Ref: [Fast and Readable Geographical Hashing (CTA-5009-A)][Consumer_Technology_Association]
+  CBOR_TAG_GEOHASH_STRING = 301ULL,
   // spdm-toc-map; Ref: [TCG DICE Concise Evidence Binding for SPDM][TCG]
   CBOR_TAG_SPDM_TOC_MAP = 570ULL,
   // concise-evidence-map; Ref: [TCG DICE Concise Evidence Binding for SPDM][TCG]
   CBOR_TAG_CONCISE_EVIDENCE_MAP = 571ULL,
-  // Detached EAT Bundle [RFC-ietf-rats-eat-25, Section 5]; Ref: [RFC-ietf-rats-eat-25]
+  // Unprotected CWT Claims Set [RFC-ietf-rats-uccs-12]; Ref: [RFC-ietf-rats-uccs-12]
+  CBOR_TAG_UNPROTECTED_CWT_CLAIMS_SET = 601ULL,
+  // Detached EAT Bundle [RFC-ietf-rats-eat-30, Section 5]; Ref: [RFC-ietf-rats-eat-30]
   CBOR_TAG_DETACHED_EAT_BUNDLE = 602ULL,
-  // [RFC-ietf-cbor-time-tag-12] extended time; Ref: [RFC-ietf-cbor-time-tag-12]
+  // extended time; Ref: [RFC9581, Section 3]
   CBOR_TAG_EXTENDED_TIME = 1001ULL,
-  // [RFC-ietf-cbor-time-tag-12] duration; Ref: [RFC-ietf-cbor-time-tag-12]
+  // duration; Ref: [RFC9581, Section 4]
   CBOR_TAG_DURATION = 1002ULL,
-  // [RFC-ietf-cbor-time-tag-12] period; Ref: [RFC-ietf-cbor-time-tag-12]
+  // period; Ref: [RFC9581, Section 5]
   CBOR_TAG_PERIOD = 1003ULL,
   // [RFC3339] full-date string; Ref: [RFC8943]
   CBOR_TAG_FULL_DATE_STRING = 1004ULL,
@@ -246,10 +256,12 @@ typedef enum cbor_tag_t {
   CBOR_TAG_IEEE_OUI_CID = 1048ULL,
   // [COSE algorithm identifier, Base Hash value]; Ref: [draft-bormann-cbor-notable-tags-09, Section 3.1.1]
   CBOR_TAG_COSE_ALGORITHM_ID_BASE_HASH_VALUE = 18556ULL,
-  // I-Regexp; Ref: [draft-bormann-cbor-notable-tags-09, Section 2.1][draft-ietf-jsonpath-iregexp-08]
+  // I-Regexp; Ref: [draft-bormann-cbor-notable-tags-11, Section 2.1][RFC9485]
   CBOR_TAG_I_REGEXP = 21065ULL,
   // ECMAScript RegExp [https://262.ecma-international.org/14.0/#sec-regexp-regular-expression-objects]; Ref: [https://github.com/hildjj/cbor-specs/blob/main/regexp.md][Joe_Hildebrand]
   CBOR_TAG_ECMASCRIPT_REGEXP = 21066ULL,
+  // a CBOR Tag identifier; Ref: [https://cbor.is4.site/cbor-tag][IS4]
+  CBOR_TAG_A_CBOR_TAG_ID = 21607ULL,
   // hint that indicates an additional level of indirection; Ref: [http://cbor.schmorp.de/indirection][Marc_A._Lehmann]
   CBOR_TAG_HINT_THAT_INDICATES_AN_ADD_LVL_OF_INDIRECTION = 22098ULL,
   // Capture [3]; Ref: [https://github.com/japhb/cbor-specs/blob/main/capture.md][Geoffrey_Broadwell]
@@ -334,11 +346,11 @@ typedef enum cbor_tag_t {
   CBOR_TAG_UR_SSH_SIGNATURE_TEXT_FORMAT_SSH_SIGNATURE = 40802ULL,
   // ur:ssh-certificate, Text format SSH certificate; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_SSH_CERTIFICATE_TXT_FORMAT_SSH_CERTIFICATE = 40803ULL,
-  // A confidentiality clearance. The key value pairs of the map are defined in ADatP-4774.4; Ref: [Aidan_Murdock]
+  // A confidentiality clearance. The key value pairs of the map are defined in ADatP-4774.8; Ref: [Aidan_Murdock]
   CBOR_TAG_A_CONFIDENTIALITY_CLEARANCE = 42600ULL,
-  // A metadata binding. The elements of the array are defined in AdatP-4778.5. The tag is also used as part of the magic number in on-disk detached and encapsulating bindings.; Ref: [Aidan_Murdock]
+  // A metadata binding. The elements of the array are defined in AdatP-4778.8. The tag is also used as part of the magic number in on-disk detached and encapsulating bindings.; Ref: [Aidan_Murdock]
   CBOR_TAG_A_METADATA_BINDING = 42601ULL,
-  // A collection of NCMS metadata elements. The key value pairs of the map are defined in AdatP-5636.4; Ref: [Aidan_Murdock]
+  // A collection of NCMS metadata elements. The key value pairs of the map are defined in AdatP-5636.8; Ref: [Aidan_Murdock]
   CBOR_TAG_A_COLLECTION_OF_NCMS_METADATA_ELEMENTS = 42602ULL,
   // Single complex number: array elements are real (I) and imaginary (Q) components; Ref: [Saajan_Chana]
   CBOR_TAG_SINGLE_COMPLEX_NUMBER = 43000ULL,
@@ -394,6 +406,12 @@ typedef enum cbor_tag_t {
   /* 65536-4294967295 : First Come First Served (32-bit) */
   // RAINS Message; Ref: [https://britram.github.io/rains-prototype][Brian_Trammell]
   CBOR_TAG_RAINS_MSG = 15309736ULL,
+  // TCG DICE Protection Environment profile descriptor; Ref: [TCG DICE Protection Environment][TCG]
+  CBOR_TAG_TCG_DICE_PROTECTION_ENV_PROFILE_DESCRIPTOR = 1146111423ULL,
+  // MoaT end-of-file marker; Ref: [https://github.com/M-o-a-T/moat-util/][Matthias_Urlichs]
+  CBOR_TAG_MOAT_END_OF_FILE_MARKER = 1298493254ULL,
+  // MoaT file identifier / details; Ref: [https://github.com/M-o-a-T/moat-util/][Matthias_Urlichs]
+  CBOR_TAG_MOAT_FILE_ID_DETAILS = 1299145044ULL,
   // A CBOR encoded Openswan configuration file, as stored on disk forunit test cases.; Ref: [Michael_Richardson][Samir_Hussain]
   CBOR_TAG_CBOR_ENC_OPENSWAN_CONFIG_FILE_AS_STORED_ON_DISK_FORUNIT_TEST_CASES = 1330664270ULL,
   // Concise Software Identifier (CoSWID); Ref: [RFC9393]

@@ -1,5 +1,10 @@
 # IANA Header Generator for Internet Protocol Standards
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![C](https://img.shields.io/badge/Language-C-blue.svg)](https://en.wikipedia.org/wiki/C_(programming_language))
+[![Python](https://img.shields.io/badge/Python-3776AB?logo=python&logoColor=fff)](https://en.wikipedia.org/wiki/Python_(programming_language))
+[![CI/CD Status Badge](https://github.com/mofosyne/iana-headers/actions/workflows/python-test.yml/badge.svg)](https://github.com/mofosyne/iana-headers/actions)
+
 **STATUS: WIP, looking for people to use and provide feedback so I can lock this list down**
 
 ## Table of Contents
@@ -82,4 +87,4 @@ Contributions to this project are welcome. If you find any issues or have sugges
 
 ## License
 
-This project is licensed under the GNU GENERAL PUBLIC LICENSE Version 3, 29 June 2007 License. See the [LICENSE](LICENSE) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.

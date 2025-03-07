@@ -274,6 +274,8 @@ typedef enum coap_content_format_t {
   COAP_CONTENT_FORMAT_APPLICATION_EAT_UCS_AS_CBOR = 267,
   // application/eat-ucs+json; Ref: [RFC-ietf-rats-eat-media-type-12]
   COAP_CONTENT_FORMAT_APPLICATION_EAT_UCS_AS_JSON = 268,
+  // application/coap-eap; Ref: [RFC-ietf-ace-wg-coap-eap-14]
+  COAP_CONTENT_FORMAT_APPLICATION_COAP_EAP = 269,
   // application/dots+cbor; Ref: [RFC9132]
   COAP_CONTENT_FORMAT_APPLICATION_DOTS_AS_CBOR = 271,
   // application/missing-blocks+cbor-seq; Ref: [RFC9177]

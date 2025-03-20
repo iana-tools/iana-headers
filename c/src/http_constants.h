@@ -238,7 +238,7 @@ typedef enum http_status_code_t {
 #define HTTP_FIELD_NAME_DAV "DAV" // DAV; permanent; Ref: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
 #define HTTP_FIELD_NAME_DEFAULT_STYLE "Default-Style" // Default-Style; obsoleted; Ref: [HTML 4.01 Specification]
 #define HTTP_FIELD_NAME_DELTA_BASE "Delta-Base" // Delta-Base; permanent; Ref: [RFC 3229: Delta encoding in HTTP]
-#define HTTP_FIELD_NAME_DEPRECATION "Deprecation" // Deprecation; Item; permanent; Ref: [RFC-ietf-httpapi-deprecation-header-09, Section 2: The Deprecation HTTP Response Header Field]
+#define HTTP_FIELD_NAME_DEPRECATION "Deprecation" // Deprecation; Item; permanent; Ref: [RFC9745, Section 2: The Deprecation HTTP Response Header Field]
 #define HTTP_FIELD_NAME_DEPTH "Depth" // Depth; permanent; Ref: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
 #define HTTP_FIELD_NAME_DERIVED_FROM "Derived-From" // Derived-From; obsoleted; Ref: [RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1]
 #define HTTP_FIELD_NAME_DESTINATION "Destination" // Destination; permanent; Ref: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]

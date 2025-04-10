@@ -312,9 +312,11 @@ typedef enum coap_content_format_t {
   COAP_CONTENT_FORMAT_APPLICATION_TD_AS_JSON = 432,
   // application/tm+json; Ref: ["Web of Things (WoT) Thing Description 1.1", April 2022]
   COAP_CONTENT_FORMAT_APPLICATION_TM_AS_JSON = 433,
+  // application/sdf+json; Ref: [RFC-ietf-asdf-sdf-23]
+  COAP_CONTENT_FORMAT_APPLICATION_SDF_AS_JSON = 434,
   // application/uccs+cbor; Ref: [RFC-ietf-rats-uccs-12, Section 6.4]
   COAP_CONTENT_FORMAT_APPLICATION_UCCS_AS_CBOR = 601,
-  // application/voucher+cose (TEMPORARY - registered 2022-04-12, extension registered 2024-03-01, expires 2025-04-12); Ref: [draft-ietf-anima-constrained-voucher-23]
+  // application/voucher+cose (TEMPORARY - registered 2022-04-12, extension registered 2025-03-07, expires 2026-04-12); Ref: [draft-ietf-anima-constrained-voucher-23]
   COAP_CONTENT_FORMAT_APPLICATION_VOUCHER_AS_COSE = 836,
 
   /* 10000-64999 : First Come First Served */

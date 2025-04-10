@@ -83,7 +83,7 @@ def get_content_of_typedef_enum(c_code: str, typedef_enum_name: str) -> str:
 
     return match.group(1)
 
-def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef_name: str, c_enum_list, depreciated_enum_support = True):
+def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef_name: str, c_enum_list, deprecated_enum_support = True):
     """
     Check for existing enum so we do not break it
     """
@@ -110,9 +110,9 @@ def override_enum_from_existing_typedef_enum(header_file_content: str, c_typedef
                 # Check if duplicated
                 if existing_enum_name != expected_enum_name:
                     # Existing Enum Name Does Not Match With This Name
-                    if depreciated_enum_support:
-                        # Preserve But Mark As Depreciated / Backward Compatible
-                        c_enum_list[id_value]["depreciated_enum_name"] = existing_enum_name
+                    if deprecated_enum_support:
+                        # Preserve But Mark As Deprecated / Backward Compatible
+                        c_enum_list[id_value]["deprecated_enum_name"] = existing_enum_name
                     else:
                         # Preserve But Override
                         c_enum_list[id_value]["enum_name"] = existing_enum_name
@@ -147,8 +147,8 @@ def generate_c_enum_content(c_head_comment, c_enum_list, c_range_marker = None, 
         if "comment" in row:
             c_enum_content += spacing_string + f'// {row.get("comment", "")}\n'
         c_enum_content += spacing_string + f'{row.get("enum_name", "")} = {id_value}{int_suffix}'
-        if "depreciated_enum_name" in row:
-            c_enum_content += ',\n' + spacing_string + f'{row.get("depreciated_enum_name", "")} = {id_value}{int_suffix} /* depreciated but identifier kept for backwards compatibility */'
+        if "deprecated_enum_name" in row:
+            c_enum_content += ',\n' + spacing_string + f'{row.get("deprecated_enum_name", "")} = {id_value}{int_suffix} /* deprecated but identifier kept for backwards compatibility */'
         c_enum_content += (',\n' if id_value != sorted(c_enum_list)[-1] else '\n')
 
     c_enum_content += range_marker_render(c_range_marker)

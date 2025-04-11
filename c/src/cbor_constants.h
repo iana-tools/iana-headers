@@ -168,6 +168,10 @@ typedef enum cbor_tag_t {
   CBOR_TAG_GEOGRAPHIC_COORDINATES = 103ULL,
   // Geographic Coordinate Reference System WKT or EPSG number; Ref: [draft-clarke-cbor-crs-01]
   CBOR_TAG_GEO_COORD_REF_SYSTEM_WKT_OR_EPSG_NUM = 104ULL,
+  // SUIT_Envelope as defined in Appendix A of [RFC-ietf-suit-manifest-33]; Ref: [RFC-ietf-suit-manifest-33]
+  CBOR_TAG_SUIT_ENVELOPE = 107ULL,
+  // Expected conversion to base16 encoding (lowercase); Ref: [draft-bormann-cbor-notable-tags-12, Section 2.1, Paragraph 2, Item 2]
+  CBOR_TAG_EXPECTED_CONVERSION_BASE16_ENC_LOWERCASE = 108ULL,
   // relative object identifier (BER encoding); SDNV [RFC6256] sequence; Ref: [RFC9090]
   CBOR_TAG_RELATIVE_OBJECT_ID = 110ULL,
   // object identifier (BER encoding); Ref: [RFC9090]
@@ -228,6 +232,14 @@ typedef enum cbor_tag_t {
   CBOR_TAG_UNIVERSAL_GEO_AREA_DESCRIPTION_DESCRIPTION_OF_VELOCITY = 278ULL,
   // Coordinate Reference System Wrapper; Ref: [Fast and Readable Geographical Hashing (CTA-5009-A)][Consumer_Technology_Association]
   CBOR_TAG_COORDINATE_REF_SYSTEM_WRAPPER = 279ULL,
+  // Symbol; Ref: [https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt][Mihai_Bazon]
+  CBOR_TAG_SYMBOL = 280ULL,
+  // Linked list; Ref: [https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt][Mihai_Bazon]
+  CBOR_TAG_LINKED_LIST = 281ULL,
+  // Character; Ref: [https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt][Mihai_Bazon]
+  CBOR_TAG_CHARACTER = 282ULL,
+  // Object; Ref: [https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt][Mihai_Bazon]
+  CBOR_TAG_OBJECT = 283ULL,
   // isolate shared values within this scope; Ref: [https://cbor.is4.site/sharedref-namespace][IS4]
   CBOR_TAG_ISOLATE_SHARED_VALUES_WITHIN_THIS_SCOPE = 296ULL,
   // Geohash String; Ref: [Fast and Readable Geographical Hashing (CTA-5009-A)][Consumer_Technology_Association]
@@ -254,12 +266,18 @@ typedef enum cbor_tag_t {
   CBOR_TAG_MULTI_DIMENSIONAL_ARRAY_COLUMN_MAJOR_ORDER = 1040ULL,
   // IEEE OUI/CID; Ref: [RFC9542]
   CBOR_TAG_IEEE_OUI_CID = 1048ULL,
+  // SUIT_Manifest as defined in Appendix A of [RFC-ietf-suit-manifest-33]; Ref: [RFC-ietf-suit-manifest-33]
+  CBOR_TAG_SUIT_MANIFEST = 1070ULL,
   // [COSE algorithm identifier, Base Hash value]; Ref: [draft-bormann-cbor-notable-tags-09, Section 3.1.1]
   CBOR_TAG_COSE_ALGORITHM_ID_BASE_HASH_VALUE = 18556ULL,
+  // description of the value instead of the value itself; Ref: [https://cbor.is4.site/quoted][IS4]
+  CBOR_TAG_DESCRIPTION_OF_VAL_INSTEAD_OF_VAL_ITSELF = 20853ULL,
   // I-Regexp; Ref: [draft-bormann-cbor-notable-tags-11, Section 2.1][RFC9485]
   CBOR_TAG_I_REGEXP = 21065ULL,
   // ECMAScript RegExp [https://262.ecma-international.org/14.0/#sec-regexp-regular-expression-objects]; Ref: [https://github.com/hildjj/cbor-specs/blob/main/regexp.md][Joe_Hildebrand]
   CBOR_TAG_ECMASCRIPT_REGEXP = 21066ULL,
+  // (always invalid in interchange) programming aid for simple values; Ref: [draft-bormann-cbor-notable-tags-12, Section 10.2 ]
+  CBOR_TAG_PROGRAMMING_AID_FOR_SIMPLE_VALUES = 21334ULL,
   // a CBOR Tag identifier; Ref: [https://cbor.is4.site/cbor-tag][IS4]
   CBOR_TAG_A_CBOR_TAG_ID = 21607ULL,
   // hint that indicates an additional level of indirection; Ref: [http://cbor.schmorp.de/indirection][Marc_A._Lehmann]
@@ -347,11 +365,11 @@ typedef enum cbor_tag_t {
   // ur:ssh-certificate, Text format SSH certificate; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_SSH_CERTIFICATE_TXT_FORMAT_SSH_CERTIFICATE = 40803ULL,
   // A confidentiality clearance. The key value pairs of the map are defined in ADatP-4774.8; Ref: [Aidan_Murdock]
-  CBOR_TAG_A_CONFIDENTIALITY_CLEARANCE = 42600ULL,
+  CBOR_TAG_CONFIDENTIALITY_CLEARANCE = 42600ULL,
   // A metadata binding. The elements of the array are defined in AdatP-4778.8. The tag is also used as part of the magic number in on-disk detached and encapsulating bindings.; Ref: [Aidan_Murdock]
-  CBOR_TAG_A_METADATA_BINDING = 42601ULL,
+  CBOR_TAG_METADATA_BINDING = 42601ULL,
   // A collection of NCMS metadata elements. The key value pairs of the map are defined in AdatP-5636.8; Ref: [Aidan_Murdock]
-  CBOR_TAG_A_COLLECTION_OF_NCMS_METADATA_ELEMENTS = 42602ULL,
+  CBOR_TAG_COLLECTION_OF_NCMS_METADATA_ELEMENTS = 42602ULL,
   // Single complex number: array elements are real (I) and imaginary (Q) components; Ref: [Saajan_Chana]
   CBOR_TAG_SINGLE_COMPLEX_NUMBER = 43000ULL,
   // Array of complex numbers in interleaved form: complex value k is stored with real (I) part at array index 2k and imaginary (Q) part at index (2k + 1); Ref: [Saajan_Chana]
@@ -400,7 +418,7 @@ typedef enum cbor_tag_t {
   CBOR_TAG_TAGGED_CBOR_ARRAY_CONTAINS_ATTEST_EVIDENCE_DATA_WITH_AN_INTEL_TEE_RPT = 60001ULL,
   // The tagged CBOR array contains attestation evidence data with an Intel SGX report.; Ref: [Shanwei_Cen]
   CBOR_TAG_TAGGED_CBOR_ARRAY_CONTAINS_ATTEST_EVIDENCE_DATA_WITH_AN_INTEL_SGX_RPT = 60002ULL,
-  // invalid 16bit; Ref: [draft-bormann-cbor-notable-tags-02]
+  // always invalid; see Section 10.1; Ref: [draft-bormann-cbor-notable-tags-02]
   CBOR_TAG_INVALID_16BIT = 65535ULL,
 
   /* 65536-4294967295 : First Come First Served (32-bit) */
@@ -408,6 +426,8 @@ typedef enum cbor_tag_t {
   CBOR_TAG_RAINS_MSG = 15309736ULL,
   // TCG DICE Protection Environment profile descriptor; Ref: [TCG DICE Protection Environment][TCG]
   CBOR_TAG_TCG_DICE_PROTECTION_ENV_PROFILE_DESCRIPTOR = 1146111423ULL,
+  // MoaT change-of-status marker; Ref: [https://github.com/M-o-a-T/moat/blob/main/doc/common/cbor.rst][Matthias_Urlichs]
+  CBOR_TAG_MOAT_CHANGE_OF_STATUS_MARKER = 1298360423ULL,
   // MoaT end-of-file marker; Ref: [https://github.com/M-o-a-T/moat-util/][Matthias_Urlichs]
   CBOR_TAG_MOAT_END_OF_FILE_MARKER = 1298493254ULL,
   // MoaT file identifier / details; Ref: [https://github.com/M-o-a-T/moat-util/][Matthias_Urlichs]
@@ -420,13 +440,13 @@ typedef enum cbor_tag_t {
   CBOR_TAG_ARRAY_OF_CONTENT_ADDR_BLOCKS_ERIS_READ_CAP = 1701996915ULL,
   // ERIS-FS image header; Ref: [Endo_Renberg]
   CBOR_TAG_ERIS_FS_IMAGE_HEADER = 1701996916ULL,
-  // invalid 32bit; Ref: [draft-bormann-cbor-notable-tags-02]
+  // always invalid; see Section 10.1; Ref: [draft-bormann-cbor-notable-tags-02]
   CBOR_TAG_INVALID_32BIT = 4294967295ULL,
 
   /* 4294967296-18446744073709551615 : First Come First Served (64-bit) */
   // Intel FPGA SPDM Manifest; Ref: [Andrew_Draper]
   CBOR_TAG_INTEL_FPGA_SPDM_MANIFEST = 4294967296ULL,
-  // invalid 64bit; Ref: [draft-bormann-cbor-notable-tags-02]
+  // always invalid; Section 10.1; Ref: [draft-bormann-cbor-notable-tags-02]
   CBOR_TAG_INVALID_64BIT = 18446744073709551615ULL
 } cbor_tag_t;
 

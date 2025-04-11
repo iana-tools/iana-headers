@@ -235,6 +235,10 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
         variable_name_list = [word.replace('+', 'PLUS') for word in variable_name_list]
         variable_name_list = [word.strip('_') for word in variable_name_list]
 
+        # Strip out 'A' if it's the first word of the list. e.g. "a CBOR Tag identifier"
+        if variable_name_list[0] == 'A':
+            variable_name_list = variable_name_list[1:]
+
         processed_variable_name_list = []
         for word in variable_name_list:
             processed_variable_name_list.extend(re.sub(r'\W+', ' ', word).split())
@@ -378,6 +382,43 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
     return enum_name
 
 
+def iana_cbor_tag_override_semantic(cbor_tag, semantics):
+    # This may be required for edge cases where the variable name generator gets confused by the semantic descriptions
+
+    if "65535" in cbor_tag:
+        # 16bit Max Invalid CBOR Tag Marker
+        # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
+        # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
+        semantics = "invalid 16bit"
+
+    if "4294967295" in cbor_tag:
+        # 32bit Max Invalid CBOR Tag Marker
+        # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
+        # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
+        semantics = "invalid 32bit"
+
+    if "18446744073709551615" in cbor_tag:
+        # 64bit Max Invalid CBOR Tag Marker
+        # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
+        # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
+        semantics = "invalid 64bit"
+
+    if "107" in cbor_tag:
+        # SUIT_Envelope as defined in Appendix A of [RFC-ietf-suit-manifest-33]
+        semantics = "SUIT Envelope"
+
+    if "1070" in cbor_tag:
+        # SUIT_Manifest as defined in Appendix A of [RFC-ietf-suit-manifest-33]
+        semantics = "SUIT Manifest"
+
+    if "108" in cbor_tag:
+        # Expected conversion to base16 encoding (lowercase)
+        # This conflicts with tag 23 because of the 'lowercase' keyword
+        semantics = "Expected conversion to base16 encoding lowercase"
+
+    return semantics
+
+
 def iana_cbor_tag_parse_csv(csv_content: str, typedef_enum_name: str):
     """
     Parse and process IANA registration into enums
@@ -399,23 +440,12 @@ def iana_cbor_tag_parse_csv(csv_content: str, typedef_enum_name: str):
         if "-" in cbor_tag:
             # Range of unassigned tags
             continue
-        if  "65535" in cbor_tag:
-            # 16bit Max Invalid CBOR Tag Marker
-            # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
-            # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
-            semantics = "invalid 16bit"
-        if "4294967295" in cbor_tag:
-            # 32bit Max Invalid CBOR Tag Marker
-            # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
-            # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
-            semantics = "invalid 32bit"
-        if "18446744073709551615" in cbor_tag:
-            # 64bit Max Invalid CBOR Tag Marker
-            # Always invalid; see Section 10.1,[draft-bormann-cbor-notable-tags-02]
-            # The purpose of these tag number registrations is to enable the tag numbers to be reserved for internal use by implementation
-            semantics = "invalid 64bit"
+
+        # Override semantic name description if it doesn't work well with our name generator
+        semantics_updated_for_enum_name = iana_cbor_tag_override_semantic(cbor_tag, semantics)
+
         # Add to enum list
-        enum_name = iana_cbor_tag_c_enum_name_generate(cbor_tag, semantics, typedef_enum_name)
+        enum_name = iana_cbor_tag_c_enum_name_generate(cbor_tag, semantics_updated_for_enum_name, typedef_enum_name)
         comment = '; '.join(filter(None, [semantics, f'Ref: {reference}']))
         c_enum_list[int(cbor_tag)] = {"enum_name": enum_name, "comment": comment}
     return c_enum_list
@@ -462,6 +492,7 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
     duplicate_enum_names = set([name for name in enum_names if enum_names.count(name) > 1])
     if duplicate_enum_names:
         print(f"Warning: Duplicate enum names detected: {', '.join(duplicate_enum_names)}")
+        print(f"Recommend: Update iana_cbor_tag_override_semantic() to handle this specific tag")
         exit()
 
     # Generate enumeration header content

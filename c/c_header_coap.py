@@ -176,13 +176,13 @@ def iana_coap_class_to_str(coap_class):
         return "Signaling Code"
     return "?"
 
-def iana_coap_request_response_c_enum_name_generate(code: str, description: str, typedef_enum_name: str):
+def iana_coap_request_response_c_enum_name_generate(coap_class: int, coap_subclass: int, description: str, typedef_enum_name: str):
     """
     This generates a c enum name based on coap content type and content coding value
     """
     # Do not include comments indicated by messages within `(...)`
     description = re.sub(r'\s+\(.*\)', '', description).strip(' ')
-    c_enum_name = f"{typedef_enum_name.upper()}_{code}_{description}"
+    c_enum_name = f"{typedef_enum_name.upper()}_{iana_coap_class_to_str(coap_class)}_{description}"
     # Convert non alphanumeric characters into variable name friendly underscore
     c_enum_name = re.sub(r'[^a-zA-Z0-9_]', '_', c_enum_name).strip('_').upper()
     return c_enum_name
@@ -209,7 +209,7 @@ def iana_coap_request_response_parse_csv(csv_content: str, typedef_enum_name: st
         coap_code = iana_coap_code_class_subclass_to_integer(coap_class, coap_subclass)
 
         # Add to enum list
-        enum_name = iana_coap_request_response_c_enum_name_generate(code, description, typedef_enum_name)
+        enum_name = iana_coap_request_response_c_enum_name_generate(coap_class, coap_subclass, description, typedef_enum_name)
         comment_line = '; '.join(filter(None, [f"code: {code}", f"{iana_coap_class_to_str(coap_class)}: {description}",  f'Ref: {reference}']))
         enum_list[int(coap_code)] = {"enum_name": enum_name, "comment": comment_line}
     return enum_list
@@ -236,7 +236,7 @@ def iana_coap_request_response_c_typedef_enum_update(header_file_content: str) -
     # Load latest IANA registrations
     empty_enum_comment_line = '; '.join(filter(None, ["code: 0.00", f"{iana_coap_class_to_str(0)}: Empty Message", 'Ref: [RFC7252, section 4.1]']))
     coap_empty_enum_list = {0:{
-                "enum_name": iana_coap_request_response_c_enum_name_generate("0.00", "Empty Message", typedef_enum_name),
+                "enum_name": iana_coap_request_response_c_enum_name_generate(0, 0, "Empty Message", typedef_enum_name),
                 "comment": empty_enum_comment_line
             }}
 

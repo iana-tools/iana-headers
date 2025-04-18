@@ -15,93 +15,93 @@ typedef enum coap_code_t {
 
   /* 0-0 : Indicates an Empty message. [RFC7252, section 4.1] */
   // code: 0.00; Method: Empty Message; Ref: [RFC7252, section 4.1]
-  COAP_CODE_0_00_EMPTY_MESSAGE = 0,
+  COAP_CODE_METHOD_EMPTY_MESSAGE = 0,
 
   /* 1-31 : Indicates a request. [RFC7252, section 12.1.1] */
   // code: 0.01; Method: GET; Ref: [RFC7252]
-  COAP_CODE_0_01_GET = 1,
+  COAP_CODE_METHOD_GET = 1,
   // code: 0.02; Method: POST; Ref: [RFC7252]
-  COAP_CODE_0_02_POST = 2,
+  COAP_CODE_METHOD_POST = 2,
   // code: 0.03; Method: PUT; Ref: [RFC7252]
-  COAP_CODE_0_03_PUT = 3,
+  COAP_CODE_METHOD_PUT = 3,
   // code: 0.04; Method: DELETE; Ref: [RFC7252]
-  COAP_CODE_0_04_DELETE = 4,
+  COAP_CODE_METHOD_DELETE = 4,
   // code: 0.05; Method: FETCH; Ref: [RFC8132]
-  COAP_CODE_0_05_FETCH = 5,
+  COAP_CODE_METHOD_FETCH = 5,
   // code: 0.06; Method: PATCH; Ref: [RFC8132]
-  COAP_CODE_0_06_PATCH = 6,
+  COAP_CODE_METHOD_PATCH = 6,
   // code: 0.07; Method: iPATCH; Ref: [RFC8132]
-  COAP_CODE_0_07_IPATCH = 7,
+  COAP_CODE_METHOD_IPATCH = 7,
 
   /* 32-63 : Reserved [RFC7252] */
 
   /* 64-191 : Indicates a response. [RFC7252, section 12.1.2] */
   // code: 2.01; Success: Created; Ref: [RFC7252]
-  COAP_CODE_2_01_CREATED = 65,
+  COAP_CODE_SUCCESS_CREATED = 65,
   // code: 2.02; Success: Deleted; Ref: [RFC7252]
-  COAP_CODE_2_02_DELETED = 66,
+  COAP_CODE_SUCCESS_DELETED = 66,
   // code: 2.03; Success: Valid; Ref: [RFC7252]
-  COAP_CODE_2_03_VALID = 67,
+  COAP_CODE_SUCCESS_VALID = 67,
   // code: 2.04; Success: Changed; Ref: [RFC7252]
-  COAP_CODE_2_04_CHANGED = 68,
+  COAP_CODE_SUCCESS_CHANGED = 68,
   // code: 2.05; Success: Content; Ref: [RFC7252]
-  COAP_CODE_2_05_CONTENT = 69,
+  COAP_CODE_SUCCESS_CONTENT = 69,
   // code: 2.31; Success: Continue; Ref: [RFC7959]
-  COAP_CODE_2_31_CONTINUE = 95,
+  COAP_CODE_SUCCESS_CONTINUE = 95,
   // code: 4.00; Client Error: Bad Request; Ref: [RFC7252]
-  COAP_CODE_4_00_BAD_REQUEST = 128,
+  COAP_CODE_CLIENT_ERROR_BAD_REQUEST = 128,
   // code: 4.01; Client Error: Unauthorized; Ref: [RFC7252]
-  COAP_CODE_4_01_UNAUTHORIZED = 129,
+  COAP_CODE_CLIENT_ERROR_UNAUTHORIZED = 129,
   // code: 4.02; Client Error: Bad Option; Ref: [RFC7252]
-  COAP_CODE_4_02_BAD_OPTION = 130,
+  COAP_CODE_CLIENT_ERROR_BAD_OPTION = 130,
   // code: 4.03; Client Error: Forbidden; Ref: [RFC7252]
-  COAP_CODE_4_03_FORBIDDEN = 131,
+  COAP_CODE_CLIENT_ERROR_FORBIDDEN = 131,
   // code: 4.04; Client Error: Not Found; Ref: [RFC7252]
-  COAP_CODE_4_04_NOT_FOUND = 132,
+  COAP_CODE_CLIENT_ERROR_NOT_FOUND = 132,
   // code: 4.05; Client Error: Method Not Allowed; Ref: [RFC7252]
-  COAP_CODE_4_05_METHOD_NOT_ALLOWED = 133,
+  COAP_CODE_CLIENT_ERROR_METHOD_NOT_ALLOWED = 133,
   // code: 4.06; Client Error: Not Acceptable; Ref: [RFC7252]
-  COAP_CODE_4_06_NOT_ACCEPTABLE = 134,
+  COAP_CODE_CLIENT_ERROR_NOT_ACCEPTABLE = 134,
   // code: 4.08; Client Error: Request Entity Incomplete; Ref: [RFC7959]
-  COAP_CODE_4_08_REQUEST_ENTITY_INCOMPLETE = 136,
+  COAP_CODE_CLIENT_ERROR_REQUEST_ENTITY_INCOMPLETE = 136,
   // code: 4.09; Client Error: Conflict; Ref: [RFC8132]
-  COAP_CODE_4_09_CONFLICT = 137,
+  COAP_CODE_CLIENT_ERROR_CONFLICT = 137,
   // code: 4.12; Client Error: Precondition Failed; Ref: [RFC7252]
-  COAP_CODE_4_12_PRECONDITION_FAILED = 140,
+  COAP_CODE_CLIENT_ERROR_PRECONDITION_FAILED = 140,
   // code: 4.13; Client Error: Request Entity Too Large; Ref: [RFC7252][RFC7959]
-  COAP_CODE_4_13_REQUEST_ENTITY_TOO_LARGE = 141,
+  COAP_CODE_CLIENT_ERROR_REQUEST_ENTITY_TOO_LARGE = 141,
   // code: 4.15; Client Error: Unsupported Content-Format; Ref: [RFC7252]
-  COAP_CODE_4_15_UNSUPPORTED_CONTENT_FORMAT = 143,
+  COAP_CODE_CLIENT_ERROR_UNSUPPORTED_CONTENT_FORMAT = 143,
   // code: 4.22; Client Error: Unprocessable Entity; Ref: [RFC8132]
-  COAP_CODE_4_22_UNPROCESSABLE_ENTITY = 150,
+  COAP_CODE_CLIENT_ERROR_UNPROCESSABLE_ENTITY = 150,
   // code: 4.29; Client Error: Too Many Requests; Ref: [RFC8516]
-  COAP_CODE_4_29_TOO_MANY_REQUESTS = 157,
+  COAP_CODE_CLIENT_ERROR_TOO_MANY_REQUESTS = 157,
   // code: 5.00; Server Error: Internal Server Error; Ref: [RFC7252]
-  COAP_CODE_5_00_INTERNAL_SERVER_ERROR = 160,
+  COAP_CODE_SERVER_ERROR_INTERNAL_SERVER_ERROR = 160,
   // code: 5.01; Server Error: Not Implemented; Ref: [RFC7252]
-  COAP_CODE_5_01_NOT_IMPLEMENTED = 161,
+  COAP_CODE_SERVER_ERROR_NOT_IMPLEMENTED = 161,
   // code: 5.02; Server Error: Bad Gateway; Ref: [RFC7252]
-  COAP_CODE_5_02_BAD_GATEWAY = 162,
+  COAP_CODE_SERVER_ERROR_BAD_GATEWAY = 162,
   // code: 5.03; Server Error: Service Unavailable; Ref: [RFC7252]
-  COAP_CODE_5_03_SERVICE_UNAVAILABLE = 163,
+  COAP_CODE_SERVER_ERROR_SERVICE_UNAVAILABLE = 163,
   // code: 5.04; Server Error: Gateway Timeout; Ref: [RFC7252]
-  COAP_CODE_5_04_GATEWAY_TIMEOUT = 164,
+  COAP_CODE_SERVER_ERROR_GATEWAY_TIMEOUT = 164,
   // code: 5.05; Server Error: Proxying Not Supported; Ref: [RFC7252]
-  COAP_CODE_5_05_PROXYING_NOT_SUPPORTED = 165,
+  COAP_CODE_SERVER_ERROR_PROXYING_NOT_SUPPORTED = 165,
   // code: 5.08; Server Error: Hop Limit Reached; Ref: [RFC8768]
-  COAP_CODE_5_08_HOP_LIMIT_REACHED = 168,
+  COAP_CODE_SERVER_ERROR_HOP_LIMIT_REACHED = 168,
 
   /* 192-255 : Reserved [RFC7252] */
   // code: 7.01; Signaling Code: CSM; Ref: [RFC8323]
-  COAP_CODE_7_01_CSM = 225,
+  COAP_CODE_SIGNALING_CODE_CSM = 225,
   // code: 7.02; Signaling Code: Ping; Ref: [RFC8323]
-  COAP_CODE_7_02_PING = 226,
+  COAP_CODE_SIGNALING_CODE_PING = 226,
   // code: 7.03; Signaling Code: Pong; Ref: [RFC8323]
-  COAP_CODE_7_03_PONG = 227,
+  COAP_CODE_SIGNALING_CODE_PONG = 227,
   // code: 7.04; Signaling Code: Release; Ref: [RFC8323]
-  COAP_CODE_7_04_RELEASE = 228,
+  COAP_CODE_SIGNALING_CODE_RELEASE = 228,
   // code: 7.05; Signaling Code: Abort; Ref: [RFC8323]
-  COAP_CODE_7_05_ABORT = 229
+  COAP_CODE_SIGNALING_CODE_ABORT = 229
 } coap_code_t;
 
 typedef enum coap_option_t {

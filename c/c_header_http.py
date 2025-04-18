@@ -201,6 +201,15 @@ def iana_http_field_names_c_macro_name_generate(http_field_names: str, section_n
     c_enum_name = c_enum_name.upper()
     return c_enum_name
 
+def iana_http_field_names_enum_override(field_name):
+    # This may be required for edge cases where the variable name generator gets confused
+
+    if "*" in field_name:
+        # *; permanent; Ref: [RFC9110, Section 12.5.5: HTTP Semantics]
+        return "WILDCARD"
+    
+    return field_name
+
 def iana_http_field_names_parse_csv(csv_content: str, section_name: str):
     """
     Parse and process IANA registration into enums
@@ -215,9 +224,13 @@ def iana_http_field_names_parse_csv(csv_content: str, section_name: str):
         reference = row["Reference"]
         if not http_field_names:
             continue
+
+        # Override enum name description if it doesn't work well with our name generator
+        http_field_names_updated_for_enum_name = iana_http_field_names_enum_override(http_field_names)
+
         # Add to enum list
         comment = '; '.join(filter(None, [http_field_names, structured_type, status, f'Ref: {reference}']))
-        macro_name = iana_http_field_names_c_macro_name_generate(http_field_names, section_name)
+        macro_name = iana_http_field_names_c_macro_name_generate(http_field_names_updated_for_enum_name, section_name)
         c_macro_list[macro_name] = {"value": f"\"{http_field_names}\"", "comment": comment}
     return c_macro_list
 

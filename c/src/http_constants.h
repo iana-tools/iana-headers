@@ -52,8 +52,6 @@ typedef enum http_status_code_t {
   HTTP_STATUS_CODE_NOT_MODIFIED = 304,
   // Use Proxy; Ref: [RFC9110, Section 15.4.6]
   HTTP_STATUS_CODE_USE_PROXY = 305,
-  // (Unused); Ref: [RFC9110, Section 15.4.7]
-  HTTP_STATUS_CODE__UNUSED = 306,
   // Temporary Redirect; Ref: [RFC9110, Section 15.4.8]
   HTTP_STATUS_CODE_TEMPORARY_REDIRECT = 307,
   // Permanent Redirect; Ref: [RFC9110, Section 15.4.9]
@@ -96,8 +94,6 @@ typedef enum http_status_code_t {
   HTTP_STATUS_CODE_RANGE_NOT_SATISFIABLE = 416,
   // Expectation Failed; Ref: [RFC9110, Section 15.5.18]
   HTTP_STATUS_CODE_EXPECTATION_FAILED = 417,
-  // (Unused); Ref: [RFC9110, Section 15.5.19]
-  HTTP_STATUS_CODE__UNUSED = 418,
   // Misdirected Request; Ref: [RFC9110, Section 15.5.20]
   HTTP_STATUS_CODE_MISDIRECTED_REQUEST = 421,
   // Unprocessable Content; Ref: [RFC9110, Section 15.5.21]

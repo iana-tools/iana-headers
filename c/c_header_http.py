@@ -149,6 +149,8 @@ def iana_http_status_codes_parse_csv(csv_content: str, typedef_enum_name: str):
             continue
         if "-" in http_status_code: # is a range of value
             continue
+        if "(Unused)" in description:
+            continue
         # Add to enum list
         comment = '; '.join(filter(None, [description, f'Ref: {reference}']))
         enum_name = iana_http_status_codes_c_enum_name_generate(http_status_code, description, typedef_enum_name)

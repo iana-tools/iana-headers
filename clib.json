@@ -1,6 +1,6 @@
 {
   "name": "iana-headers",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "repo": "mofosyne/iana-headers",
   "description": "The IANA Header Generator is a Python script designed to automate the generation of C headers for various Internet protocol standards using data from the Internet Assigned Numbers Authority (IANA)",
   "keywords": [

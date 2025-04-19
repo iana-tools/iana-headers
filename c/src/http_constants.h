@@ -396,16 +396,15 @@ X(HTTP_FIELD_NAME_X_FRAME_OPTIONS, "X-Frame-Options") /* X-Frame-Options; perman
 
 #define HTTP_FIELD_NAME_LIST_ENTRY_TO_ENUM_ENTRY(ENUM_NAME, FIELD_NAME_STRING) ENUM_NAME,
 typedef enum http_field_name_t {
-HTTP_FIELD_NAME_UNKNOWN,
 HTTP_FIELD_NAME_LIST(HTTP_FIELD_NAME_LIST_ENTRY_TO_ENUM_ENTRY)
+HTTP_FIELD_NAME_MAX
 } http_field_name_t;
 
 #define HTTP_FIELD_NAME_CASE(ENUM_NAME, FIELD_NAME_STRING) case ENUM_NAME: return FIELD_NAME_STRING;
-static const char * http_field_name_to_enum(http_field_name_t val, const char * default_value) {
+static const char * http_field_name_get_string(http_field_name_t val, const char * default_value) {
     switch (val)
     {
         HTTP_FIELD_NAME_LIST(HTTP_FIELD_NAME_CASE)
-        case HTTP_FIELD_NAME_UNKNOWN: return default_value;
         default: return default_value;
     }
 }

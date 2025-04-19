@@ -214,16 +214,15 @@ def update_c_const_macro(document_content, section_name, c_head_comment, c_macro
     c_const_macro_content += f"""
 #define {section_name.upper()}_LIST_ENTRY_TO_ENUM_ENTRY(ENUM_NAME, FIELD_NAME_STRING) ENUM_NAME,
 typedef enum {section_name.lower()}_t {{
-{section_name.upper()}_UNKNOWN,
 {section_name.upper()}_LIST({section_name.upper()}_LIST_ENTRY_TO_ENUM_ENTRY)
+{section_name.upper()}_MAX
 }} {section_name.lower()}_t;
 
 #define {section_name.upper()}_CASE(ENUM_NAME, FIELD_NAME_STRING) case ENUM_NAME: return FIELD_NAME_STRING;
-static const char * {section_name.lower()}_to_enum({section_name.lower()}_t val, const char * default_value) {{
+static const char * {section_name.lower()}_get_string({section_name.lower()}_t val, const char * default_value) {{
     switch (val)
     {{
         {section_name.upper()}_LIST({section_name.upper()}_CASE)
-        case {section_name.upper()}_UNKNOWN: return default_value;
         default: return default_value;
     }}
 }}

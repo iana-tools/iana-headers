@@ -158,9 +158,6 @@ default_coap_header_c = """
 
 """
 
-# Record CoAP code names when the coap codes get parsed as it's useful for option number
-coap_code_list = {}
-
 ###############################################################################
 # COAP Utility
 

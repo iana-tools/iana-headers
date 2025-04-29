@@ -346,6 +346,12 @@ typedef enum coap_content_format_t {
   COAP_CONTENT_FORMAT_APPLICATION_VND_OMA_LWM2M_AS_JSON = 11543,
   // application/vnd.oma.lwm2m+cbor; Ref: [OMA-TS-LightweightM2M-V1_2]
   COAP_CONTENT_FORMAT_APPLICATION_VND_OMA_LWM2M_AS_CBOR = 11544,
+  // text/plain;charset=utf-8; zstd; Ref: [Benjamin_Valentin]
+  COAP_CONTENT_FORMAT_TEXT_PLAIN_UTF_8_ZSTD = 12000,
+  // application/xml; zstd; Ref: [Benjamin_Valentin]
+  COAP_CONTENT_FORMAT_APPLICATION_XML_ZSTD = 12041,
+  // application/json; zstd; Ref: [Benjamin_Valentin]
+  COAP_CONTENT_FORMAT_APPLICATION_JSON_ZSTD = 12050,
   // text/css; Ref: [RFC2318]
   COAP_CONTENT_FORMAT_TEXT_CSS = 20000,
   // image/svg+xml; Ref: [https://www.w3.org/TR/SVG/mimereg.html]

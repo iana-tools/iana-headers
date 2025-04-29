@@ -250,7 +250,7 @@ typedef enum cbor_tag_t {
   CBOR_TAG_CONCISE_EVIDENCE_MAP = 571ULL,
   // Unprotected CWT Claims Set [RFC-ietf-rats-uccs-12]; Ref: [RFC-ietf-rats-uccs-12]
   CBOR_TAG_UNPROTECTED_CWT_CLAIMS_SET = 601ULL,
-  // Detached EAT Bundle [RFC-ietf-rats-eat-30, Section 5]; Ref: [RFC-ietf-rats-eat-30]
+  // Detached EAT Bundle; Ref: [RFC-ietf-rats-eat-30, Section 5]
   CBOR_TAG_DETACHED_EAT_BUNDLE = 602ULL,
   // extended time; Ref: [RFC9581, Section 3]
   CBOR_TAG_EXTENDED_TIME = 1001ULL,
@@ -316,6 +316,8 @@ typedef enum cbor_tag_t {
   CBOR_TAG_UR_AGREEMENT_PUBLIC_KEY_CURVE25519_PUBLIC_KEY_FOR_X25519_KEY_AGREEMENT = 40011ULL,
   // ur:arid, Apparently Random Identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_ARID_APPARENTLY_RANDOM_ID = 40012ULL,
+  // ur:crypto-prvkeys, Private keys for cryptographic operations; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_CRYPTO_PRVKEYS_PRIVATE_KEYS_FOR_CRYPTOGRAPHIC_OP = 40013ULL,
   // ur:nonce, Cryptographic nonce; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_NONCE_CRYPTOGRAPHIC_NONCE = 40014ULL,
   // ur:password, Scrypt-hashed password; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
@@ -336,6 +338,26 @@ typedef enum cbor_tag_t {
   CBOR_TAG_UR_SIGNING_PUBLIC_KEY_CRYPTOGRAPHIC_PUBLIC_KEY_USED_FOR_SIGNING = 40022ULL,
   // ur:crypto-key, Cryptographic key used for symmetric encryption; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_CRYPTO_KEY_CRYPTOGRAPHIC_KEY_USED_FOR_SYMMETRIC_ENCRYPTION = 40023ULL,
+  // ur:xid, Extensible identifier or XID Document; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_XID_EXTENSIBLE_ID_OR_XID_DOCUMENT = 40024ULL,
+  // ur:reference, Cryptographically secure reference to an object; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_REF_CRYPTOGRAPHICALLY_SECURE_REF_AN_OBJ = 40025ULL,
+  // ur:event, Event identifier; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_EVENT_EVENT_ID = 40026ULL,
+  // ur:encrypted-key, Content key encrypted with a derivation function; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_ENCRYPTED_KEY_CONTENT_KEY_ENCRYPTED_WITH_DERIVATION_FUNCTION = 40027ULL,
+  // ur:mlkem-private-key, Private key for MLKEM key encapsulation; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_MLKEM_PRIVATE_KEY_PRIVATE_KEY_FOR_MLKEM_KEY_ENCAPSULATION = 40100ULL,
+  // ur:mlkem-public-key, Public key for MLKEM key encapsulation; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_MLKEM_PUBLIC_KEY_PUBLIC_KEY_FOR_MLKEM_KEY_ENCAPSULATION = 40101ULL,
+  // ur:mlkem-ciphertext, Ciphertext for MLKEM key encapsulation; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_MLKEM_CIPHERTEXT_CIPHERTEXT_FOR_MLKEM_KEY_ENCAPSULATION = 40102ULL,
+  // ur:mldsa-private-key, Private key for MLDSA signature generation; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_MLDSA_PRIVATE_KEY_PRIVATE_KEY_FOR_MLDSA_SIGNATURE_GENERATION = 40103ULL,
+  // ur:mldsa-public-key, Public key for MLDSA signature verification; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_MLDSA_PUBLIC_KEY_PUBLIC_KEY_FOR_MLDSA_SIGNATURE_VERIFICATION = 40104ULL,
+  // ur:mldsa-signature, MLDSA signature; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_MLDSA_SIGNATURE_MLDSA_SIGNATURE = 40105ULL,
   // ur:seed, Cryptographic seed; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_SEED_CRYPTOGRAPHIC_SEED = 40300ULL,
   // ur:hdkey, Bitcoin BIP-32 HD key; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
@@ -350,12 +372,12 @@ typedef enum cbor_tag_t {
   CBOR_TAG_UR_ADDRESS_CRYPTOCURRENCY_ADDRESS = 40307ULL,
   // ur:output-descriptor, Bitcoin output descriptor; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_OUTPUT_DESCRIPTOR_BITCOIN_OUTPUT_DESCRIPTOR = 40308ULL,
-  // ur:sskr, Sharded Secret Key Reconstruction (SSKR) shear; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
-  CBOR_TAG_UR_SSKR_SHARDED_SECRET_KEY_RECONSTRUCTION_SHEAR = 40309ULL,
+  // ur:sskr, Sharded Secret Key Reconstruction (SSKR) share; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_SSKR_SHARDED_SECRET_KEY_RECONSTRUCTION_SHARE = 40309ULL,
   // ur:psbt, Partially Signed Bitcoin Transaction; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_PSBT_PARTIALLY_SIGNED_BITCOIN_TRANSACTION = 40310ULL,
-  // ur:account, Bitcoin output descriptor bundle; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
-  CBOR_TAG_UR_ACCOUNT_BITCOIN_OUTPUT_DESCRIPTOR_BUNDLE = 40311ULL,
+  // ur:account-descriptor, Bitcoin account descriptor; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_ACCOUNT_DESCRIPTOR_BITCOIN_ACCOUNT_DESCRIPTOR = 40311ULL,
   // ur:ssh-private, Text format SSH private key; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
   CBOR_TAG_UR_SSH_PRIVATE_TEXT_FORMAT_SSH_PRIVATE_KEY = 40800ULL,
   // ur:ssh-public, Text format SSH public key; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
@@ -434,6 +456,8 @@ typedef enum cbor_tag_t {
   CBOR_TAG_MOAT_FILE_ID_DETAILS = 1299145044ULL,
   // A CBOR encoded Openswan configuration file, as stored on disk forunit test cases.; Ref: [Michael_Richardson][Samir_Hussain]
   CBOR_TAG_CBOR_ENC_OPENSWAN_CONFIG_FILE_AS_STORED_ON_DISK_FORUNIT_TEST_CASES = 1330664270ULL,
+  // ur:provenance, Provenance Mark; Ref: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+  CBOR_TAG_UR_PROVENANCE_PROVENANCE_MARK = 1347571542ULL,
   // Concise Software Identifier (CoSWID); Ref: [RFC9393]
   CBOR_TAG_CONCISE_SOFTWARE_ID = 1398229316ULL,
   // Array of content-addressed blocks and ERIS read capabilities; Ref: [Endo_Renberg]

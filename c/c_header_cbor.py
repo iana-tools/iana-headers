@@ -42,6 +42,7 @@ import csv
 import os
 import re
 import toml
+import argparse
 
 import iana_header_utils as utils
 
@@ -50,9 +51,6 @@ script_dir = os.path.dirname(__file__)
 spacing_string = "  "
 iana_cbor_c_header_file_path = './src/cbor_constants.h'
 iana_cache_dir_path = './cache/cbor/'
-
-iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")
-iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml")
 
 # Override default to tiny cbor compatibility mode (History: https://github.com/intel/tinycbor/issues/240)
 tiny_cbor_style_override = False
@@ -79,45 +77,6 @@ iana_cbor_tag_source = {
     "csv_url"        : "https://www.iana.org/assignments/cbor-tags/tags.csv",
     "source_url"     : "https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml#tags",
 }
-
-# Load the iana data sources from the toml file if avaliable
-try:
-    with open(iana_source_filepath, 'r') as source_file:
-        config = toml.load(source_file)
-        iana_cbor_simple_value_source.update(config.get('iana_cbor_simple_value_source', {}))
-        iana_cbor_tag_source.update(config.get('iana_cbor_tag_source', {}))
-        print("Info: IANA Source Config File loaded")
-except FileNotFoundError:
-    # Handle the case where the toml file doesn't exist
-    print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
-
-
-# Load settings
-try:
-    with open(iana_settings_filepath, 'r') as config_file:
-        toml_data = toml.load(config_file)
-        cbor_settings = toml_data['cbor']
-
-        spacing_string = cbor_settings.get('spacing_string', spacing_string)
-        iana_cbor_c_header_file_path = cbor_settings.get('generated_header_filepath')
-        iana_cache_dir_path = cbor_settings.get('cache_directory_path')
-
-        if cbor_settings.get('style_override', None) == "tiny_cbor":
-            tiny_cbor_style_override = True
-
-        iana_cbor_settings["simple_value"].update(cbor_settings.get('simple_value', {}))
-        iana_cbor_settings["tag_source"].update(cbor_settings.get('tag_source', {}))
-
-        print("Info: IANA Settings Config File loaded")
-except FileNotFoundError:
-    # Handle the case where the toml file doesn't exist
-    print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
-
-# Path is all relative to this script
-# Note: This approach was chosen to keep things simple, as each project would only have one header file)
-#       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
-iana_cbor_c_header_file_path = os.path.join(script_dir, iana_cbor_c_header_file_path)
-iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
 
 default_cbor_header_c = """
 // IANA CBOR Headers
@@ -541,7 +500,60 @@ def iana_cbor_c_header_update(header_filepath: str):
     # Indicate header has been synced
     print(f"C header file '{header_filepath}' updated successfully.")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="IANA CBOR C Header Generator")
+    parser.add_argument('--sources', default=os.path.join(script_dir, "../iana_sources.toml"),
+                        help="Path to the IANA sources TOML file")
+    parser.add_argument('--settings', default=os.path.join(script_dir, "iana_settings.toml"),
+                        help="Path to the IANA settings TOML file")
+    return parser.parse_args()
+
 def main():
+    args = parse_args()
+    iana_source_filepath = args.sources
+    iana_settings_filepath = args.settings
+
+    # Load the iana data sources from the toml file if avaliable
+    try:
+        with open(iana_source_filepath, 'r') as source_file:
+            config = toml.load(source_file)
+            iana_cbor_simple_value_source.update(config.get('iana_cbor_simple_value_source', {}))
+            iana_cbor_tag_source.update(config.get('iana_cbor_tag_source', {}))
+            print("Info: IANA Source Config File loaded")
+    except FileNotFoundError:
+        # Handle the case where the toml file doesn't exist
+        print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
+
+    # Load settings
+    try:
+        with open(iana_settings_filepath, 'r') as config_file:
+            global spacing_string
+
+            toml_data = toml.load(config_file)
+            cbor_settings = toml_data['cbor']
+
+            spacing_string = cbor_settings.get('spacing_string', spacing_string)
+            iana_cbor_c_header_file_path = cbor_settings.get('generated_header_filepath')
+            iana_cache_dir_path = cbor_settings.get('cache_directory_path')
+
+            if cbor_settings.get('style_override', None) == "tiny_cbor":
+                tiny_cbor_style_override = True
+
+            iana_cbor_settings["simple_value"].update(cbor_settings.get('simple_value', {}))
+            iana_cbor_settings["tag_source"].update(cbor_settings.get('tag_source', {}))
+
+            print("Info: IANA Settings Config File loaded")
+    except FileNotFoundError:
+        # Handle the case where the toml file doesn't exist
+        print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
+
+    # Path is all relative to this script
+    # Note: This approach was chosen to keep things simple, as each project would only have one header file)
+    #       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
+    iana_cbor_c_header_file_path = os.path.join(script_dir, iana_cbor_c_header_file_path)
+    iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
+
+
     iana_cbor_c_header_update(iana_cbor_c_header_file_path)
 
 if __name__ == "__main__":

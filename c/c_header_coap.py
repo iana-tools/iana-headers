@@ -42,6 +42,7 @@ import csv
 import os
 import re
 import toml
+import argparse
 
 import iana_header_utils as utils
 
@@ -53,9 +54,6 @@ iana_coap_c_header_file_path = './src/coap_constants.h'
 iana_cache_dir_path = './cache/coap/'
 
 style_override_contiki_ng = False
-
-iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")
-iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml")
 
 iana_coap_settings = {
     "request_response" : {
@@ -104,49 +102,6 @@ iana_coap_signaling_option_numbers_source = {
     "csv_url"        : "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv",
     "source"         : "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers",
 }
-
-# Load the iana data sources from the toml file if avaliable
-try:
-    with open(iana_source_filepath, 'r') as source_file:
-        config = toml.load(source_file)
-        iana_coap_request_response_source.update(config.get('iana_coap_request_response_source', {}))
-        iana_coap_option_source.update(config.get('iana_coap_option_source', {}))
-        iana_coap_content_format_source.update(config.get('iana_coap_content_format_source', {}))
-        iana_coap_signaling_option_numbers_source.update(config.get('iana_coap_signaling_option_numbers_source', {}))
-        print("Info: IANA Source Config File loaded")
-except FileNotFoundError:
-    # Handle the case where the toml file doesn't exist
-    print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
-
-
-# Load settings
-try:
-    with open(iana_settings_filepath, 'r') as config_file:
-        toml_data = toml.load(config_file)
-        coap_settings = toml_data['coap']
-
-        spacing_string = coap_settings.get('spacing_string', spacing_string)
-        iana_coap_c_header_file_path = coap_settings.get('generated_header_filepath')
-        iana_cache_dir_path = coap_settings.get('cache_directory_path')
-
-        iana_coap_settings["request_response"].update(coap_settings.get('request_response', {}))
-        iana_coap_settings["option"].update(coap_settings.get('option', {}))
-        iana_coap_settings["content_format"].update(coap_settings.get('content_format', {}))
-        iana_coap_settings["signaling_option_numbers"].update(coap_settings.get('signaling_option_numbers', {}))
-
-        if coap_settings.get('style_override', None) == "contiki-ng":
-            style_override_contiki_ng = True
-
-        print("Info: IANA Settings Config File loaded")
-except FileNotFoundError:
-    # Handle the case where the toml file doesn't exist
-    print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
-
-# Path is all relative to this script
-# Note: This approach was chosen to keep things simple, as each project would only have one header file)
-#       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
-iana_coap_c_header_file_path = os.path.join(script_dir, iana_coap_c_header_file_path)
-iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
 
 default_coap_header_c = """
 // IANA CoAP Headers
@@ -586,7 +541,63 @@ def iana_coap_c_header_update(header_filepath: str):
     # Indicate header has been synced
     print(f"C header file '{header_filepath}' updated successfully.")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="IANA CoAP C Header Generator")
+    parser.add_argument('--sources', default=os.path.join(script_dir, "../iana_sources.toml"),
+                        help="Path to the IANA sources TOML file")
+    parser.add_argument('--settings', default=os.path.join(script_dir, "iana_settings.toml"),
+                        help="Path to the IANA settings TOML file")
+    return parser.parse_args()
+
 def main():
+    args = parse_args()
+    iana_source_filepath = args.sources
+    iana_settings_filepath = args.settings
+
+    # Load the iana data sources from the toml file if avaliable
+    try:
+        with open(iana_source_filepath, 'r') as source_file:
+            config = toml.load(source_file)
+            iana_coap_request_response_source.update(config.get('iana_coap_request_response_source', {}))
+            iana_coap_option_source.update(config.get('iana_coap_option_source', {}))
+            iana_coap_content_format_source.update(config.get('iana_coap_content_format_source', {}))
+            iana_coap_signaling_option_numbers_source.update(config.get('iana_coap_signaling_option_numbers_source', {}))
+            print("Info: IANA Source Config File loaded")
+    except FileNotFoundError:
+        # Handle the case where the toml file doesn't exist
+        print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
+
+    # Load settings
+    try:
+        with open(iana_settings_filepath, 'r') as config_file:
+            global spacing_string
+
+            toml_data = toml.load(config_file)
+            coap_settings = toml_data['coap']
+
+            spacing_string = coap_settings.get('spacing_string', spacing_string)
+            iana_coap_c_header_file_path = coap_settings.get('generated_header_filepath')
+            iana_cache_dir_path = coap_settings.get('cache_directory_path')
+
+            iana_coap_settings["request_response"].update(coap_settings.get('request_response', {}))
+            iana_coap_settings["option"].update(coap_settings.get('option', {}))
+            iana_coap_settings["content_format"].update(coap_settings.get('content_format', {}))
+            iana_coap_settings["signaling_option_numbers"].update(coap_settings.get('signaling_option_numbers', {}))
+
+            if coap_settings.get('style_override', None) == "contiki-ng":
+                style_override_contiki_ng = True
+
+            print("Info: IANA Settings Config File loaded")
+    except FileNotFoundError:
+        # Handle the case where the toml file doesn't exist
+        print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
+
+    # Path is all relative to this script
+    # Note: This approach was chosen to keep things simple, as each project would only have one header file)
+    #       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
+    iana_coap_c_header_file_path = os.path.join(script_dir, iana_coap_c_header_file_path)
+    iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
+
     iana_coap_c_header_update(iana_coap_c_header_file_path)
 
 if __name__ == "__main__":

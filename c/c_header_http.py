@@ -1,10 +1,4 @@
 #!/usr/bin/env python3
-import csv
-import os
-import re
-import toml
-
-import iana_header_utils as utils
 
 '''
 MIT License
@@ -44,15 +38,20 @@ This Python script performs the following tasks:
 - Update or create the C header file with the generated enumeration values, preserving any existing values.
 """
 
+import csv
+import os
+import re
+import toml
+import argparse
+
+import iana_header_utils as utils
+
 script_dir = os.path.dirname(__file__)
 
 spacing_string = "  "
 
 iana_http_c_header_file_path = './src/http_constants.h'
 iana_cache_dir_path = './cache/http/'
-
-iana_source_filepath = os.path.join(script_dir, "../iana_sources.toml")
-iana_settings_filepath = os.path.join(script_dir, "iana_settings.toml")
 
 iana_http_settings = {
     "http_status_code" : {
@@ -76,43 +75,6 @@ iana_http_field_name_settings = {
     "csv_url"        : "https://www.iana.org/assignments/http-fields/field-names.csv",
     "source_url"     : "https://www.iana.org/assignments/http-fields/http-fields.xhtml#field-names",
 }
-
-
-# Load the iana data sources from the toml file if avaliable
-try:
-    with open(iana_source_filepath, 'r') as source_file:
-        config = toml.load(source_file)
-        iana_http_status_code_settings.update(config.get('iana_http_status_code_settings', {}))
-        iana_http_field_name_settings.update(config.get('iana_http_field_name_settings', {}))
-        print("Info: IANA Source Settings Config File loaded")
-except FileNotFoundError:
-    # Handle the case where the toml file doesn't exist
-    print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
-
-
-# Load settings
-try:
-    with open(iana_settings_filepath, 'r') as config_file:
-        toml_data = toml.load(config_file)
-        http_settings = toml_data['http']
-
-        spacing_string = http_settings.get('spacing_string', spacing_string)
-        iana_http_c_header_file_path = http_settings.get('generated_header_filepath')
-        iana_cache_dir_path = http_settings.get('cache_directory_path')
-
-        iana_http_settings["http_status_code"].update(http_settings.get('http_status_code', {}))
-        iana_http_settings["http_field_name"].update(http_settings.get('http_field_name', {}))
-
-        print("Info: IANA Settings Config File loaded")
-except FileNotFoundError:
-    # Handle the case where the toml file doesn't exist
-    print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
-
-# Path is all relative to this script
-# Note: This approach was chosen to keep things simple, as each project would only have one header file)
-#       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
-iana_http_c_header_file_path = os.path.join(script_dir, iana_http_c_header_file_path)
-iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
 
 default_http_header_c = """
 // IANA HTTP Headers
@@ -281,7 +243,56 @@ def iana_http_c_header_update(header_filepath: str):
     # Indicate header has been synced
     print(f"C header file '{header_filepath}' updated successfully.")
 
+def parse_args():
+    parser = argparse.ArgumentParser(description="IANA HTTP C Header Generator")
+    parser.add_argument('--sources', default=os.path.join(script_dir, "../iana_sources.toml"),
+                        help="Path to the IANA sources TOML file")
+    parser.add_argument('--settings', default=os.path.join(script_dir, "iana_settings.toml"),
+                        help="Path to the IANA settings TOML file")
+    return parser.parse_args()
+
 def main():
+    args = parse_args()
+    iana_source_filepath = args.sources
+    iana_settings_filepath = args.settings
+
+    # Load the iana data sources from the toml file if avaliable
+    try:
+        with open(iana_source_filepath, 'r') as source_file:
+            config = toml.load(source_file)
+            iana_http_status_code_settings.update(config.get('iana_http_status_code_settings', {}))
+            iana_http_field_name_settings.update(config.get('iana_http_field_name_settings', {}))
+            print("Info: IANA Source Settings Config File loaded")
+    except FileNotFoundError:
+        # Handle the case where the toml file doesn't exist
+        print(f"Warning: IANA Source Config File does not exist. Using default settings. {iana_source_filepath}")
+
+    # Load settings
+    try:
+        with open(iana_settings_filepath, 'r') as config_file:
+            global spacing_string
+
+            toml_data = toml.load(config_file)
+            http_settings = toml_data['http']
+
+            spacing_string = http_settings.get('spacing_string', spacing_string)
+            iana_http_c_header_file_path = http_settings.get('generated_header_filepath')
+            iana_cache_dir_path = http_settings.get('cache_directory_path')
+
+            iana_http_settings["http_status_code"].update(http_settings.get('http_status_code', {}))
+            iana_http_settings["http_field_name"].update(http_settings.get('http_field_name', {}))
+
+            print("Info: IANA Settings Config File loaded")
+    except FileNotFoundError:
+        # Handle the case where the toml file doesn't exist
+        print(f"Warning: IANA Settings Config File does not exist. Using default settings. {iana_settings_filepath}")
+
+    # Path is all relative to this script
+    # Note: This approach was chosen to keep things simple, as each project would only have one header file)
+    #       (Admittely, if the script location changes, you have to update the settings, but if it's an issue, we can cross that bridge later)
+    iana_http_c_header_file_path = os.path.join(script_dir, iana_http_c_header_file_path)
+    iana_cache_dir_path = os.path.join(script_dir, iana_cache_dir_path)
+
     iana_http_c_header_update(iana_http_c_header_file_path)
 
 if __name__ == "__main__":

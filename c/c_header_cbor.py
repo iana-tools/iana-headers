@@ -528,6 +528,7 @@ def main():
     try:
         with open(iana_settings_filepath, 'r') as config_file:
             global spacing_string
+            global tiny_cbor_style_override
 
             toml_data = toml.load(config_file)
             cbor_settings = toml_data['cbor']

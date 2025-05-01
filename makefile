@@ -1,16 +1,13 @@
 # Default target
-all: install generate
+all: generate
 
 # Create a virtual environment
-.PHONY: venv
-venv:
-	python3 -m venv venv
-
-# Install dependencies
-.PHONY: install
-install: venv
+venv: venv/touchfile
+venv/touchfile: ./requirements.txt
 	@echo "Installing dependencies"
-	. venv/bin/activate && venv/bin/pip install -r requirements.txt
+	test -d venv || python3 -m venv venv
+	. venv/bin/activate; venv/bin/pip install -r ./requirements.txt
+	touch venv/touchfile
 
 # Update dependencies
 .PHONY: update

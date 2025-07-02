@@ -302,6 +302,15 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
         screaming_snake_case_str = "_".join(variable_name_list).upper()
         return screaming_snake_case_str
 
+    # Strip out 'A CBOR tag that contains ' in front of a semantic sentence as it's just redundant
+    # Dev Note: Was done because of "TCG DICE Endorsement Architecture for Devices" tends to use description of "A CBOR tag that contains X"
+    if semantics.startswith("A CBOR tag that contains a "):
+        semantics = semantics[len("A CBOR tag that contains a"):]
+    elif semantics.startswith("A CBOR tag that contains an "):
+        semantics = semantics[len("A CBOR tag that contains an "):]
+    elif semantics.startswith("A CBOR tag that contains either "):
+        semantics = semantics[len("A CBOR tag that contains either "):]
+
     # Remove unnecessary '[' and '(' (if not at the beginning)
     semantics = clean_semantics(semantics)
 
@@ -311,6 +320,11 @@ def iana_cbor_tag_c_enum_name_generate(tag_value, semantics, typedef_enum_name, 
 
     # Remove descriptions after ';' (if present)
     semantics = semantics.split(';', 1)[0].strip()
+
+    # Remove descriptions after '. ' (if present)
+    idx = semantics.find(". ")
+    if idx != -1:
+        semantics = semantics[:idx]
 
     # Clear any _ to space
     semantics = re.sub(r'\_', ' ', semantics)
@@ -375,6 +389,17 @@ def iana_cbor_tag_override_semantic(cbor_tag, semantics):
         # This conflicts with tag 23 because of the 'lowercase' keyword
         semantics = "Expected conversion to base16 encoding lowercase"
 
+    if "527" in cbor_tag:
+        # A CBOR tag that contains either: xcorimmap, or signed-xcorim. 
+        # This conflicts with the ':' detection heruistic
+        semantics = "A CBOR tag that contains either xcorimmap, or signed-xcorim."
+
+    if "554" in cbor_tag or "555" in cbor_tag:
+        # Tag 554 and 555 for some reason is both described as
+        # 'A CBOR tag that contains a PEM encoded SubjectPublicKeyInfo. See Section 13 of [RFC7468].,[TCG DICE Endorsement Architecture for Devices][TCG Errata for DICE Endorsement Architecture for Devices Version 1.1][TCG],'
+        # Possibly a errata? Until it's fixed... best to ban this.
+        semantics = None
+
     return semantics
 
 
@@ -396,12 +421,19 @@ def iana_cbor_tag_parse_csv(csv_content: str, typedef_enum_name: str):
         if not cbor_tag or "unassigned" in data_item.lower() or "reserved" in semantics.lower():
             # Either single unassigned tag or a reserved tag
             continue
+        if "earmarked" in semantics.lower():
+            # Tag is being reserved for future use by an organisation. 
+            # e.g. "Earmarked for CoRIM,[draft-ietf-rats-corim-07]"
+            continue
         if "-" in cbor_tag:
             # Range of unassigned tags
             continue
 
         # Override semantic name description if it doesn't work well with our name generator
         semantics_updated_for_enum_name = iana_cbor_tag_override_semantic(cbor_tag, semantics)
+        if semantics_updated_for_enum_name is None:
+            # Banned entry (E.g. due to badly worded or duplicated message)
+            continue
 
         # Add to enum list
         enum_name = iana_cbor_tag_c_enum_name_generate(cbor_tag, semantics_updated_for_enum_name, typedef_enum_name)
@@ -452,7 +484,7 @@ def iana_cbor_tag_c_typedef_enum_update(header_file_content: str) -> str:
     if duplicate_enum_names:
         print(f"Warning: Duplicate enum names detected: {', '.join(duplicate_enum_names)}")
         print(f"Recommend: Update iana_cbor_tag_override_semantic() to handle this specific tag")
-        exit()
+        exit(1)
 
     # Generate enumeration header content
     c_range_marker = [

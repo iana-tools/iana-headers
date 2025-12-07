@@ -400,6 +400,21 @@ def iana_cbor_tag_override_semantic(cbor_tag, semantics):
         # Possibly a errata? Until it's fixed... best to ban this.
         semantics = None
 
+    if "32870" in cbor_tag:
+        # A CBOR tag that contains: "Logical operator"
+        # This conflicts with the ':' detection heruistic
+        semantics = "Logical operator NONE or NOT"
+
+    if "32871" in cbor_tag:
+        # A CBOR tag that contains: "Logical operator"
+        # This conflicts with the ':' detection heruistic
+        semantics = "Logical operator ANY"
+
+    if "32872" in cbor_tag:
+        # A CBOR tag that contains: "Logical operator"
+        # This conflicts with the ':' detection heruistic
+        semantics = "Logical operator ALL"
+
     return semantics
 
 

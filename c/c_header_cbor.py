@@ -415,6 +415,26 @@ def iana_cbor_tag_override_semantic(cbor_tag, semantics):
         # This conflicts with the ':' detection heruistic
         semantics = "Logical operator ALL"
 
+    if "41728" in cbor_tag:
+        # A CBOR tag that contains: "Fraction"
+        # This conflicts with the '(' detection heruistic
+        semantics = "Fraction"
+
+    if "41729" in cbor_tag:
+        # A CBOR tag that contains: "Fraction"
+        # This conflicts with the '(' detection heruistic
+        semantics = "Fraction Negative NaN signals"
+
+    if "41730" in cbor_tag:
+        # A CBOR tag that contains: "Fraction"
+        # This conflicts with the '(' detection heruistic
+        semantics = "Fraction Positive NaN signals"
+
+    if "41731" in cbor_tag:
+        # A CBOR tag that contains: "Fraction"
+        # This conflicts with the '(' detection heruistic
+        semantics = "Fraction Both NaN signals"
+
     return semantics
 
 

@@ -1,16 +1,21 @@
 #!/usr/bin/env python3
 """
-name.py — fill Words on Source:new entries via heuristic (or LLM).
+name.py — fill Words on Source:new entries via heuristic, TF-IDF, or LLM.
 
 Collision rule: if two or more new entries would produce the same candidate
 Words, ALL of them keep Words empty and are reported for manual resolution.
+
+Namer tiers (each falls through to the next on empty result):
+  heuristic  — regex/abbreviation rules (default)
+  tfidf      — db-driven term ranking, no dependencies (--tfidf)
+  llm        — local Ollama model (--llm)
 """
 
 import os
 import re
 import sys
 import argparse
-import toml
+import math
 
 import recfile
 
@@ -113,6 +118,57 @@ def heuristic_words(semantics, tag_hint=''):
 
 
 # ---------------------------------------------------------------------------
+# TF-IDF namer — db-driven, no external dependencies
+# ---------------------------------------------------------------------------
+
+def _raw_tokens(s):
+    """Tokenise without abbreviation or stopword rules — just clean words."""
+    s = re.sub(r'\w[\w+.-]*://\S*', '', s)   # strip URIs
+    s = re.sub(r'\(.*?\)|\[.*?\]', '', s)    # strip parentheticals
+    s = s.split(':', 1)[0].split(';', 1)[0]  # truncate at : or ;
+    s = re.sub(r'[_\-]', ' ', s)
+    return [re.sub(r'\W+', '', w).lower() for w in s.split() if re.sub(r'\W+', '', w)]
+
+
+def tfidf_words(semantics, corpus_semantics, max_tokens=5):
+    """
+    Score candidate tokens from `semantics` by TF-IDF against `corpus_semantics`
+    (a list of existing Semantics strings from the db).
+
+    Terms that appear in many db entries are downweighted; rare/technical terms
+    (e.g. 'base64url', 'corim') are upweighted. Returns a space-separated token
+    string, or '' if no useful tokens are found.
+    """
+    tokens = _raw_tokens(semantics)
+    if not tokens:
+        return ''
+
+    N = len(corpus_semantics) + 1
+    idf = {}
+    for tok in set(tokens):
+        df = sum(1 for s in corpus_semantics if tok in _raw_tokens(s))
+        idf[tok] = math.log(N / (df + 1))
+
+    # Preserve source order (TF=1 for all since each appears in one doc),
+    # break ties by IDF descending so technical terms stay near the front.
+    seen = set()
+    ranked = []
+    for tok in tokens:
+        if tok not in seen:
+            seen.add(tok)
+            ranked.append((tok, idf.get(tok, 0)))
+
+    ranked.sort(key=lambda x: -x[1])
+    selected = [tok for tok, _ in ranked[:max_tokens]]
+
+    # Re-order to match original left-to-right order for readability
+    order = {tok: i for i, tok in enumerate(tokens)}
+    selected.sort(key=lambda t: order[t])
+
+    return ' '.join(selected)
+
+
+# ---------------------------------------------------------------------------
 # LLM namer (optional — falls back silently)
 # ---------------------------------------------------------------------------
 
@@ -154,31 +210,32 @@ def llm_words(semantics, existing_examples, fallback_fn):
 # Core naming logic
 # ---------------------------------------------------------------------------
 
-def fill_words_for_file(db_file, use_llm=False, dry_run=False):
+def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False):
     records = recfile.read(db_file)
 
     new_entries = [r for r in records if r.get('Source', '') == 'new']
     if not new_entries:
         return []
 
-    existing_words = {r.get('Words', '').strip() for r in records if r.get('Source', '') != 'new' and r.get('Words', '').strip()}
+    named = [r for r in records if r.get('Source', '') != 'new' and r.get('Words', '').strip()]
+    existing_words = {r.get('Words', '').strip() for r in named}
 
-    # Few-shot examples for LLM from existing named records
-    examples = [
-        (r['Semantics'], r['Words'])
-        for r in records
-        if r.get('Source', '') not in ('new', '') and r.get('Words', '').strip() and r.get('Semantics', '').strip()
-    ]
+    # Corpus of existing semantics strings for TF-IDF
+    corpus_semantics = [r.get('Semantics', '') for r in named if r.get('Semantics', '').strip()]
+
+    # Few-shot examples for LLM
+    examples = [(r['Semantics'], r['Words']) for r in named if r.get('Semantics', '').strip()]
 
     # Generate candidates for all new entries
     candidates = {}
     for rec in new_entries:
         tag = rec['Tag']
         sem = rec.get('Semantics', '')
-        if use_llm:
+        candidate = heuristic_words(sem, tag_hint=tag)
+        if use_tfidf and not candidate:
+            candidate = tfidf_words(sem, corpus_semantics)
+        if use_llm and not candidate:
             candidate = llm_words(sem, examples, heuristic_words)
-        else:
-            candidate = heuristic_words(sem, tag_hint=tag)
         candidates[tag] = candidate
 
     # Collision detection: count how many times each candidate appears
@@ -211,7 +268,6 @@ def fill_words_for_file(db_file, use_llm=False, dry_run=False):
     if dry_run:
         return _report(new_entries, assignments, collision_groups, collision_with_existing, candidates, dry_run=True)
 
-    # Rewrite the rec file in-place
     _apply_assignments(db_file, assignments)
 
     return _report(new_entries, assignments, collision_groups, collision_with_existing, candidates)
@@ -280,7 +336,8 @@ def _report(new_entries, assignments, collision_groups, collision_with_existing,
 
 def main():
     parser = argparse.ArgumentParser(description='Fill Words on Source:new db entries')
-    parser.add_argument('--llm', action='store_true', help='Use local Ollama LLM (falls back to heuristic)')
+    parser.add_argument('--tfidf', action='store_true', help='Use TF-IDF tier when heuristic returns empty')
+    parser.add_argument('--llm', action='store_true', help='Use local Ollama LLM as final fallback')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be written without modifying files')
     args = parser.parse_args()
 
@@ -293,7 +350,7 @@ def main():
         if not fname.endswith('.rec'):
             continue
         db_file = os.path.join(db_dir, fname)
-        issues = fill_words_for_file(db_file, use_llm=args.llm, dry_run=args.dry_run)
+        issues = fill_words_for_file(db_file, use_llm=args.llm, use_tfidf=args.tfidf, dry_run=args.dry_run)
         if issues:
             print(f"\n{fname}:")
             for iss in issues:

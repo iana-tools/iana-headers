@@ -20,7 +20,14 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_dir = os.path.dirname(script_dir)
 db_dir = os.path.join(repo_dir, 'db')
 
-sources = toml.load(os.path.join(repo_dir, 'iana_sources.toml'))
+def _load_sources():
+    try:
+        return toml.load(os.path.join(repo_dir, 'iana_sources.toml'))
+    except FileNotFoundError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+sources = _load_sources()
 
 
 # ---------------------------------------------------------------------------
@@ -128,6 +135,8 @@ def sync_cbor_tags(verbose=False, dry_run=False):
             continue
         if not semantics or 'unassigned' in semantics.lower() or 'reserved' in semantics.lower():
             continue
+        if 'earmarked' in semantics.lower():
+            continue
         _check_and_append(db_file, tag_str, semantics, reference, existing, dry_run, added, warnings)
 
     return added, warnings
@@ -182,7 +191,8 @@ def _sync_coap_registry(db_file, rec_type, doc_url, coap_xml_content, xml_regist
 
     for row in records:
         if used_xml:
-            tag_str = row.get('value', '').strip()
+            # IANA CoAP XML uses <code> for codes, <number> for options/content-formats
+            tag_str = (row.get('value') or row.get('code') or row.get('number') or '').strip()
             semantics = row.get('name', row.get('description', '')).strip()
             reference = row.get('xref', '').strip()
         else:
@@ -316,7 +326,8 @@ def sync_http_field_names(verbose=False, dry_run=False):
     )
     for row in records:
         if used_xml:
-            tag_str = row.get('value', '').strip()
+            # IANA http-fields XML uses <name> for the field name string
+            tag_str = (row.get('name') or row.get('value') or '').strip()
             status = row.get('status', '').strip()
             structured_type = row.get('type', '').strip()
             reference = row.get('xref', '').strip()

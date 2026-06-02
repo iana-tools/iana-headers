@@ -18,8 +18,12 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_dir = os.path.dirname(script_dir)
 db_dir = os.path.join(repo_dir, 'db')
 
-settings = toml.load(os.path.join(script_dir, 'iana_settings.toml'))
-sources = toml.load(os.path.join(repo_dir, 'iana_sources.toml'))
+try:
+    settings = toml.load(os.path.join(script_dir, 'iana_settings.toml'))
+    sources = toml.load(os.path.join(repo_dir, 'iana_sources.toml'))
+except FileNotFoundError as e:
+    print(f"ERROR: config file not found: {e}", file=sys.stderr)
+    sys.exit(1)
 
 
 # ---------------------------------------------------------------------------
@@ -251,9 +255,7 @@ def generate_http(header_content):
     http_cfg = settings['http']
     spacing = http_cfg.get('spacing_string', '  ')
 
-    # Status codes — note: settings has a typo ([coap.http_status_code] instead of [http.*])
-    # We read from whichever section exists
-    sc_section = settings.get('http', {}).get('http_status_code') or settings.get('coap', {}).get('http_status_code', {})
+    sc_section = settings['http'].get('http_status_code', {})
     sc_name = sc_section.get('name', 'http_status_code')
     sc_src = sources['iana_http_status_code_source']
     sc_db = os.path.join(db_dir, 'http_status_codes.rec')
@@ -284,7 +286,7 @@ def generate_http(header_content):
     )
 
     # Field names (X-macro)
-    fn_section = settings.get('http', {}).get('http_field_name') or settings.get('coap', {}).get('http_field_name', {})
+    fn_section = settings['http'].get('http_field_name', {})
     fn_name = fn_section.get('name', 'http_field_name')
     fn_src = sources['iana_http_field_name_source']
     fn_db = os.path.join(db_dir, 'http_field_names.rec')

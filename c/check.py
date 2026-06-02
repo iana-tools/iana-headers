@@ -32,10 +32,12 @@ def check_file(db_file):
         tag = rec.get('Tag', '').strip()
         loc = f"{fname} Tag={tag!r}"
 
-        # 1. Required fields
+        # 1. Required fields present and non-empty
         for field in REQUIRED_FIELDS:
             if field not in rec:
                 errors.append(f"{loc}: missing required field '{field}'")
+            elif field in ('Semantics', 'Reference') and not rec[field].strip():
+                errors.append(f"{loc}: empty required field '{field}'")
 
         # 2. Duplicate Tag keys
         if tag in seen_tags:

@@ -48,8 +48,10 @@ def write_header(filepath, rec_type, key_field, doc_url):
     """Write the recfile directive header (only if file is new/empty)."""
     if os.path.exists(filepath) and os.path.getsize(filepath) > 0:
         return
-    os.makedirs(os.path.dirname(filepath), exist_ok=True)
+    parent = os.path.dirname(filepath)
+    if parent:
+        os.makedirs(parent, exist_ok=True)
     with open(filepath, 'w', encoding='utf-8') as f:
         f.write(f'%rec: {rec_type}\n')
-        f.write(f'%key: Tag\n')
+        f.write(f'%key: {key_field}\n')
         f.write(f'%doc: {doc_url}\n')

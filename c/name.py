@@ -74,8 +74,11 @@ def _tokenise(s):
 
     s = _clean(s)
 
-    # Truncate at first ':' (not part of URI), ';', or '. '
-    s = re.split(r'(?<!://)(?<!\w:)\s*:\s*(?!\w)', s)[0].strip()
+    # Strip URI patterns before splitting on ':' so "https://..." isn't truncated
+    s = re.sub(r'\w[\w+.-]*://\S*', '', s)
+
+    # Truncate at first ':', ';', or '. '
+    s = s.split(':', 1)[0].strip()
     s = s.split(';', 1)[0].strip()
     idx = s.find('. ')
     if idx != -1:
@@ -143,7 +146,7 @@ def llm_words(semantics, existing_examples, fallback_fn):
             tokens = result.get('response', '').strip().lower()
             tokens = re.sub(r'[^a-z0-9 ]', ' ', tokens).split()
             return ' '.join(tokens) if tokens else fallback_fn(semantics)
-    except Exception:
+    except (OSError, ValueError):
         return fallback_fn(semantics)
 
 
@@ -233,7 +236,7 @@ def _apply_assignments(db_file, assignments):
         elif stripped.startswith('Words: ') and current_tag in assignments:
             words = assignments[current_tag]
             lines.append(f'Words: {words}\n')
-        elif stripped.startswith('Source: new') and current_tag in assignments:
+        elif stripped.startswith(('Source: new', 'Source: needs-manual')) and current_tag in assignments:
             words = assignments.get(current_tag, '')
             source = 'needs-manual' if not words else 'heuristic'
             lines.append(f'Source: {source}\n')
@@ -300,7 +303,8 @@ def main():
     if all_issues:
         print(f"\n{'='*60}")
         print(f"{len(all_issues)} collision(s) require manual Words — edit db/*.rec then run `make check`.")
-        sys.exit(1)
+        if not args.dry_run:
+            sys.exit(1)
     else:
         print("All new entries named successfully." + (" (dry-run)" if args.dry_run else ""))
 

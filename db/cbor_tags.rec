@@ -121,3 +121,15 @@ Words: fraction both nan signals
 Semantics: A CBOR tag that contains: Fraction Both NaN signals
 Reference: [IANA]
 Source: manual
+
+Tag: 4294967295
+Words: invalid 32bit
+Semantics: Always invalid 32-bit max marker
+Reference: [RFC8949]
+Source: manual
+
+Tag: 18446744073709551615
+Words: invalid 64bit
+Semantics: Always invalid 64-bit max marker
+Reference: [RFC8949]
+Source: manual

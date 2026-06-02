@@ -62,14 +62,14 @@ def read_or_download_csv(csv_url: str, cache_file: str) -> str:
             return _download_csv(csv_url, cache_file)
 
         remote_last_modified = response.headers['last-modified']
-        remote_timestamp = time.mktime(email.utils.parsedate_to_datetime(remote_last_modified).timetuple())
+        remote_timestamp = email.utils.parsedate_to_datetime(remote_last_modified).timestamp()
         cached_timestamp = os.path.getmtime(cache_file)
         if remote_timestamp > cached_timestamp:
             return _download_csv(csv_url, cache_file)
 
         return _read_cache_csv(cache_file)
 
-    except requests.RequestException as err:
+    except (requests.RequestException, ValueError, OSError) as err:
         if os.path.exists(cache_file):
             return _read_cache_csv(cache_file)
         raise Exception("Error fetching CSV and no cache available.") from err
@@ -92,12 +92,12 @@ def read_or_download_xml(xml_url: str, cache_file: str) -> str:
         response = requests.head(xml_url)
         if not os.path.exists(cache_file) or 'last-modified' not in response.headers:
             return _download_xml(xml_url, cache_file)
-        remote_ts = time.mktime(email.utils.parsedate_to_datetime(response.headers['last-modified']).timetuple())
+        remote_ts = email.utils.parsedate_to_datetime(response.headers['last-modified']).timestamp()
         if remote_ts > os.path.getmtime(cache_file):
             return _download_xml(xml_url, cache_file)
         with open(cache_file, "r", encoding="utf-8") as f:
             return f.read()
-    except requests.RequestException as err:
+    except (requests.RequestException, ValueError, OSError) as err:
         if os.path.exists(cache_file):
             with open(cache_file, "r", encoding="utf-8") as f:
                 return f.read()

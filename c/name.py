@@ -21,7 +21,7 @@ db_dir = os.path.join(repo_dir, 'db')
 
 # ---------------------------------------------------------------------------
 # Heuristic word-token generators
-# (ported from existing c_header_cbor.py / c_header_http.py / c_header_coap.py)
+# Output: lowercase space-separated tokens  e.g. "date time string"
 # Output: lowercase space-separated tokens  e.g. "date time string"
 # Style (SCREAMING_SNAKE, PascalCase …) is applied later by generate.py
 # ---------------------------------------------------------------------------

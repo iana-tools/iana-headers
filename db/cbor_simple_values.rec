@@ -1,0 +1,33 @@
+%rec: CborSimpleValue
+%key: Tag
+%doc: https://www.iana.org/assignments/cbor-simple-values/cbor-simple-values.xhtml#simple
+
+Tag: 20
+Words: false
+Semantics: False
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 21
+Words: true
+Semantics: True
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 22
+Words: null
+Semantics: Null
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 23
+Words: undefined
+Semantics: Undefined
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 31
+Words: break
+Semantics: Break code
+Reference: [RFC8949]
+Source: heuristic

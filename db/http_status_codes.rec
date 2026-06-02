@@ -1,0 +1,81 @@
+%rec: HttpStatusCode
+%key: Tag
+%doc: https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml#http-status-codes-1
+
+Tag: 100
+Words: continue
+Semantics: Continue
+Reference: [RFC9110, Section 15.2.1]
+Source: heuristic
+
+Tag: 101
+Words: switching protocols
+Semantics: Switching Protocols
+Reference: [RFC9110, Section 15.2.2]
+Source: heuristic
+
+Tag: 200
+Words: ok
+Semantics: OK
+Reference: [RFC9110, Section 15.3.1]
+Source: heuristic
+
+Tag: 201
+Words: created
+Semantics: Created
+Reference: [RFC9110, Section 15.3.2]
+Source: heuristic
+
+Tag: 204
+Words: no content
+Semantics: No Content
+Reference: [RFC9110, Section 15.3.5]
+Source: heuristic
+
+Tag: 301
+Words: moved permanently
+Semantics: Moved Permanently
+Reference: [RFC9110, Section 15.4.2]
+Source: heuristic
+
+Tag: 304
+Words: not modified
+Semantics: Not Modified
+Reference: [RFC9110, Section 15.4.5]
+Source: heuristic
+
+Tag: 400
+Words: bad request
+Semantics: Bad Request
+Reference: [RFC9110, Section 15.5.1]
+Source: heuristic
+
+Tag: 401
+Words: unauthorized
+Semantics: Unauthorized
+Reference: [RFC9110, Section 15.5.2]
+Source: heuristic
+
+Tag: 403
+Words: forbidden
+Semantics: Forbidden
+Reference: [RFC9110, Section 15.5.4]
+Source: heuristic
+
+Tag: 404
+Words: not found
+Semantics: Not Found
+Reference: [RFC9110, Section 15.5.5]
+Source: heuristic
+
+Tag: 500
+Words: internal server error
+Semantics: Internal Server Error
+Reference: [RFC9110, Section 15.6.1]
+Source: heuristic
+
+Tag: 503
+Words: service unavailable
+Semantics: Service Unavailable
+Reference: [RFC9110, Section 15.6.4]
+Source: heuristic

@@ -15,15 +15,29 @@ update: venv
 	@echo "Updating dependencies"
 	. venv/bin/activate && venv/bin/pip install --upgrade -r requirements.txt
 
-# Generate headers
+# Fetch IANA registries → append empty-Words entries to db/ (needs network)
+.PHONY: sync
+sync: venv
+	@echo "Syncing IANA registries"
+	. venv/bin/activate && cd c && python3 sync.py
+
+# Fill Words on new db entries via heuristic (or --llm for Ollama)
+.PHONY: name
+name: venv
+	@echo "Naming new entries"
+	. venv/bin/activate && cd c && python3 name.py
+
+# Validate db/ integrity — blocks generate on errors
+.PHONY: check
+check: venv
+	@echo "Checking db/ integrity"
+	. venv/bin/activate && cd c && python3 check.py
+
+# Generate headers from db/ (deterministic, no network)
 .PHONY: generate
 generate: venv
 	@echo "Generating Headers"
-	. venv/bin/activate && \
-	cd c && \
-	./c_header_cbor.py && \
-	./c_header_coap.py && \
-	./c_header_http.py
+	. venv/bin/activate && cd c && python3 generate.py
 
 # Clean
 .PHONY: clean
@@ -40,6 +54,9 @@ help:
 	@echo "Targets:"
 	@echo "  install     : Create virtual environment and install dependencies"
 	@echo "  update      : Update project dependencies"
-	@echo "  generate    : Generate headers"
+	@echo "  sync        : Fetch IANA registries → db/ (needs network)"
+	@echo "  name        : Fill Words on new db entries (heuristic/LLM)"
+	@echo "  check       : Validate db/ integrity"
+	@echo "  generate    : db/ → c/src/*.h (no network)"
 	@echo "  clean       : Clean generated files"
 	@echo "  help        : Display this help message"

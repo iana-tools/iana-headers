@@ -1,0 +1,3 @@
+%rec: CoapSignalingOption
+%key: Tag
+%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers

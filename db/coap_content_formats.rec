@@ -1,0 +1,15 @@
+%rec: CoapContentFormat
+%key: Tag
+%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats
+
+Tag: 0
+Words: text plain
+Semantics: text/plain; charset=utf-8
+Reference: [RFC2046][RFC3676][RFC5147]
+Source: heuristic
+
+Tag: 60
+Words: application cbor
+Semantics: application/cbor
+Reference: [RFC7049]
+Source: heuristic

@@ -1,0 +1,135 @@
+%rec: CborTag
+%key: Tag
+%doc: https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml#tags
+
+Tag: 0
+Words: date time string
+Semantics: text string; date/time; Section 3.4.1
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 1
+Words: epoch based date time
+Semantics: epoch-based date/time; Section 3.4.2
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 2
+Words: positive bignum
+Semantics: unsigned bignum
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 3
+Words: negative bignum
+Semantics: negative bignum
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 21
+Words: expected base64url
+Semantics: Expected conversion to base64url encoding
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 22
+Words: expected base64
+Semantics: Expected conversion to base64 encoding
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 23
+Words: expected base16
+Semantics: Expected conversion to base16 encoding
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 32
+Words: uri
+Semantics: URI
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 55799
+Words: self described cbor
+Semantics: Self-Described CBOR
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 107
+Words: suit envelope
+Semantics: SUIT_Envelope as defined in Appendix A of RFC-ietf-suit-manifest
+Reference: [RFC-ietf-suit-manifest]
+Source: manual
+
+Tag: 1070
+Words: suit manifest
+Semantics: SUIT_Manifest as defined in Appendix A of RFC-ietf-suit-manifest
+Reference: [RFC-ietf-suit-manifest]
+Source: manual
+
+Tag: 108
+Words: expected base16 lowercase
+Semantics: Expected conversion to base16 encoding (lowercase)
+Reference: [IANA]
+Source: manual
+
+Tag: 65535
+Words: invalid 16bit
+Semantics: Always invalid 16-bit max marker
+Reference: [draft-bormann-cbor-notable-tags-02]
+Source: manual
+
+Tag: 32870
+Words: logical operator none or not
+Semantics: A CBOR tag that contains: Logical operator NONE or NOT
+Reference: [IANA]
+Source: manual
+
+Tag: 32871
+Words: logical operator any
+Semantics: A CBOR tag that contains: Logical operator ANY
+Reference: [IANA]
+Source: manual
+
+Tag: 32872
+Words: logical operator all
+Semantics: A CBOR tag that contains: Logical operator ALL
+Reference: [IANA]
+Source: manual
+
+Tag: 41728
+Words: fraction
+Semantics: A CBOR tag that contains: Fraction
+Reference: [IANA]
+Source: manual
+
+Tag: 41729
+Words: fraction negative nan signals
+Semantics: A CBOR tag that contains: Fraction Negative NaN signals
+Reference: [IANA]
+Source: manual
+
+Tag: 41730
+Words: fraction positive nan signals
+Semantics: A CBOR tag that contains: Fraction Positive NaN signals
+Reference: [IANA]
+Source: manual
+
+Tag: 41731
+Words: fraction both nan signals
+Semantics: A CBOR tag that contains: Fraction Both NaN signals
+Reference: [IANA]
+Source: manual
+
+Tag: 4294967295
+Words: invalid 32bit
+Semantics: Always invalid 32-bit max marker
+Reference: [RFC8949]
+Source: manual
+
+Tag: 18446744073709551615
+Words: invalid 64bit
+Semantics: Always invalid 64-bit max marker
+Reference: [RFC8949]
+Source: manual

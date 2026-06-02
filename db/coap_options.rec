@@ -1,0 +1,33 @@
+%rec: CoapOption
+%key: Tag
+%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#option-numbers
+
+Tag: 1
+Words: if match
+Semantics: If-Match
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 3
+Words: uri host
+Semantics: Uri-Host
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4
+Words: etag
+Semantics: ETag
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 11
+Words: uri path
+Semantics: Uri-Path
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 12
+Words: content format
+Semantics: Content-Format
+Reference: [RFC7252]
+Source: heuristic

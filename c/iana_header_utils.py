@@ -2,6 +2,7 @@ import os
 import re
 import time
 import email
+import xml.etree.ElementTree as ET
 import requests
 
 '''
@@ -61,17 +62,94 @@ def read_or_download_csv(csv_url: str, cache_file: str) -> str:
             return _download_csv(csv_url, cache_file)
 
         remote_last_modified = response.headers['last-modified']
-        remote_timestamp = time.mktime(email.utils.parsedate_to_datetime(remote_last_modified).timetuple())
+        remote_timestamp = email.utils.parsedate_to_datetime(remote_last_modified).timestamp()
         cached_timestamp = os.path.getmtime(cache_file)
         if remote_timestamp > cached_timestamp:
             return _download_csv(csv_url, cache_file)
 
         return _read_cache_csv(cache_file)
 
-    except requests.RequestException as err:
+    except (requests.RequestException, ValueError, OSError) as err:
         if os.path.exists(cache_file):
             return _read_cache_csv(cache_file)
         raise Exception("Error fetching CSV and no cache available.") from err
+
+###############################################################################
+# XML Handlers
+
+def _download_xml(xml_url: str, cache_file: str) -> str:
+    response = requests.get(xml_url, headers={"Accept": "application/xml"})
+    response.raise_for_status()
+    xml_content = response.text
+    os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+    with open(cache_file, "w", encoding="utf-8") as f:
+        f.write(xml_content)
+    return xml_content
+
+def read_or_download_xml(xml_url: str, cache_file: str) -> str:
+    """Fetch XML with the same HEAD/timestamp caching logic as read_or_download_csv."""
+    try:
+        response = requests.head(xml_url)
+        if not os.path.exists(cache_file) or 'last-modified' not in response.headers:
+            return _download_xml(xml_url, cache_file)
+        remote_ts = email.utils.parsedate_to_datetime(response.headers['last-modified']).timestamp()
+        if remote_ts > os.path.getmtime(cache_file):
+            return _download_xml(xml_url, cache_file)
+        with open(cache_file, "r", encoding="utf-8") as f:
+            return f.read()
+    except (requests.RequestException, ValueError, OSError) as err:
+        if os.path.exists(cache_file):
+            with open(cache_file, "r", encoding="utf-8") as f:
+                return f.read()
+        raise Exception("Error fetching XML and no cache available.") from err
+
+def format_xrefs(record_elem) -> str:
+    """Render all <xref> children of a record element into a single reference string."""
+    parts = []
+    for xref in record_elem.findall('{http://www.iana.org/assignments}xref'):
+        xtype = xref.get('type', '')
+        data = xref.get('data', '')
+        section = xref.get('section', '')
+        if xtype == 'rfc':
+            ref = f'[{data.upper()}'
+            if section:
+                ref += f', Section {section}'
+            ref += ']'
+            parts.append(ref)
+        elif xtype == 'uri':
+            parts.append(data)
+        elif data:
+            parts.append(f'[{data}]')
+    return ''.join(parts)
+
+def parse_iana_xml_registry(xml_content: str, registry_id: str) -> list:
+    """Return a list of dicts for every <record> under <registry id=registry_id>.
+
+    Each dict maps child element local-names to their text content.
+    The 'xref' key is pre-formatted via format_xrefs().
+    """
+    ns = 'http://www.iana.org/assignments'
+    root = ET.fromstring(xml_content)
+
+    target = None
+    for reg in root.iter(f'{{{ns}}}registry'):
+        if reg.get('id') == registry_id:
+            target = reg
+            break
+    if target is None:
+        return []
+
+    records = []
+    for record in target.findall(f'{{{ns}}}record'):
+        row = {}
+        for child in record:
+            local = child.tag.split('}', 1)[-1]
+            if local == 'xref':
+                continue
+            row[local] = (child.text or '').strip()
+        row['xref'] = format_xrefs(record)
+        records.append(row)
+    return records
 
 ###############################################################################
 # C Code Generation Utilities

@@ -1,0 +1,45 @@
+%rec: HttpFieldName
+%key: Tag
+%doc: https://www.iana.org/assignments/http-fields/http-fields.xhtml#field-names
+
+Tag: Accept
+Words: accept
+Semantics: permanent
+Reference: [RFC9110, Section 12.5.1]
+Source: heuristic
+
+Tag: Content-Type
+Words: content type
+Semantics: permanent
+Reference: [RFC9110, Section 8.3]
+Source: heuristic
+
+Tag: Authorization
+Words: authorization
+Semantics: permanent
+Reference: [RFC9110, Section 11.6.2]
+Source: heuristic
+
+Tag: Cache-Control
+Words: cache control
+Semantics: permanent
+Reference: [RFC9111, Section 5.2]
+Source: heuristic
+
+Tag: Content-Length
+Words: content length
+Semantics: permanent
+Reference: [RFC9110, Section 8.6]
+Source: heuristic
+
+Tag: Host
+Words: host
+Semantics: permanent
+Reference: [RFC9110, Section 7.2]
+Source: heuristic
+
+Tag: User-Agent
+Words: user agent
+Semantics: permanent
+Reference: [RFC9110, Section 10.1.5]
+Source: heuristic

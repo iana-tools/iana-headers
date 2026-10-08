@@ -108,18 +108,23 @@ def _ref(rec):
     return f'Ref: {ref}' if ref else ''
 
 
+def _c_comment(text):
+    """Text from the db must not be able to end a // or /* */ comment and leak into C code."""
+    return text.replace('\r', ' ').replace('\n', ' ').replace('*/', '* /')
+
+
 def comment_default(rec):
-    return '; '.join(filter(None, [rec.get('Semantics', ''), _ref(rec)]))
+    return _c_comment('; '.join(filter(None, [rec.get('Semantics', ''), _ref(rec)])))
 
 
 def comment_coap_code(rec):
     tag = rec['Tag'].strip()
     label = registry.coap_class_label(tag)
-    return '; '.join(filter(None, [f'code: {tag}', f"{label}: {rec.get('Semantics', '')}", _ref(rec)]))
+    return _c_comment('; '.join(filter(None, [f'code: {tag}', f"{label}: {rec.get('Semantics', '')}", _ref(rec)])))
 
 
 def comment_http_field(rec):
-    return '; '.join(filter(None, [rec['Tag'].strip(), rec.get('Semantics', ''), _ref(rec)]))
+    return _c_comment('; '.join(filter(None, [rec['Tag'].strip(), rec.get('Semantics', ''), _ref(rec)])))
 
 
 # ---------------------------------------------------------------------------

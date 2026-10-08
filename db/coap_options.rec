@@ -1,0 +1,183 @@
+%rec: CoapOption
+%key: Tag
+%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#option-numbers
+
+Tag: 1
+Words: if match
+Semantics: If-Match
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 3
+Words: uri host
+Semantics: Uri-Host
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 4
+Words: etag
+Semantics: ETag
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 5
+Words: if none match
+Semantics: If-None-Match
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 6
+Words: observe
+Semantics: Observe
+Reference: [RFC7641][RFC8613]
+Source: heuristic
+
+Tag: 7
+Words: uri port
+Semantics: Uri-Port
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 8
+Words: location path
+Semantics: Location-Path
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 9
+Words: oscore
+Semantics: OSCORE
+Reference: [RFC8613]
+Source: heuristic
+
+Tag: 11
+Words: uri path
+Semantics: Uri-Path
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 12
+Words: content format
+Semantics: Content-Format
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 14
+Words: max age
+Semantics: Max-Age
+Reference: [RFC7252][RFC8516][RFC8613]
+Source: heuristic
+
+Tag: 15
+Words: uri query
+Semantics: Uri-Query
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 16
+Words: hop limit
+Semantics: Hop-Limit
+Reference: [RFC8768]
+Source: heuristic
+
+Tag: 17
+Words: accept
+Semantics: Accept
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 19
+Words: q block1
+Semantics: Q-Block1
+Reference: [RFC9177]
+Source: heuristic
+
+Tag: 20
+Words: location query
+Semantics: Location-Query
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 21
+Words: edhoc
+Semantics: EDHOC
+Reference: [RFC9668]
+Source: heuristic
+
+Tag: 23
+Words: block2
+Semantics: Block2
+Reference: [RFC7959][RFC8323][RFC8613]
+Source: heuristic
+
+Tag: 27
+Words: block1
+Semantics: Block1
+Reference: [RFC7959][RFC8323][RFC8613]
+Source: heuristic
+
+Tag: 28
+Words: size2
+Semantics: Size2
+Reference: [RFC7959][RFC8613]
+Source: heuristic
+
+Tag: 31
+Words: q block2
+Semantics: Q-Block2
+Reference: [RFC9177]
+Source: heuristic
+
+Tag: 35
+Words: proxy uri
+Semantics: Proxy-Uri
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 39
+Words: proxy scheme
+Semantics: Proxy-Scheme
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 60
+Words: size1
+Semantics: Size1
+Reference: [RFC7252][RFC8613]
+Source: heuristic
+
+Tag: 252
+Words: echo
+Semantics: Echo
+Reference: [RFC9175]
+Source: heuristic
+
+Tag: 258
+Words: no response
+Semantics: No-Response
+Reference: [RFC7967][RFC8613]
+Source: heuristic
+
+Tag: 292
+Words: request tag
+Semantics: Request-Tag
+Reference: [RFC9175]
+Source: heuristic
+
+Tag: 2049
+Words: ocf accept content format version
+Semantics: OCF-Accept-Content-Format-Version
+Reference: [Michael_Koster]
+Source: heuristic
+
+Tag: 2053
+Words: ocf content format version
+Semantics: OCF-Content-Format-Version
+Reference: [Michael_Koster]
+Source: heuristic
+
+Tag: 2055
+Words: scp82 params
+Semantics: SCP82-Params
+Reference: [GPC_SPE_207]
+Source: heuristic

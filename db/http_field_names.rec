@@ -1,0 +1,1503 @@
+%rec: HttpFieldName
+%key: Tag
+%doc: https://www.iana.org/assignments/http-fields/http-fields.xhtml#field-names
+
+Tag: Accept
+Words: accept
+Semantics: permanent
+Reference: [RFC9110, Section 12.5.1: HTTP Semantics]
+Source: heuristic
+
+Tag: Accept-Additions
+Words: accept additions
+Semantics: permanent
+Reference: [RFC 2324: Hyper Text Coffee Pot Control Protocol (HTCPCP/1.0)]
+Source: heuristic
+
+Tag: Accept-CH
+Words: accept ch
+Semantics: List; permanent
+Reference: [RFC 8942, Section 3.1: HTTP Client Hints]
+Source: heuristic
+
+Tag: Accept-Charset
+Words: accept charset
+Semantics: deprecated
+Reference: [RFC9110, Section 12.5.2: HTTP Semantics]
+Source: heuristic
+
+Tag: Accept-Datetime
+Words: accept datetime
+Semantics: permanent
+Reference: [RFC 7089: HTTP Framework for Time-Based Access to Resource States -- Memento]
+Source: heuristic
+
+Tag: Accept-Encoding
+Words: accept encoding
+Semantics: permanent
+Reference: [RFC9110, Section 12.5.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Accept-Features
+Words: accept features
+Semantics: permanent
+Reference: [RFC 2295: Transparent Content Negotiation in HTTP]
+Source: heuristic
+
+Tag: Accept-Language
+Words: accept language
+Semantics: permanent
+Reference: [RFC9110, Section 12.5.4: HTTP Semantics]
+Source: heuristic
+
+Tag: Accept-Patch
+Words: accept patch
+Semantics: permanent
+Reference: [RFC 5789: PATCH Method for HTTP]
+Source: heuristic
+
+Tag: Accept-Post
+Words: accept post
+Semantics: permanent
+Reference: [Linked Data Platform 1.0]
+Source: heuristic
+
+Tag: Accept-Ranges
+Words: accept ranges
+Semantics: permanent
+Reference: [RFC9110, Section 14.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Accept-Signature
+Words: accept signature
+Semantics: permanent
+Reference: [RFC 9421, Section 5.1: HTTP Message Signatures]
+Source: heuristic
+
+Tag: Access-Control
+Words: access control
+Semantics: obsoleted
+Reference: [Access Control for Cross-site Requests]
+Source: heuristic
+
+Tag: Access-Control-Allow-Credentials
+Words: access control allow credentials
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Access-Control-Allow-Headers
+Words: access control allow headers
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Access-Control-Allow-Methods
+Words: access control allow methods
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Access-Control-Allow-Origin
+Words: access control allow origin
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Access-Control-Expose-Headers
+Words: access control expose headers
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Access-Control-Max-Age
+Words: access control max age
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Access-Control-Request-Headers
+Words: access control request headers
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Access-Control-Request-Method
+Words: access control request method
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Activate-Storage-Access
+Words: activate storage access
+Semantics: Item; provisional
+Reference: [https://privacycg.github.io/storage-access-headers]
+Source: heuristic
+
+Tag: Age
+Words: age
+Semantics: permanent
+Reference: [RFC9111, Section 5.1: HTTP Caching]
+Source: heuristic
+
+Tag: Allow
+Words: allow
+Semantics: permanent
+Reference: [RFC9110, Section 10.2.1: HTTP Semantics]
+Source: heuristic
+
+Tag: ALPN
+Words: alpn
+Semantics: permanent
+Reference: [RFC 7639, Section 2: The ALPN HTTP Header Field]
+Source: heuristic
+
+Tag: Alternates
+Words: alternates
+Semantics: permanent
+Reference: [RFC 2295: Transparent Content Negotiation in HTTP]
+Source: heuristic
+
+Tag: Alt-Svc
+Words: alt svc
+Semantics: permanent
+Reference: [RFC 7838: HTTP Alternative Services]
+Source: heuristic
+
+Tag: Alt-Used
+Words: alt used
+Semantics: permanent
+Reference: [RFC 7838: HTTP Alternative Services]
+Source: heuristic
+
+Tag: AMP-Cache-Transform
+Words: amp cache transform
+Semantics: provisional
+Reference: [AMP-Cache-Transform HTTP request header]
+Source: heuristic
+
+Tag: Apply-To-Redirect-Ref
+Words: apply to redirect ref
+Semantics: permanent
+Reference: [RFC 4437: Web Distributed Authoring and Versioning (WebDAV) Redirect Reference Resources]
+Source: heuristic
+
+Tag: Authentication-Control
+Words: authentication control
+Semantics: permanent
+Reference: [RFC 8053, Section 4: HTTP Authentication Extensions for Interactive Clients]
+Source: heuristic
+
+Tag: Authentication-Info
+Words: authentication info
+Semantics: permanent
+Reference: [RFC9110, Section 11.6.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Authorization
+Words: authorization
+Semantics: permanent
+Reference: [RFC9110, Section 11.6.2: HTTP Semantics]
+Source: heuristic
+
+Tag: Available-Dictionary
+Words: available dictionary
+Semantics: permanent
+Reference: [RFC-ietf-httpbis-compression-dictionary-19, Section 2.2: Compression Dictionary Transport]
+Source: heuristic
+
+Tag: A-IM
+Words: a im
+Semantics: permanent
+Reference: [RFC 3229: Delta encoding in HTTP]
+Source: heuristic
+
+Tag: Cache-Control
+Words: cache control
+Semantics: permanent
+Reference: [RFC9111, Section 5.2]
+Source: heuristic
+
+Tag: Cache-Status
+Words: cache status
+Semantics: List; permanent
+Reference: [RFC9211: The Cache-Status HTTP Response Header Field]
+Source: heuristic
+
+Tag: CalDAV-Timezones
+Words: caldav timezones
+Semantics: permanent
+Reference: [RFC 7809, Section 7.1: Calendaring Extensions to WebDAV (CalDAV): Time Zones by Reference]
+Source: heuristic
+
+Tag: Cal-Managed-ID
+Words: cal managed id
+Semantics: permanent
+Reference: [RFC 8607, Section 5.1: Calendaring Extensions to WebDAV (CalDAV): Managed Attachments]
+Source: heuristic
+
+Tag: Capsule-Protocol
+Words: capsule protocol
+Semantics: permanent
+Reference: [RFC9297]
+Source: heuristic
+
+Tag: CDN-Cache-Control
+Words: cdn cache control
+Semantics: Dictionary; permanent
+Reference: [RFC9213: Targeted HTTP Cache Control]
+Source: heuristic
+
+Tag: CDN-Loop
+Words: cdn loop
+Semantics: permanent
+Reference: [RFC 8586: Loop Detection in Content Delivery Networks (CDNs)]
+Source: heuristic
+
+Tag: Cert-Not-After
+Words: cert not after
+Semantics: permanent
+Reference: [RFC 8739, Section 3.3: Support for Short-Term, Automatically Renewed (STAR) Certificates in the Automated Certificate Management Environment (ACME)]
+Source: heuristic
+
+Tag: Cert-Not-Before
+Words: cert not before
+Semantics: permanent
+Reference: [RFC 8739, Section 3.3: Support for Short-Term, Automatically Renewed (STAR) Certificates in the Automated Certificate Management Environment (ACME)]
+Source: heuristic
+
+Tag: Clear-Site-Data
+Words: clear site data
+Semantics: permanent
+Reference: [Clear Site Data]
+Source: heuristic
+
+Tag: Client-Cert
+Words: client cert
+Semantics: Item; permanent
+Reference: [RFC9440, Section 2: Client-Cert HTTP Header Field]
+Source: heuristic
+
+Tag: Client-Cert-Chain
+Words: client cert chain
+Semantics: List; permanent
+Reference: [RFC9440, Section 2: Client-Cert HTTP Header Field]
+Source: heuristic
+
+Tag: Close
+Words: close
+Semantics: permanent
+Reference: [RFC9112, Section 9.6: HTTP/1.1]
+Source: heuristic
+
+Tag: CMCD-Object
+Words: cmcd object
+Semantics: provisional
+Reference: [CTA][CTA-5004 Common Media Client Data]
+Source: heuristic
+
+Tag: CMCD-Request
+Words: cmcd request
+Semantics: provisional
+Reference: [CTA][CTA-5004 Common Media Client Data]
+Source: heuristic
+
+Tag: CMCD-Session
+Words: cmcd session
+Semantics: provisional
+Reference: [CTA][CTA-5004 Common Media Client Data]
+Source: heuristic
+
+Tag: CMCD-Status
+Words: cmcd status
+Semantics: provisional
+Reference: [CTA][CTA-5004 Common Media Client Data]
+Source: heuristic
+
+Tag: CMSD-Dynamic
+Words: cmsd dynamic
+Semantics: provisional
+Reference: [CTA][CTA-5006 Common Media Server Data (CMSD)]
+Source: heuristic
+
+Tag: CMSD-Static
+Words: cmsd static
+Semantics: provisional
+Reference: [CTA][CTA-5006 Common Media Server Data (CMSD)]
+Source: heuristic
+
+Tag: Concealed-Auth-Export
+Words: concealed auth export
+Semantics: Item; permanent
+Reference: [RFC9729: The Concealed HTTP Authentication Scheme]
+Source: heuristic
+
+Tag: Configuration-Context
+Words: configuration context
+Semantics: provisional
+Reference: [OSLC Configuration Management Version 1.0. Part 3: Configuration Specification]
+Source: heuristic
+
+Tag: Connection
+Words: connection
+Semantics: permanent
+Reference: [RFC9110, Section 7.6.1: HTTP Semantics]
+Source: heuristic
+
+Tag: Content-Base
+Words: content base
+Semantics: obsoleted
+Reference: [RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1]
+Source: heuristic
+
+Tag: Content-Digest
+Words: content digest
+Semantics: permanent
+Reference: [RFC 9530, Section 2: Digest Fields]
+Source: heuristic
+
+Tag: Content-Disposition
+Words: content disposition
+Semantics: permanent
+Reference: [RFC 6266: Use of the Content-Disposition Header Field in the Hypertext Transfer Protocol (HTTP)]
+Source: heuristic
+
+Tag: Content-Encoding
+Words: content encoding
+Semantics: permanent
+Reference: [RFC9110, Section 8.4: HTTP Semantics]
+Source: heuristic
+
+Tag: Content-ID
+Words: content id
+Semantics: deprecated
+Reference: [The HTTP Distribution and Replication Protocol]
+Source: heuristic
+
+Tag: Content-Language
+Words: content language
+Semantics: permanent
+Reference: [RFC9110, Section 8.5: HTTP Semantics]
+Source: heuristic
+
+Tag: Content-Length
+Words: content length
+Semantics: permanent
+Reference: [RFC9110, Section 8.6: HTTP Semantics]
+Source: heuristic
+
+Tag: Content-Location
+Words: content location
+Semantics: permanent
+Reference: [RFC9110, Section 8.7: HTTP Semantics]
+Source: heuristic
+
+Tag: Content-MD5
+Words: content md5
+Semantics: obsoleted
+Reference: [RFC 2616, Section 14.15: Hypertext Transfer Protocol -- HTTP/1.1]
+Source: heuristic
+
+Tag: Content-Range
+Words: content range
+Semantics: permanent
+Reference: [RFC9110, Section 14.4: HTTP Semantics]
+Source: heuristic
+
+Tag: Content-Script-Type
+Words: content script type
+Semantics: obsoleted
+Reference: [HTML 4.01 Specification]
+Source: heuristic
+
+Tag: Content-Security-Policy
+Words: content security policy
+Semantics: permanent
+Reference: [Content Security Policy Level 3]
+Source: heuristic
+
+Tag: Content-Security-Policy-Report-Only
+Words: content security policy report only
+Semantics: permanent
+Reference: [Content Security Policy Level 3]
+Source: heuristic
+
+Tag: Content-Style-Type
+Words: content style type
+Semantics: obsoleted
+Reference: [HTML 4.01 Specification]
+Source: heuristic
+
+Tag: Content-Type
+Words: content type
+Semantics: permanent
+Reference: [RFC9110, Section 8.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Content-Version
+Words: content version
+Semantics: obsoleted
+Reference: [RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1]
+Source: heuristic
+
+Tag: Cookie
+Words: cookie
+Semantics: permanent
+Reference: [RFC 6265: HTTP State Management Mechanism]
+Source: heuristic
+
+Tag: Cookie2
+Words: cookie2
+Semantics: obsoleted
+Reference: [RFC 2965: HTTP State Management Mechanism]
+Source: heuristic
+
+Tag: Cross-Origin-Embedder-Policy
+Words: cross origin embedder policy
+Semantics: Item; permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: Cross-Origin-Embedder-Policy-Report-Only
+Words: cross origin embedder policy report only
+Semantics: Item; permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: Cross-Origin-Opener-Policy
+Words: cross origin opener policy
+Semantics: Item; permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: Cross-Origin-Opener-Policy-Report-Only
+Words: cross origin opener policy report only
+Semantics: Item; permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: Cross-Origin-Resource-Policy
+Words: cross origin resource policy
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: CTA-Common-Access-Token
+Words: cta common access token
+Semantics: provisional
+Reference: [CTA][Chris_Lemmons]
+Source: heuristic
+
+Tag: C-Ext
+Words: c ext
+Semantics: obsoleted
+Reference: [RFC 2774: An HTTP Extension Framework]
+Source: heuristic
+
+Tag: C-Man
+Words: c man
+Semantics: obsoleted
+Reference: [RFC 2774: An HTTP Extension Framework]
+Source: heuristic
+
+Tag: C-Opt
+Words: c opt
+Semantics: obsoleted
+Reference: [RFC 2774: An HTTP Extension Framework]
+Source: heuristic
+
+Tag: C-PEP
+Words: c pep
+Semantics: obsoleted
+Reference: [PEP - an Extension Mechanism for HTTP]
+Source: heuristic
+
+Tag: C-PEP-Info
+Words: c pep info
+Semantics: deprecated
+Reference: [PEP - an Extension Mechanism for HTTP]
+Source: heuristic
+
+Tag: DASL
+Words: dasl
+Semantics: permanent
+Reference: [RFC 5323: Web Distributed Authoring and Versioning (WebDAV) SEARCH]
+Source: heuristic
+
+Tag: Date
+Words: date
+Semantics: permanent
+Reference: [RFC9110, Section 6.6.1: HTTP Semantics]
+Source: heuristic
+
+Tag: DAV
+Words: dav
+Semantics: permanent
+Reference: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
+Source: heuristic
+
+Tag: Default-Style
+Words: default style
+Semantics: obsoleted
+Reference: [HTML 4.01 Specification]
+Source: heuristic
+
+Tag: Delta-Base
+Words: delta base
+Semantics: permanent
+Reference: [RFC 3229: Delta encoding in HTTP]
+Source: heuristic
+
+Tag: Deprecation
+Words: deprecation
+Semantics: Item; permanent
+Reference: [RFC9745, Section 2: The Deprecation HTTP Response Header Field]
+Source: heuristic
+
+Tag: Depth
+Words: depth
+Semantics: permanent
+Reference: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
+Source: heuristic
+
+Tag: Derived-From
+Words: derived from
+Semantics: obsoleted
+Reference: [RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1]
+Source: heuristic
+
+Tag: Destination
+Words: destination
+Semantics: permanent
+Reference: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
+Source: heuristic
+
+Tag: Detached-JWS
+Words: detached jws
+Semantics: permanent
+Reference: [RFC 9635: Grant Negotiation and Authorization Protocol (GNAP)]
+Source: heuristic
+
+Tag: Dictionary-ID
+Words: dictionary id
+Semantics: permanent
+Reference: [RFC-ietf-httpbis-compression-dictionary-19, Section 2.3: Compression Dictionary Transport]
+Source: heuristic
+
+Tag: Differential-ID
+Words: differential id
+Semantics: deprecated
+Reference: [The HTTP Distribution and Replication Protocol]
+Source: heuristic
+
+Tag: Digest
+Words: digest
+Semantics: obsoleted
+Reference: [RFC 3230: Instance Digests in HTTP]
+Source: heuristic
+
+Tag: DPoP
+Words: dpop
+Semantics: permanent
+Reference: [RFC9449: OAuth 2.0 Demonstrating Proof of Possession (DPoP)]
+Source: heuristic
+
+Tag: DPoP-Nonce
+Words: dpop nonce
+Semantics: permanent
+Reference: [RFC9449: OAuth 2.0 Demonstrating Proof of Possession (DPoP)]
+Source: heuristic
+
+Tag: Early-Data
+Words: early data
+Semantics: permanent
+Reference: [RFC 8470: Using Early Data in HTTP]
+Source: heuristic
+
+Tag: EDIINT-Features
+Words: ediint features
+Semantics: provisional
+Reference: [RFC 6017: Electronic Data Interchange - Internet Integration (EDIINT) Features Header Field]
+Source: heuristic
+
+Tag: ETag
+Words: etag
+Semantics: permanent
+Reference: [RFC9110, Section 8.8.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Expect
+Words: expect
+Semantics: permanent
+Reference: [RFC9110, Section 10.1.1: HTTP Semantics]
+Source: heuristic
+
+Tag: Expect-CT
+Words: expect ct
+Semantics: deprecated
+Reference: [RFC9163: Expect-CT Extension for HTTP]
+Source: heuristic
+
+Tag: Expires
+Words: expires
+Semantics: permanent
+Reference: [RFC9111, Section 5.3: HTTP Caching]
+Source: heuristic
+
+Tag: Ext
+Words: ext
+Semantics: obsoleted
+Reference: [RFC 2774: An HTTP Extension Framework]
+Source: heuristic
+
+Tag: Forwarded
+Words: forwarded
+Semantics: permanent
+Reference: [RFC 7239: Forwarded HTTP Extension]
+Source: heuristic
+
+Tag: From
+Words: from
+Semantics: permanent
+Reference: [RFC9110, Section 10.1.2: HTTP Semantics]
+Source: heuristic
+
+Tag: GetProfile
+Words: getprofile
+Semantics: obsoleted
+Reference: [Implementation of OPS Over HTTP]
+Source: heuristic
+
+Tag: Hobareg
+Words: hobareg
+Semantics: permanent
+Reference: [RFC 7486, Section 6.1.1: HTTP Origin-Bound Authentication (HOBA)]
+Source: heuristic
+
+Tag: Host
+Words: host
+Semantics: permanent
+Reference: [RFC9110, Section 7.2: HTTP Semantics]
+Source: heuristic
+
+Tag: HTTP2-Settings
+Words: http2 settings
+Semantics: obsoleted
+Reference: [RFC 7540, Section 3.2.1: Hypertext Transfer Protocol Version 2 (HTTP/2)]
+Source: heuristic
+
+Tag: If
+Words: if
+Semantics: permanent
+Reference: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
+Source: heuristic
+
+Tag: If-Match
+Words: if match
+Semantics: permanent
+Reference: [RFC9110, Section 13.1.1: HTTP Semantics]
+Source: heuristic
+
+Tag: If-Modified-Since
+Words: if modified since
+Semantics: permanent
+Reference: [RFC9110, Section 13.1.3: HTTP Semantics]
+Source: heuristic
+
+Tag: If-None-Match
+Words: if none match
+Semantics: permanent
+Reference: [RFC9110, Section 13.1.2: HTTP Semantics]
+Source: heuristic
+
+Tag: If-Range
+Words: if range
+Semantics: permanent
+Reference: [RFC9110, Section 13.1.5: HTTP Semantics]
+Source: heuristic
+
+Tag: If-Schedule-Tag-Match
+Words: if schedule tag match
+Semantics: permanent
+Reference: [ RFC 6338: Scheduling Extensions to CalDAV]
+Source: heuristic
+
+Tag: If-Unmodified-Since
+Words: if unmodified since
+Semantics: permanent
+Reference: [RFC9110, Section 13.1.4: HTTP Semantics]
+Source: heuristic
+
+Tag: IM
+Words: im
+Semantics: permanent
+Reference: [RFC 3229: Delta encoding in HTTP]
+Source: heuristic
+
+Tag: Include-Referred-Token-Binding-ID
+Words: include referred token binding id
+Semantics: permanent
+Reference: [RFC 8473: Token Binding over HTTP]
+Source: heuristic
+
+Tag: Isolation
+Words: isolation
+Semantics: provisional
+Reference: [OData Version 4.01 Part 1: Protocol][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: Keep-Alive
+Words: keep alive
+Semantics: permanent
+Reference: [RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1]
+Source: heuristic
+
+Tag: Label
+Words: label
+Semantics: permanent
+Reference: [RFC 3253: Versioning Extensions to WebDAV: (Web Distributed Authoring and Versioning)]
+Source: heuristic
+
+Tag: Last-Event-ID
+Words: last event id
+Semantics: permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: Last-Modified
+Words: last modified
+Semantics: permanent
+Reference: [RFC9110, Section 8.8.2: HTTP Semantics]
+Source: heuristic
+
+Tag: Link
+Words: link
+Semantics: permanent
+Reference: [RFC 8288: Web Linking]
+Source: heuristic
+
+Tag: Link-Template
+Words: link template
+Semantics: permanent
+Reference: [RFC 9652: The Link-Template HTTP Header Field]
+Source: heuristic
+
+Tag: Location
+Words: location
+Semantics: permanent
+Reference: [RFC9110, Section 10.2.2: HTTP Semantics]
+Source: heuristic
+
+Tag: Lock-Token
+Words: lock token
+Semantics: permanent
+Reference: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
+Source: heuristic
+
+Tag: Man
+Words: man
+Semantics: obsoleted
+Reference: [RFC 2774: An HTTP Extension Framework]
+Source: heuristic
+
+Tag: Max-Forwards
+Words: max forwards
+Semantics: permanent
+Reference: [RFC9110, Section 7.6.2: HTTP Semantics]
+Source: heuristic
+
+Tag: Memento-Datetime
+Words: memento datetime
+Semantics: permanent
+Reference: [RFC 7089: HTTP Framework for Time-Based Access to Resource States -- Memento]
+Source: heuristic
+
+Tag: Meter
+Words: meter
+Semantics: permanent
+Reference: [RFC 2227: Simple Hit-Metering and Usage-Limiting for HTTP]
+Source: heuristic
+
+Tag: Method-Check
+Words: method check
+Semantics: obsoleted
+Reference: [Access Control for Cross-site Requests]
+Source: heuristic
+
+Tag: Method-Check-Expires
+Words: method check expires
+Semantics: obsoleted
+Reference: [Access Control for Cross-site Requests]
+Source: heuristic
+
+Tag: MIME-Version
+Words: mime version
+Semantics: permanent
+Reference: [RFC9112, Appendix B.1: HTTP/1.1]
+Source: heuristic
+
+Tag: Negotiate
+Words: negotiate
+Semantics: permanent
+Reference: [RFC 2295: Transparent Content Negotiation in HTTP]
+Source: heuristic
+
+Tag: NEL
+Words: nel
+Semantics: permanent
+Reference: [Network Error Logging]
+Source: heuristic
+
+Tag: OData-EntityId
+Words: odata entityid
+Semantics: permanent
+Reference: [OData Version 4.01 Part 1: Protocol][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: OData-Isolation
+Words: odata isolation
+Semantics: permanent
+Reference: [OData Version 4.01 Part 1: Protocol][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: OData-MaxVersion
+Words: odata maxversion
+Semantics: permanent
+Reference: [OData Version 4.01 Part 1: Protocol][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: OData-Version
+Words: odata version
+Semantics: permanent
+Reference: [OData Version 4.01 Part 1: Protocol][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: Opt
+Words: opt
+Semantics: obsoleted
+Reference: [RFC 2774: An HTTP Extension Framework]
+Source: heuristic
+
+Tag: Optional-WWW-Authenticate
+Words: optional www authenticate
+Semantics: permanent
+Reference: [RFC 8053, Section 3: HTTP Authentication Extensions for Interactive Clients]
+Source: heuristic
+
+Tag: Ordering-Type
+Words: ordering type
+Semantics: permanent
+Reference: [RFC 3648: Web Distributed Authoring and Versioning (WebDAV) Ordered Collections Protocol]
+Source: heuristic
+
+Tag: Origin
+Words: origin
+Semantics: permanent
+Reference: [RFC 6454: The Web Origin Concept]
+Source: heuristic
+
+Tag: Origin-Agent-Cluster
+Words: origin agent cluster
+Semantics: Item; permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: OSCORE
+Words: oscore
+Semantics: permanent
+Reference: [RFC 8613, Section 11.1: Object Security for Constrained RESTful Environments (OSCORE)]
+Source: heuristic
+
+Tag: OSLC-Core-Version
+Words: oslc core version
+Semantics: permanent
+Reference: [OASIS Project Specification 01][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: Overwrite
+Words: overwrite
+Semantics: permanent
+Reference: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
+Source: heuristic
+
+Tag: P3P
+Words: p3p
+Semantics: obsoleted
+Reference: [The Platform for Privacy Preferences 1.0 (P3P1.0) Specification]
+Source: heuristic
+
+Tag: PEP
+Words: pep
+Semantics: obsoleted
+Reference: [PEP - an Extension Mechanism for HTTP]
+Source: heuristic
+
+Tag: PEP-Info
+Words: pep info
+Semantics: obsoleted
+Reference: [PEP - an Extension Mechanism for HTTP]
+Source: heuristic
+
+Tag: Permissions-Policy
+Words: permissions policy
+Semantics: provisional
+Reference: [Permissions Policy]
+Source: heuristic
+
+Tag: PICS-Label
+Words: pics label
+Semantics: obsoleted
+Reference: [PICS Label Distribution Label Syntax and Communication Protocols]
+Source: heuristic
+
+Tag: Ping-From
+Words: ping from
+Semantics: permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: Ping-To
+Words: ping to
+Semantics: permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: Position
+Words: position
+Semantics: permanent
+Reference: [RFC 3648: Web Distributed Authoring and Versioning (WebDAV) Ordered Collections Protocol]
+Source: heuristic
+
+Tag: Pragma
+Words: pragma
+Semantics: deprecated
+Reference: [RFC9111, Section 5.4: HTTP Caching]
+Source: heuristic
+
+Tag: Prefer
+Words: prefer
+Semantics: permanent
+Reference: [RFC 7240: Prefer Header for HTTP]
+Source: heuristic
+
+Tag: Preference-Applied
+Words: preference applied
+Semantics: permanent
+Reference: [RFC 7240: Prefer Header for HTTP]
+Source: heuristic
+
+Tag: Priority
+Words: priority
+Semantics: Dictionary; permanent
+Reference: [RFC9218: Extensible Prioritization Scheme for HTTP]
+Source: heuristic
+
+Tag: ProfileObject
+Words: profileobject
+Semantics: obsoleted
+Reference: [Implementation of OPS Over HTTP]
+Source: heuristic
+
+Tag: Protocol
+Words: protocol
+Semantics: obsoleted
+Reference: [PICS Label Distribution Label Syntax and Communication Protocols]
+Source: heuristic
+
+Tag: Protocol-Info
+Words: protocol info
+Semantics: deprecated
+Reference: [White Paper: Joint Electronic Payment Initiative]
+Source: heuristic
+
+Tag: Protocol-Query
+Words: protocol query
+Semantics: deprecated
+Reference: [White Paper: Joint Electronic Payment Initiative]
+Source: heuristic
+
+Tag: Protocol-Request
+Words: protocol request
+Semantics: obsoleted
+Reference: [PICS Label Distribution Label Syntax and Communication Protocols]
+Source: heuristic
+
+Tag: Proxy-Authenticate
+Words: proxy authenticate
+Semantics: permanent
+Reference: [RFC9110, Section 11.7.1: HTTP Semantics]
+Source: heuristic
+
+Tag: Proxy-Authentication-Info
+Words: proxy authentication info
+Semantics: permanent
+Reference: [RFC9110, Section 11.7.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Proxy-Authorization
+Words: proxy authorization
+Semantics: permanent
+Reference: [RFC9110, Section 11.7.2: HTTP Semantics]
+Source: heuristic
+
+Tag: Proxy-Features
+Words: proxy features
+Semantics: obsoleted
+Reference: [Notification for Proxy Caches]
+Source: heuristic
+
+Tag: Proxy-Instruction
+Words: proxy instruction
+Semantics: obsoleted
+Reference: [Notification for Proxy Caches]
+Source: heuristic
+
+Tag: Proxy-Status
+Words: proxy status
+Semantics: List; permanent
+Reference: [RFC9209: The Proxy-Status HTTP Response Header Field]
+Source: heuristic
+
+Tag: Public
+Words: public
+Semantics: obsoleted
+Reference: [RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1]
+Source: heuristic
+
+Tag: Public-Key-Pins
+Words: public key pins
+Semantics: permanent
+Reference: [RFC 7469: Public Key Pinning Extension for HTTP]
+Source: heuristic
+
+Tag: Public-Key-Pins-Report-Only
+Words: public key pins report only
+Semantics: permanent
+Reference: [RFC 7469: Public Key Pinning Extension for HTTP]
+Source: heuristic
+
+Tag: Range
+Words: range
+Semantics: permanent
+Reference: [RFC9110, Section 14.2: HTTP Semantics]
+Source: heuristic
+
+Tag: Redirect-Ref
+Words: redirect ref
+Semantics: permanent
+Reference: [RFC 4437: Web Distributed Authoring and Versioning (WebDAV) Redirect Reference Resources]
+Source: heuristic
+
+Tag: Referer
+Words: referer
+Semantics: permanent
+Reference: [RFC9110, Section 10.1.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Referer-Root
+Words: referer root
+Semantics: obsoleted
+Reference: [Access Control for Cross-site Requests]
+Source: heuristic
+
+Tag: Referrer-Policy
+Words: referrer policy
+Semantics: permanent
+Reference: [Referrer Policy]
+Source: heuristic
+
+Tag: Refresh
+Words: refresh
+Semantics: permanent
+Reference: [HTML]
+Source: heuristic
+
+Tag: Repeatability-Client-ID
+Words: repeatability client id
+Semantics: provisional
+Reference: [Repeatable Requests Version 1.0][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: Repeatability-First-Sent
+Words: repeatability first sent
+Semantics: provisional
+Reference: [Repeatable Requests Version 1.0][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: Repeatability-Request-ID
+Words: repeatability request id
+Semantics: provisional
+Reference: [Repeatable Requests Version 1.0][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: Repeatability-Result
+Words: repeatability result
+Semantics: provisional
+Reference: [Repeatable Requests Version 1.0][OASIS][Chet_Ensign]
+Source: heuristic
+
+Tag: Replay-Nonce
+Words: replay nonce
+Semantics: permanent
+Reference: [RFC 8555, Section 6.5.1: Automatic Certificate Management Environment (ACME)]
+Source: heuristic
+
+Tag: Reporting-Endpoints
+Words: reporting endpoints
+Semantics: provisional
+Reference: [Reporting API]
+Source: heuristic
+
+Tag: Repr-Digest
+Words: repr digest
+Semantics: permanent
+Reference: [RFC 9530, Section 3: Digest Fields]
+Source: heuristic
+
+Tag: Retry-After
+Words: retry after
+Semantics: permanent
+Reference: [RFC9110, Section 10.2.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Safe
+Words: safe
+Semantics: obsoleted
+Reference: [RFC 2310: The Safe Response Header Field]
+Source: heuristic
+
+Tag: Schedule-Reply
+Words: schedule reply
+Semantics: permanent
+Reference: [RFC 6638: Scheduling Extensions to CalDAV]
+Source: heuristic
+
+Tag: Schedule-Tag
+Words: schedule tag
+Semantics: permanent
+Reference: [RFC 6338: Scheduling Extensions to CalDAV]
+Source: heuristic
+
+Tag: Security-Scheme
+Words: security scheme
+Semantics: obsoleted
+Reference: [RFC 2660: The Secure HyperText Transfer Protocol]
+Source: heuristic
+
+Tag: Sec-Fetch-Dest
+Words: sec fetch dest
+Semantics: Item; Permanent
+Reference: [https://www.w3.org/TR/fetch-metadata/#sec-fetch-dest-header]
+Source: heuristic
+
+Tag: Sec-Fetch-Mode
+Words: sec fetch mode
+Semantics: Item; Permanent
+Reference: [https://www.w3.org/TR/fetch-metadata/#sec-fetch-mode-header]
+Source: heuristic
+
+Tag: Sec-Fetch-Site
+Words: sec fetch site
+Semantics: Item; Permanent
+Reference: [https://www.w3.org/TR/fetch-metadata/#sec-fetch-site-header]
+Source: heuristic
+
+Tag: Sec-Fetch-Storage-Access
+Words: sec fetch storage access
+Semantics: Token; provisional
+Reference: [https://privacycg.github.io/storage-access-headers]
+Source: heuristic
+
+Tag: Sec-Fetch-User
+Words: sec fetch user
+Semantics: Item; Permanent
+Reference: [https://www.w3.org/TR/fetch-metadata/#sec-fetch-user-header]
+Source: heuristic
+
+Tag: Sec-GPC
+Words: sec gpc
+Semantics: provisional
+Reference: [Global Privacy Control (GPC)]
+Source: heuristic
+
+Tag: Sec-Purpose
+Words: sec purpose
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: Sec-Token-Binding
+Words: sec token binding
+Semantics: permanent
+Reference: [RFC 8473: Token Binding over HTTP]
+Source: heuristic
+
+Tag: Sec-WebSocket-Accept
+Words: sec websocket accept
+Semantics: permanent
+Reference: [RFC 6455: The WebSocket Protocol]
+Source: heuristic
+
+Tag: Sec-WebSocket-Extensions
+Words: sec websocket extensions
+Semantics: permanent
+Reference: [RFC 6455: The WebSocket Protocol]
+Source: heuristic
+
+Tag: Sec-WebSocket-Key
+Words: sec websocket key
+Semantics: permanent
+Reference: [RFC 6455: The WebSocket Protocol]
+Source: heuristic
+
+Tag: Sec-WebSocket-Protocol
+Words: sec websocket protocol
+Semantics: permanent
+Reference: [RFC 6455: The WebSocket Protocol]
+Source: heuristic
+
+Tag: Sec-WebSocket-Version
+Words: sec websocket version
+Semantics: permanent
+Reference: [RFC 6455: The WebSocket Protocol]
+Source: heuristic
+
+Tag: Server
+Words: server
+Semantics: permanent
+Reference: [RFC9110, Section 10.2.4: HTTP Semantics]
+Source: heuristic
+
+Tag: Server-Timing
+Words: server timing
+Semantics: permanent
+Reference: [Server Timing]
+Source: heuristic
+
+Tag: SetProfile
+Words: setprofile
+Semantics: obsoleted
+Reference: [Implementation of OPS Over HTTP]
+Source: heuristic
+
+Tag: Set-Cookie
+Words: set cookie
+Semantics: permanent
+Reference: [RFC 6265: HTTP State Management Mechanism]
+Source: heuristic
+
+Tag: Set-Cookie2
+Words: set cookie2
+Semantics: obsoleted
+Reference: [RFC 2965: HTTP State Management Mechanism]
+Source: heuristic
+
+Tag: Signature
+Words: signature
+Semantics: permanent
+Reference: [RFC 9421, Section 4.2: HTTP Message Signatures]
+Source: heuristic
+
+Tag: Signature-Input
+Words: signature input
+Semantics: permanent
+Reference: [RFC 9421, Section 4.1: HTTP Message Signatures]
+Source: heuristic
+
+Tag: SLUG
+Words: slug
+Semantics: permanent
+Reference: [RFC 5023: The Atom Publishing Protocol]
+Source: heuristic
+
+Tag: SoapAction
+Words: soapaction
+Semantics: permanent
+Reference: [Simple Object Access Protocol (SOAP) 1.1]
+Source: heuristic
+
+Tag: Status-URI
+Words: status uri
+Semantics: permanent
+Reference: [RFC 2518: HTTP Extensions for Distributed Authoring -- WEBDAV]
+Source: heuristic
+
+Tag: Strict-Transport-Security
+Words: strict transport security
+Semantics: permanent
+Reference: [RFC 6797: HTTP Strict Transport Security (HSTS)]
+Source: heuristic
+
+Tag: Sunset
+Words: sunset
+Semantics: permanent
+Reference: [RFC 8594: The Sunset HTTP Header Field]
+Source: heuristic
+
+Tag: Surrogate-Capability
+Words: surrogate capability
+Semantics: provisional
+Reference: [Edge Architecture Specification]
+Source: heuristic
+
+Tag: Surrogate-Control
+Words: surrogate control
+Semantics: provisional
+Reference: [Edge Architecture Specification]
+Source: heuristic
+
+Tag: TCN
+Words: tcn
+Semantics: permanent
+Reference: [RFC 2295: Transparent Content Negotiation in HTTP]
+Source: heuristic
+
+Tag: TE
+Words: te
+Semantics: permanent
+Reference: [RFC9110, Section 10.1.4: HTTP Semantics]
+Source: heuristic
+
+Tag: Timeout
+Words: timeout
+Semantics: permanent
+Reference: [RFC 4918: HTTP Extensions for Web Distributed Authoring and Versioning (WebDAV)]
+Source: heuristic
+
+Tag: Timing-Allow-Origin
+Words: timing allow origin
+Semantics: provisional
+Reference: [Resource Timing Level 1]
+Source: heuristic
+
+Tag: Topic
+Words: topic
+Semantics: permanent
+Reference: [RFC 8030, Section 5.4: Generic Event Delivery Using HTTP Push]
+Source: heuristic
+
+Tag: Traceparent
+Words: traceparent
+Semantics: permanent
+Reference: [Trace Context]
+Source: heuristic
+
+Tag: Tracestate
+Words: tracestate
+Semantics: permanent
+Reference: [Trace Context]
+Source: heuristic
+
+Tag: Trailer
+Words: trailer
+Semantics: permanent
+Reference: [RFC9110, Section 6.6.2: HTTP Semantics]
+Source: heuristic
+
+Tag: Transfer-Encoding
+Words: transfer encoding
+Semantics: permanent
+Reference: [RFC9112, Section 6.1: HTTP Semantics]
+Source: heuristic
+
+Tag: TTL
+Words: ttl
+Semantics: permanent
+Reference: [RFC 8030, Section 5.2: Generic Event Delivery Using HTTP Push]
+Source: heuristic
+
+Tag: Upgrade
+Words: upgrade
+Semantics: permanent
+Reference: [RFC9110, Section 7.8: HTTP Semantics]
+Source: heuristic
+
+Tag: Urgency
+Words: urgency
+Semantics: permanent
+Reference: [RFC 8030, Section 5.3: Generic Event Delivery Using HTTP Push]
+Source: heuristic
+
+Tag: URI
+Words: uri
+Semantics: obsoleted
+Reference: [RFC 2068: Hypertext Transfer Protocol -- HTTP/1.1]
+Source: heuristic
+
+Tag: User-Agent
+Words: user agent
+Semantics: permanent
+Reference: [RFC9110, Section 10.1.5: HTTP Semantics]
+Source: heuristic
+
+Tag: Use-As-Dictionary
+Words: use as dictionary
+Semantics: permanent
+Reference: [RFC-ietf-httpbis-compression-dictionary-19, Section 2.1: Compression Dictionary Transport]
+Source: heuristic
+
+Tag: Variant-Vary
+Words: variant vary
+Semantics: permanent
+Reference: [RFC 2295: Transparent Content Negotiation in HTTP]
+Source: heuristic
+
+Tag: Vary
+Words: vary
+Semantics: permanent
+Reference: [RFC9110, Section 12.5.5: HTTP Semantics]
+Source: heuristic
+
+Tag: Via
+Words: via
+Semantics: permanent
+Reference: [RFC9110, Section 7.6.3: HTTP Semantics]
+Source: heuristic
+
+Tag: Want-Content-Digest
+Words: want content digest
+Semantics: permanent
+Reference: [RFC 9530, Section 4: Digest Fields]
+Source: heuristic
+
+Tag: Want-Digest
+Words: want digest
+Semantics: obsoleted
+Reference: [RFC 3230: Instance Digests in HTTP]
+Source: heuristic
+
+Tag: Want-Repr-Digest
+Words: want repr digest
+Semantics: permanent
+Reference: [RFC 9530, Section 4: Digest Fields]
+Source: heuristic
+
+Tag: Warning
+Words: warning
+Semantics: obsoleted
+Reference: [RFC9111, Section 5.5: HTTP Caching]
+Source: heuristic
+
+Tag: *
+Words: wildcard
+Semantics: permanent
+Reference: [RFC9110, Section 12.5.5: HTTP Semantics]
+Source: heuristic
+
+Tag: WWW-Authenticate
+Words: www authenticate
+Semantics: permanent
+Reference: [RFC9110, Section 11.6.1: HTTP Semantics]
+Source: heuristic
+
+Tag: X-Content-Type-Options
+Words: x content type options
+Semantics: permanent
+Reference: [Fetch]
+Source: heuristic
+
+Tag: X-Frame-Options
+Words: x frame options
+Semantics: permanent
+Reference: [HTML]
+Source: heuristic

@@ -1,0 +1,51 @@
+%rec: CoapRequestCode
+%key: Tag
+%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#method-codes
+
+Tag: 0.00
+Words: method empty message
+Semantics: Empty Message
+Reference: [RFC7252, section 4.1]
+Source: heuristic
+
+Tag: 0.01
+Words: method get
+Semantics: GET
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 0.02
+Words: method post
+Semantics: POST
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 0.03
+Words: method put
+Semantics: PUT
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 0.04
+Words: method delete
+Semantics: DELETE
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 0.05
+Words: method fetch
+Semantics: FETCH
+Reference: [RFC8132]
+Source: heuristic
+
+Tag: 0.06
+Words: method patch
+Semantics: PATCH
+Reference: [RFC8132]
+Source: heuristic
+
+Tag: 0.07
+Words: method ipatch
+Semantics: iPATCH
+Reference: [RFC8132]
+Source: heuristic

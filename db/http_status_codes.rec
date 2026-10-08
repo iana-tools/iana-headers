@@ -14,6 +14,24 @@ Semantics: Switching Protocols
 Reference: [RFC9110, Section 15.2.2]
 Source: heuristic
 
+Tag: 102
+Words: processing
+Semantics: Processing
+Reference: [RFC2518]
+Source: heuristic
+
+Tag: 103
+Words: early hints
+Semantics: Early Hints
+Reference: [RFC8297]
+Source: heuristic
+
+Tag: 104
+Words: upload resumption supported
+Semantics: Upload Resumption Supported (TEMPORARY - registered 2024-11-13, expires 2025-11-13)
+Reference: [draft-ietf-httpbis-resumable-upload-05]
+Source: heuristic
+
 Tag: 200
 Words: ok
 Semantics: OK
@@ -26,10 +44,58 @@ Semantics: Created
 Reference: [RFC9110, Section 15.3.2]
 Source: heuristic
 
+Tag: 202
+Words: accepted
+Semantics: Accepted
+Reference: [RFC9110, Section 15.3.3]
+Source: heuristic
+
+Tag: 203
+Words: non authoritative information
+Semantics: Non-Authoritative Information
+Reference: [RFC9110, Section 15.3.4]
+Source: heuristic
+
 Tag: 204
 Words: no content
 Semantics: No Content
 Reference: [RFC9110, Section 15.3.5]
+Source: heuristic
+
+Tag: 205
+Words: reset content
+Semantics: Reset Content
+Reference: [RFC9110, Section 15.3.6]
+Source: heuristic
+
+Tag: 206
+Words: partial content
+Semantics: Partial Content
+Reference: [RFC9110, Section 15.3.7]
+Source: heuristic
+
+Tag: 207
+Words: multi status
+Semantics: Multi-Status
+Reference: [RFC4918]
+Source: heuristic
+
+Tag: 208
+Words: already reported
+Semantics: Already Reported
+Reference: [RFC5842]
+Source: heuristic
+
+Tag: 226
+Words: im used
+Semantics: IM Used
+Reference: [RFC3229]
+Source: heuristic
+
+Tag: 300
+Words: multiple choices
+Semantics: Multiple Choices
+Reference: [RFC9110, Section 15.4.1]
 Source: heuristic
 
 Tag: 301
@@ -38,10 +104,40 @@ Semantics: Moved Permanently
 Reference: [RFC9110, Section 15.4.2]
 Source: heuristic
 
+Tag: 302
+Words: found
+Semantics: Found
+Reference: [RFC9110, Section 15.4.3]
+Source: heuristic
+
+Tag: 303
+Words: see other
+Semantics: See Other
+Reference: [RFC9110, Section 15.4.4]
+Source: heuristic
+
 Tag: 304
 Words: not modified
 Semantics: Not Modified
 Reference: [RFC9110, Section 15.4.5]
+Source: heuristic
+
+Tag: 305
+Words: use proxy
+Semantics: Use Proxy
+Reference: [RFC9110, Section 15.4.6]
+Source: heuristic
+
+Tag: 307
+Words: temporary redirect
+Semantics: Temporary Redirect
+Reference: [RFC9110, Section 15.4.8]
+Source: heuristic
+
+Tag: 308
+Words: permanent redirect
+Semantics: Permanent Redirect
+Reference: [RFC9110, Section 15.4.9]
 Source: heuristic
 
 Tag: 400
@@ -56,6 +152,12 @@ Semantics: Unauthorized
 Reference: [RFC9110, Section 15.5.2]
 Source: heuristic
 
+Tag: 402
+Words: payment required
+Semantics: Payment Required
+Reference: [RFC9110, Section 15.5.3]
+Source: heuristic
+
 Tag: 403
 Words: forbidden
 Semantics: Forbidden
@@ -68,14 +170,206 @@ Semantics: Not Found
 Reference: [RFC9110, Section 15.5.5]
 Source: heuristic
 
+Tag: 405
+Words: method not allowed
+Semantics: Method Not Allowed
+Reference: [RFC9110, Section 15.5.6]
+Source: heuristic
+
+Tag: 406
+Words: not acceptable
+Semantics: Not Acceptable
+Reference: [RFC9110, Section 15.5.7]
+Source: heuristic
+
+Tag: 407
+Words: proxy authentication required
+Semantics: Proxy Authentication Required
+Reference: [RFC9110, Section 15.5.8]
+Source: heuristic
+
+Tag: 408
+Words: request timeout
+Semantics: Request Timeout
+Reference: [RFC9110, Section 15.5.9]
+Source: heuristic
+
+Tag: 409
+Words: conflict
+Semantics: Conflict
+Reference: [RFC9110, Section 15.5.10]
+Source: heuristic
+
+Tag: 410
+Words: gone
+Semantics: Gone
+Reference: [RFC9110, Section 15.5.11]
+Source: heuristic
+
+Tag: 411
+Words: length required
+Semantics: Length Required
+Reference: [RFC9110, Section 15.5.12]
+Source: heuristic
+
+Tag: 412
+Words: precondition failed
+Semantics: Precondition Failed
+Reference: [RFC9110, Section 15.5.13]
+Source: heuristic
+
+Tag: 413
+Words: content too large
+Semantics: Content Too Large
+Reference: [RFC9110, Section 15.5.14]
+Source: heuristic
+
+Tag: 414
+Words: uri too long
+Semantics: URI Too Long
+Reference: [RFC9110, Section 15.5.15]
+Source: heuristic
+
+Tag: 415
+Words: unsupported media type
+Semantics: Unsupported Media Type
+Reference: [RFC9110, Section 15.5.16]
+Source: heuristic
+
+Tag: 416
+Words: range not satisfiable
+Semantics: Range Not Satisfiable
+Reference: [RFC9110, Section 15.5.17]
+Source: heuristic
+
+Tag: 417
+Words: expectation failed
+Semantics: Expectation Failed
+Reference: [RFC9110, Section 15.5.18]
+Source: heuristic
+
+Tag: 421
+Words: misdirected request
+Semantics: Misdirected Request
+Reference: [RFC9110, Section 15.5.20]
+Source: heuristic
+
+Tag: 422
+Words: unprocessable content
+Semantics: Unprocessable Content
+Reference: [RFC9110, Section 15.5.21]
+Source: heuristic
+
+Tag: 423
+Words: locked
+Semantics: Locked
+Reference: [RFC4918]
+Source: heuristic
+
+Tag: 424
+Words: failed dependency
+Semantics: Failed Dependency
+Reference: [RFC4918]
+Source: heuristic
+
+Tag: 425
+Words: too early
+Semantics: Too Early
+Reference: [RFC8470]
+Source: heuristic
+
+Tag: 426
+Words: upgrade required
+Semantics: Upgrade Required
+Reference: [RFC9110, Section 15.5.22]
+Source: heuristic
+
+Tag: 428
+Words: precondition required
+Semantics: Precondition Required
+Reference: [RFC6585]
+Source: heuristic
+
+Tag: 429
+Words: too many requests
+Semantics: Too Many Requests
+Reference: [RFC6585]
+Source: heuristic
+
+Tag: 431
+Words: request header fields too large
+Semantics: Request Header Fields Too Large
+Reference: [RFC6585]
+Source: heuristic
+
+Tag: 451
+Words: unavailable for legal reasons
+Semantics: Unavailable For Legal Reasons
+Reference: [RFC7725]
+Source: heuristic
+
 Tag: 500
 Words: internal server error
 Semantics: Internal Server Error
 Reference: [RFC9110, Section 15.6.1]
 Source: heuristic
 
+Tag: 501
+Words: not implemented
+Semantics: Not Implemented
+Reference: [RFC9110, Section 15.6.2]
+Source: heuristic
+
+Tag: 502
+Words: bad gateway
+Semantics: Bad Gateway
+Reference: [RFC9110, Section 15.6.3]
+Source: heuristic
+
 Tag: 503
 Words: service unavailable
 Semantics: Service Unavailable
 Reference: [RFC9110, Section 15.6.4]
+Source: heuristic
+
+Tag: 504
+Words: gateway timeout
+Semantics: Gateway Timeout
+Reference: [RFC9110, Section 15.6.5]
+Source: heuristic
+
+Tag: 505
+Words: http version not supported
+Semantics: HTTP Version Not Supported
+Reference: [RFC9110, Section 15.6.6]
+Source: heuristic
+
+Tag: 506
+Words: variant also negotiates
+Semantics: Variant Also Negotiates
+Reference: [RFC2295]
+Source: heuristic
+
+Tag: 507
+Words: insufficient storage
+Semantics: Insufficient Storage
+Reference: [RFC4918]
+Source: heuristic
+
+Tag: 508
+Words: loop detected
+Semantics: Loop Detected
+Reference: [RFC5842]
+Source: heuristic
+
+Tag: 510
+Words: not extended
+Semantics: Not Extended (OBSOLETED)
+Reference: [RFC2774][Status change of HTTP experiments to Historic]
+Source: heuristic
+
+Tag: 511
+Words: network authentication required
+Semantics: Network Authentication Required
+Reference: [RFC6585]
 Source: heuristic

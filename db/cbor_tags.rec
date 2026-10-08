@@ -3,83 +3,1333 @@
 %doc: https://www.iana.org/assignments/cbor-tags/cbor-tags.xhtml#tags
 
 Tag: 0
-Words: date time string
-Semantics: text string; date/time; Section 3.4.1
+Words: std date time string
+Semantics: Standard date/time string; see Section 3.4.1
 Reference: [RFC8949]
 Source: heuristic
 
 Tag: 1
 Words: epoch based date time
-Semantics: epoch-based date/time; Section 3.4.2
+Semantics: Epoch-based date/time; see Section 3.4.2
 Reference: [RFC8949]
 Source: heuristic
 
 Tag: 2
-Words: positive bignum
-Semantics: unsigned bignum
+Words: unsigned bignum
+Semantics: Unsigned bignum; see Section 3.4.3
 Reference: [RFC8949]
 Source: heuristic
 
 Tag: 3
 Words: negative bignum
-Semantics: negative bignum
+Semantics: Negative bignum; see Section 3.4.3
 Reference: [RFC8949]
 Source: heuristic
 
+Tag: 4
+Words: decimal fraction
+Semantics: Decimal fraction; see Section 3.4.4
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 5
+Words: bigfloat
+Semantics: Bigfloat; see Section 3.4.4
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 16
+Words: cose single recipient encrypted data object
+Semantics: COSE Single Recipient Encrypted Data Object
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 17
+Words: cose mac w o recipients object
+Semantics: COSE Mac w/o Recipients Object
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 18
+Words: cose single signer data object
+Semantics: COSE Single Signer Data Object
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 19
+Words: cose standalone v2 countersignature
+Semantics: COSE standalone V2 countersignature
+Reference: [RFC9338]
+Source: heuristic
+
 Tag: 21
-Words: expected base64url
-Semantics: Expected conversion to base64url encoding
+Words: expected conversion to base64url encoding
+Semantics: Expected conversion to base64url encoding; see Section 3.4.5.2
 Reference: [RFC8949]
 Source: heuristic
 
 Tag: 22
-Words: expected base64
-Semantics: Expected conversion to base64 encoding
+Words: expected conversion to base64 encoding
+Semantics: Expected conversion to base64 encoding; see Section 3.4.5.2
 Reference: [RFC8949]
 Source: heuristic
 
 Tag: 23
-Words: expected base16
-Semantics: Expected conversion to base16 encoding
+Words: expected conversion to base16 encoding
+Semantics: Expected conversion to base16 encoding; see Section 3.4.5.2
 Reference: [RFC8949]
+Source: heuristic
+
+Tag: 24
+Words: encoded cbor data item
+Semantics: Encoded CBOR data item; see Section 3.4.5.1
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 25
+Words: ref the nth prev seen string
+Semantics: reference the nth previously seen string
+Reference: [http://cbor.schmorp.de/stringref][Marc_A._Lehmann]
+Source: heuristic
+
+Tag: 26
+Words: serialised perl obj with classname constructor arg
+Semantics: Serialised Perl object with classname and constructor arguments
+Reference: [http://cbor.schmorp.de/perl-object][Marc_A._Lehmann]
+Source: heuristic
+
+Tag: 27
+Words: serialised lang indep obj with type name constructor arg
+Semantics: Serialised language-independent object with type name and constructor arguments
+Reference: [http://cbor.schmorp.de/generic-object][Marc_A._Lehmann]
+Source: heuristic
+
+Tag: 28
+Words: mark value as shared
+Semantics: mark value as (potentially) shared
+Reference: [http://cbor.schmorp.de/value-sharing][Marc_A._Lehmann]
+Source: heuristic
+
+Tag: 29
+Words: ref nth marked value
+Semantics: reference nth marked value
+Reference: [http://cbor.schmorp.de/value-sharing][Marc_A._Lehmann]
+Source: heuristic
+
+Tag: 30
+Words: rational number
+Semantics: Rational number
+Reference: [http://peteroupc.github.io/CBOR/rational.html][Peter_Occil]
+Source: heuristic
+
+Tag: 31
+Words: absent value in a cbor array
+Semantics: Absent value in a CBOR Array
+Reference: [https://github.com/svaarala/cbor-specs/blob/master/cbor-absent-tag.rst][Sami_Vaarala]
 Source: heuristic
 
 Tag: 32
 Words: uri
-Semantics: URI
+Semantics: URI; see Section 3.4.5.3
 Reference: [RFC8949]
 Source: heuristic
 
-Tag: 55799
-Words: self described cbor
-Semantics: Self-Described CBOR
+Tag: 33
+Words: base64url
+Semantics: base64url; see Section 3.4.5.3
 Reference: [RFC8949]
+Source: heuristic
+
+Tag: 34
+Words: base64
+Semantics: base64; see Section 3.4.5.3
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 35
+Words: regular expression
+Semantics: Regular expression; see Section 2.4.4.3
+Reference: [RFC7049]
+Source: heuristic
+
+Tag: 36
+Words: mime msg
+Semantics: MIME message; see Section 3.4.5.3
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 37
+Words: binary uuid
+Semantics: Binary UUID ([RFC9562, Section 4])
+Reference: [https://github.com/lucas-clemente/cbor-specs/blob/master/uuid.md][Lucas_Clemente]
+Source: heuristic
+
+Tag: 38
+Words: language tagged string
+Semantics: Language-tagged string
+Reference: [RFC9290, Appendix A]
+Source: heuristic
+
+Tag: 39
+Words: id
+Semantics: Identifier
+Reference: [https://github.com/lucas-clemente/cbor-specs/blob/master/id.md][Lucas_Clemente]
+Source: heuristic
+
+Tag: 40
+Words: multi dimensional array row major order
+Semantics: Multi-dimensional Array, row-major order
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 41
+Words: homogeneous array
+Semantics: Homogeneous Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 42
+Words: ipld content id
+Semantics: IPLD content identifier
+Reference: [https://github.com/ipld/cid-cbor/][Volker_Mische]
+Source: heuristic
+
+Tag: 43
+Words: yang bits datatype
+Semantics: YANG bits datatype; see Section 6.7.
+Reference: [RFC9254]
+Source: heuristic
+
+Tag: 44
+Words: yang enumeration datatype
+Semantics: YANG enumeration datatype; see Section 6.6.
+Reference: [RFC9254]
+Source: heuristic
+
+Tag: 45
+Words: yang identityref datatype
+Semantics: YANG identityref datatype; see Section 6.10.
+Reference: [RFC9254]
+Source: heuristic
+
+Tag: 46
+Words: yang instance id datatype
+Semantics: YANG instance-identifier datatype; see Section 6.13.
+Reference: [RFC9254]
+Source: heuristic
+
+Tag: 47
+Words: yang schema item id
+Semantics: YANG Schema Item iDentifier (sid); see Section 3.2.
+Reference: [RFC9254]
+Source: heuristic
+
+Tag: 48
+Words: ieee mac address
+Semantics: IEEE MAC Address
+Reference: [RFC9542]
+Source: heuristic
+
+Tag: 52
+Words: ipv4
+Semantics: IPv4, [prefixlen,IPv4], [IPv4,prefixpart]
+Reference: [RFC9164]
+Source: heuristic
+
+Tag: 54
+Words: ipv6
+Semantics: IPv6, [prefixlen,IPv6], [IPv6,prefixpart]
+Reference: [RFC9164]
+Source: heuristic
+
+Tag: 61
+Words: cbor web token
+Semantics: CBOR Web Token (CWT)
+Reference: [RFC8392][Michael_B._Jones]
+Source: heuristic
+
+Tag: 63
+Words: encoded cbor sequence
+Semantics: Encoded CBOR Sequence [RFC8742]
+Reference: [draft-bormann-cbor-notable-tags-02, Section 2.1]
+Source: heuristic
+
+Tag: 64
+Words: uint8 typed array
+Semantics: uint8 Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 65
+Words: uint16 big endian typed array
+Semantics: uint16, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 66
+Words: uint32 big endian typed array
+Semantics: uint32, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 67
+Words: uint64 big endian typed array
+Semantics: uint64, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 68
+Words: uint8 typed array clamped arithmetic
+Semantics: uint8 Typed Array, clamped arithmetic
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 69
+Words: uint16 little endian typed array
+Semantics: uint16, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 70
+Words: uint32 little endian typed array
+Semantics: uint32, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 71
+Words: uint64 little endian typed array
+Semantics: uint64, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 72
+Words: sint8 typed array
+Semantics: sint8 Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 73
+Words: sint16 big endian typed array
+Semantics: sint16, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 74
+Words: sint32 big endian typed array
+Semantics: sint32, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 75
+Words: sint64 big endian typed array
+Semantics: sint64, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 77
+Words: sint16 little endian typed array
+Semantics: sint16, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 78
+Words: sint32 little endian typed array
+Semantics: sint32, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 79
+Words: sint64 little endian typed array
+Semantics: sint64, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 80
+Words: ieee 754 binary16 big endian typed array
+Semantics: IEEE 754 binary16, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 81
+Words: ieee 754 binary32 big endian typed array
+Semantics: IEEE 754 binary32, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 82
+Words: ieee 754 binary64 big endian typed array
+Semantics: IEEE 754 binary64, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 83
+Words: ieee 754 binary128 big endian typed array
+Semantics: IEEE 754 binary128, big endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 84
+Words: ieee 754 binary16 little endian typed array
+Semantics: IEEE 754 binary16, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 85
+Words: ieee 754 binary32 little endian typed array
+Semantics: IEEE 754 binary32, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 86
+Words: ieee 754 binary64 little endian typed array
+Semantics: IEEE 754 binary64, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 87
+Words: ieee 754 binary128 little endian typed array
+Semantics: IEEE 754 binary128, little endian, Typed Array
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 96
+Words: cose encrypted data object
+Semantics: COSE Encrypted Data Object
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 97
+Words: cose maced data object
+Semantics: COSE MACed Data Object
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 98
+Words: cose signed data object
+Semantics: COSE Signed Data Object
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 100
+Words: number of days since the epoch date 1970 01 01
+Semantics: Number of days since the epoch date 1970-01-01
+Reference: [RFC8943]
+Source: heuristic
+
+Tag: 101
+Words: alternatives as given by the uint plus 128
+Semantics: alternatives as given by the uint + 128; see Section 9.1
+Reference: [draft-bormann-cbor-notable-tags-07]
+Source: heuristic
+
+Tag: 103
+Words: geographic coordinates
+Semantics: Geographic Coordinates
+Reference: [https://github.com/allthingstalk/cbor/blob/master/CBOR-Tag103-Geographic-Coordinates.md][Danilo_Vidovic]
+Source: heuristic
+
+Tag: 104
+Words: geo coord ref system wkt or epsg num
+Semantics: Geographic Coordinate Reference System WKT or EPSG number
+Reference: [draft-clarke-cbor-crs-01]
 Source: heuristic
 
 Tag: 107
 Words: suit envelope
-Semantics: SUIT_Envelope as defined in Appendix A of RFC-ietf-suit-manifest
-Reference: [RFC-ietf-suit-manifest]
-Source: manual
-
-Tag: 1070
-Words: suit manifest
-Semantics: SUIT_Manifest as defined in Appendix A of RFC-ietf-suit-manifest
-Reference: [RFC-ietf-suit-manifest]
+Semantics: SUIT_Envelope as defined in Appendix A of [RFC-ietf-suit-manifest-33]
+Reference: [RFC-ietf-suit-manifest-33]
 Source: manual
 
 Tag: 108
-Words: expected base16 lowercase
+Words: expected conversion base16 enc lowercase
 Semantics: Expected conversion to base16 encoding (lowercase)
-Reference: [IANA]
+Reference: [draft-bormann-cbor-notable-tags-12, Section 2.1, Paragraph 2, Item 2]
 Source: manual
+
+Tag: 110
+Words: relative object id
+Semantics: relative object identifier (BER encoding); SDNV [RFC6256] sequence
+Reference: [RFC9090]
+Source: heuristic
+
+Tag: 111
+Words: object id
+Semantics: object identifier (BER encoding)
+Reference: [RFC9090]
+Source: heuristic
+
+Tag: 112
+Words: object id relative to 1 3 6 1 4 1
+Semantics: object identifier (BER encoding), relative to 1.3.6.1.4.1
+Reference: [RFC9090]
+Source: heuristic
+
+Tag: 120
+Words: internet of things data point
+Semantics: Internet of Things Data Point
+Reference: [https://github.com/allthingstalk/cbor/blob/master/CBOR-Tag120-Internet-of-Things-Data-Points.md][Danilo_Vidovic]
+Source: heuristic
+
+Tag: 200
+Words: gordian envelope
+Semantics: Gordian Envelope
+Reference: [draft-mcnally-envelope-05]
+Source: heuristic
+
+Tag: 201
+Words: enclosed dcbor
+Semantics: enclosed dCBOR
+Reference: [draft-mcnally-deterministic-cbor-10]
+Source: heuristic
+
+Tag: 256
+Words: mark value as having string references
+Semantics: mark value as having string references
+Reference: [http://cbor.schmorp.de/stringref][Marc_A._Lehmann]
+Source: heuristic
+
+Tag: 257
+Words: binary mime msg
+Semantics: Binary MIME message
+Reference: [http://peteroupc.github.io/CBOR/binarymime.html][Peter_Occil]
+Source: heuristic
+
+Tag: 258
+Words: mathematical finite set
+Semantics: Mathematical finite set
+Reference: [https://github.com/input-output-hk/cbor-sets-spec/blob/master/CBOR_SETS.md][Alfredo_Di_Napoli]
+Source: heuristic
+
+Tag: 259
+Words: map datatype with key val op set delete
+Semantics: Map datatype with key-value operations (e.g. `.get()/.set()/.delete()`)
+Reference: [https://github.com/shanewholloway/js-cbor-codec/blob/master/docs/CBOR-259-spec--explicit-maps.md][Shane_Holloway]
+Source: heuristic
+
+Tag: 260
+Words: network address
+Semantics: Network Address (IPv4 or IPv6 or MAC Address) (DEPRECATED in favor of 52 and 54        for IP addresses)
+Reference: [http://www.employees.org/~ravir/cbor-network.txt][Ravi_Raju][RFC9164]
+Source: heuristic
+
+Tag: 261
+Words: network address prefix
+Semantics: Network Address Prefix (IPv4 or IPv6 Address + Mask Length) (DEPRECATED in favor of 52 and 54        for IP addresses)
+Reference: [https://github.com/toravir/CBOR-Tag-Specs/blob/master/networkPrefix.md][Ravi_Raju][RFC9164]
+Source: heuristic
+
+Tag: 262
+Words: embedded json object
+Semantics: Embedded JSON Object
+Reference: [https://github.com/toravir/CBOR-Tag-Specs/blob/master/embeddedJSON.md][Ravi_Raju]
+Source: heuristic
+
+Tag: 263
+Words: hexadecimal string
+Semantics: Hexadecimal string
+Reference: [https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md][Ravi_Raju]
+Source: heuristic
+
+Tag: 264
+Words: decimal fraction with arbitrary exponent
+Semantics: Decimal fraction with arbitrary exponent
+Reference: [http://peteroupc.github.io/CBOR/bigfrac.html][Peter_Occil]
+Source: heuristic
+
+Tag: 265
+Words: bigfloat with arbitrary exponent
+Semantics: Bigfloat with arbitrary exponent
+Reference: [http://peteroupc.github.io/CBOR/bigfrac.html][Peter_Occil]
+Source: heuristic
+
+Tag: 266
+Words: internationalized resource id
+Semantics: Internationalized resource identifier (IRI)
+Reference: [https://peteroupc.github.io/CBOR/iri.html][Peter_Occil]
+Source: heuristic
+
+Tag: 267
+Words: internationalized resource id ref
+Semantics: Internationalized resource identifier reference (IRI reference)
+Reference: [https://peteroupc.github.io/CBOR/iri.html][Peter_Occil]
+Source: heuristic
+
+Tag: 268
+Words: extended decimal fraction
+Semantics: Extended decimal fraction
+Reference: [https://peteroupc.github.io/CBOR/extended.html][Peter_Occil]
+Source: heuristic
+
+Tag: 269
+Words: extended bigfloat
+Semantics: Extended bigfloat
+Reference: [https://peteroupc.github.io/CBOR/extended.html][Peter_Occil]
+Source: heuristic
+
+Tag: 270
+Words: extended rational number
+Semantics: Extended rational number
+Reference: [https://peteroupc.github.io/CBOR/extended.html][Peter_Occil]
+Source: heuristic
+
+Tag: 271
+Words: ddos open threat signaling sig chn obj
+Semantics: DDoS Open Threat Signaling (DOTS) signal channel object, as defined in [RFC9132]
+Reference: [RFC9132]
+Source: heuristic
+
+Tag: 272
+Words: non utf 8 cesu 8 string
+Semantics: Non-UTF-8 CESU-8 string
+Reference: [https://github.com/svaarala/cbor-specs/blob/master/cbor-nonutf8-string-tags.rst][Sami_Vaarala]
+Source: heuristic
+
+Tag: 273
+Words: non utf 8 wtf 8 string
+Semantics: Non-UTF-8 WTF-8 string
+Reference: [https://github.com/svaarala/cbor-specs/blob/master/cbor-nonutf8-string-tags.rst][Sami_Vaarala]
+Source: heuristic
+
+Tag: 274
+Words: non utf 8 mutf 8 string
+Semantics: Non-UTF-8 MUTF-8 string
+Reference: [https://github.com/svaarala/cbor-specs/blob/master/cbor-nonutf8-string-tags.rst][Sami_Vaarala]
+Source: heuristic
+
+Tag: 275
+Words: map contains only keys that are of type txt str
+Semantics: Map contains only keys that are of type Text String (major type 3)
+Reference: [https://github.com/ecorm/cbor-tag-text-key-map][Emile_Cormier]
+Source: heuristic
+
+Tag: 276
+Words: eris binary read capability
+Semantics: ERIS binary read capability
+Reference: [http://purl.org/eris]
+Source: heuristic
+
+Tag: 277
+Words: universal geo area description shape
+Semantics: Universal Geographical Area Description (GAD) shape; see Section 5
+Reference: [TS 23.032][Mathew_Meins]
+Source: heuristic
+
+Tag: 278
+Words: universal geo area description description of velocity
+Semantics: Universal Geographical Area Description (GAD) description of velocity; see Section 8
+Reference: [TS 23.032][Mathew_Meins]
+Source: heuristic
+
+Tag: 279
+Words: coordinate ref system wrapper
+Semantics: Coordinate Reference System Wrapper
+Reference: [Fast and Readable Geographical Hashing (CTA-5009-A)][Consumer_Technology_Association]
+Source: heuristic
+
+Tag: 280
+Words: symbol
+Semantics: Symbol
+Reference: [https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt][Mihai_Bazon]
+Source: heuristic
+
+Tag: 281
+Words: linked list
+Semantics: Linked list
+Reference: [https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt][Mihai_Bazon]
+Source: heuristic
+
+Tag: 282
+Words: character
+Semantics: Character
+Reference: [https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt][Mihai_Bazon]
+Source: heuristic
+
+Tag: 283
+Words: object
+Semantics: Object
+Reference: [https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt][Mihai_Bazon]
+Source: heuristic
+
+Tag: 296
+Words: isolate shared values within this scope
+Semantics: isolate shared values within this scope
+Reference: [https://cbor.is4.site/sharedref-namespace][IS4]
+Source: heuristic
+
+Tag: 301
+Words: geohash string
+Semantics: Geohash String
+Reference: [Fast and Readable Geographical Hashing (CTA-5009-A)][Consumer_Technology_Association]
+Source: heuristic
+
+Tag: 570
+Words: spdm toc map
+Semantics: spdm-toc-map
+Reference: [TCG DICE Concise Evidence Binding for SPDM][TCG]
+Source: heuristic
+
+Tag: 571
+Words: concise evidence map
+Semantics: concise-evidence-map
+Reference: [TCG DICE Concise Evidence Binding for SPDM][TCG]
+Source: heuristic
+
+Tag: 601
+Words: unprotected cwt claims set
+Semantics: Unprotected CWT Claims Set [RFC-ietf-rats-uccs-12]
+Reference: [RFC-ietf-rats-uccs-12]
+Source: heuristic
+
+Tag: 602
+Words: detached eat bundle
+Semantics: Detached EAT Bundle
+Reference: [RFC-ietf-rats-eat-30, Section 5]
+Source: heuristic
+
+Tag: 1001
+Words: extended time
+Semantics: extended time
+Reference: [RFC9581, Section 3]
+Source: heuristic
+
+Tag: 1002
+Words: duration
+Semantics: duration
+Reference: [RFC9581, Section 4]
+Source: heuristic
+
+Tag: 1003
+Words: period
+Semantics: period
+Reference: [RFC9581, Section 5]
+Source: heuristic
+
+Tag: 1004
+Words: full date string
+Semantics: [RFC3339] full-date string
+Reference: [RFC8943]
+Source: heuristic
+
+Tag: 1010
+Words: object type id
+Semantics: Object type identifier
+Reference: [draft-rundgren-cotx-04]
+Source: heuristic
+
+Tag: 1040
+Words: multi dimensional array column major order
+Semantics: Multi-dimensional Array, column-major order
+Reference: [RFC8746]
+Source: heuristic
+
+Tag: 1048
+Words: ieee oui cid
+Semantics: IEEE OUI/CID
+Reference: [RFC9542]
+Source: heuristic
+
+Tag: 1070
+Words: suit manifest
+Semantics: SUIT_Manifest as defined in Appendix A of [RFC-ietf-suit-manifest-33]
+Reference: [RFC-ietf-suit-manifest-33]
+Source: manual
+
+Tag: 18556
+Words: cose algorithm id base hash value
+Semantics: [COSE algorithm identifier, Base Hash value]
+Reference: [draft-bormann-cbor-notable-tags-09, Section 3.1.1]
+Source: heuristic
+
+Tag: 20853
+Words: description of val instead of val itself
+Semantics: description of the value instead of the value itself
+Reference: [https://cbor.is4.site/quoted][IS4]
+Source: heuristic
+
+Tag: 21065
+Words: i regexp
+Semantics: I-Regexp
+Reference: [draft-bormann-cbor-notable-tags-11, Section 2.1][RFC9485]
+Source: heuristic
+
+Tag: 21066
+Words: ecmascript regexp
+Semantics: ECMAScript RegExp [https://262.ecma-international.org/14.0/#sec-regexp-regular-expression-objects]
+Reference: [https://github.com/hildjj/cbor-specs/blob/main/regexp.md][Joe_Hildebrand]
+Source: heuristic
+
+Tag: 21334
+Words: programming aid for simple values
+Semantics: (always invalid in interchange) programming aid for simple values
+Reference: [draft-bormann-cbor-notable-tags-12, Section 10.2 ]
+Source: heuristic
+
+Tag: 21607
+Words: a cbor tag id
+Semantics: a CBOR Tag identifier
+Reference: [https://cbor.is4.site/cbor-tag][IS4]
+Source: heuristic
+
+Tag: 22098
+Words: hint that indicates an add lvl of indirection
+Semantics: hint that indicates an additional level of indirection
+Reference: [http://cbor.schmorp.de/indirection][Marc_A._Lehmann]
+Source: heuristic
+
+Tag: 25441
+Words: capture
+Semantics: Capture [3]
+Reference: [https://github.com/japhb/cbor-specs/blob/main/capture.md][Geoffrey_Broadwell]
+Source: heuristic
+
+Tag: 32768
+Words: id for a fhir constant
+Semantics: Identifier for a FHIR constant
+Reference: [Stefan_Genchev]
+Source: heuristic
+
+Tag: 32769
+Words: external ref
+Semantics: External reference
+Reference: [https://gitlab.com/Hawk777/cbor-specs/-/blob/main/external-reference.md][Christopher_Head]
+Source: heuristic
+
+Tag: 40000
+Words: ur known value semantic signifier
+Semantics: ur:known-value, Semantic signifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40001
+Words: ur digest 32 byte sha 256 digest
+Semantics: ur:digest, 32-byte SHA-256 digest
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40002
+Words: ur encrypted ietf chacha20 poly1305 encrypted msg
+Semantics: ur:encrypted, IETF ChaCha20-Poly1305 ([RFC8439]) encrypted message
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40003
+Words: ur compressed deflate compressed msg
+Semantics: ur:compressed, [RFC1951] DEFLATE-compressed message
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40004
+Words: ur request transaction request id
+Semantics: ur:request, Transaction Request identifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40005
+Words: ur response transaction response id
+Semantics: ur:response, Transaction response identifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40006
+Words: ur function envelope expression function id
+Semantics: ur:function, Envelope expression function identifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40007
+Words: ur param envelope expression param id
+Semantics: ur:parameter, Envelope expression parameter identifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40008
+Words: ur placeholder envelope expression placeholder id
+Semantics: ur:placeholder, Envelope expression placeholder identifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40009
+Words: ur replacement envelope expression replacement id
+Semantics: ur:replacement, Envelope expression replacement identifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40010
+Words: ur agreement private key curve25519 private key for x25519 key agreement
+Semantics: ur:agreement-private-key, Curve25519 private key for X25519 key agreement
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40011
+Words: ur agreement public key curve25519 public key for x25519 key agreement
+Semantics: ur:agreement-public-key, Curve25519 public key for X25519 key agreement
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40012
+Words: ur arid apparently random id
+Semantics: ur:arid, Apparently Random Identifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40013
+Words: ur crypto prvkeys private keys for cryptographic op
+Semantics: ur:crypto-prvkeys, Private keys for cryptographic operations
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40014
+Words: ur nonce cryptographic nonce
+Semantics: ur:nonce, Cryptographic nonce
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40015
+Words: ur password scrypt hashed password
+Semantics: ur:password, Scrypt-hashed password
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40016
+Words: ur crypto prvkeys private key base
+Semantics: ur:crypto-prvkeys, Private key base (key material)
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40017
+Words: ur crypto pubkeys public key base
+Semantics: ur:crypto-pubkeys, Public key base (signing and agreement public key bundle)
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40018
+Words: ur salt random salt used for hash tree decorrelation
+Semantics: ur:salt, Random salt used for hash tree decorrelation
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40019
+Words: ur crypto sealed encrypted msg ephemeral public key
+Semantics: ur:crypto-sealed, Encrypted message and ephemeral public key
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40020
+Words: ur signature cryptographic signature
+Semantics: ur:signature, Cryptographic signature
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40021
+Words: ur signing private key cryptographic private key used for signing
+Semantics: ur:signing-private-key, Cryptographic private key used for signing
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40022
+Words: ur signing public key cryptographic public key used for signing
+Semantics: ur:signing-public-key, Cryptographic public key used for signing
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40023
+Words: ur crypto key cryptographic key used for symmetric encryption
+Semantics: ur:crypto-key, Cryptographic key used for symmetric encryption
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40024
+Words: ur xid extensible id or xid document
+Semantics: ur:xid, Extensible identifier or XID Document
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40025
+Words: ur ref cryptographically secure ref an obj
+Semantics: ur:reference, Cryptographically secure reference to an object
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40026
+Words: ur event event id
+Semantics: ur:event, Event identifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40027
+Words: ur encrypted key content key encrypted with derivation function
+Semantics: ur:encrypted-key, Content key encrypted with a derivation function
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40100
+Words: ur mlkem private key private key for mlkem key encapsulation
+Semantics: ur:mlkem-private-key, Private key for MLKEM key encapsulation
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40101
+Words: ur mlkem public key public key for mlkem key encapsulation
+Semantics: ur:mlkem-public-key, Public key for MLKEM key encapsulation
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40102
+Words: ur mlkem ciphertext ciphertext for mlkem key encapsulation
+Semantics: ur:mlkem-ciphertext, Ciphertext for MLKEM key encapsulation
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40103
+Words: ur mldsa private key private key for mldsa signature generation
+Semantics: ur:mldsa-private-key, Private key for MLDSA signature generation
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40104
+Words: ur mldsa public key public key for mldsa signature verification
+Semantics: ur:mldsa-public-key, Public key for MLDSA signature verification
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40105
+Words: ur mldsa signature mldsa signature
+Semantics: ur:mldsa-signature, MLDSA signature
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40300
+Words: ur seed cryptographic seed
+Semantics: ur:seed, Cryptographic seed
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40303
+Words: ur hdkey bitcoin bip 32 hd key
+Semantics: ur:hdkey, Bitcoin BIP-32 HD key
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40304
+Words: ur keypath bitcoin bip 32 key derivation path
+Semantics: ur:keypath, Bitcoin BIP-32 key derivation path
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40305
+Words: ur coin info cryptographic asset network specifier
+Semantics: ur:coin-info, Cryptographic asset and network specifier
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40306
+Words: ur eckey bitcoin elliptic curve key
+Semantics: ur:eckey, Bitcoin elliptic curve key (private or public)
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40307
+Words: ur address cryptocurrency address
+Semantics: ur:address, Cryptocurrency address
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40308
+Words: ur output descriptor bitcoin output descriptor
+Semantics: ur:output-descriptor, Bitcoin output descriptor
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40309
+Words: ur sskr sharded secret key reconstruction share
+Semantics: ur:sskr, Sharded Secret Key Reconstruction (SSKR) share
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40310
+Words: ur psbt partially signed bitcoin transaction
+Semantics: ur:psbt, Partially Signed Bitcoin Transaction
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40311
+Words: ur account descriptor bitcoin account descriptor
+Semantics: ur:account-descriptor, Bitcoin account descriptor
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40800
+Words: ur ssh private text format ssh private key
+Semantics: ur:ssh-private, Text format SSH private key
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40801
+Words: ur ssh public text format ssh public key
+Semantics: ur:ssh-public, Text format SSH public key
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40802
+Words: ur ssh signature text format ssh signature
+Semantics: ur:ssh-signature, Text format SSH signature
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 40803
+Words: ur ssh certificate txt format ssh certificate
+Semantics: ur:ssh-certificate, Text format SSH certificate
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 42600
+Words: confidentiality clearance
+Semantics: A confidentiality clearance. The key value pairs of the map are defined in ADatP-4774.8
+Reference: [Aidan_Murdock]
+Source: heuristic
+
+Tag: 42601
+Words: metadata binding
+Semantics: A metadata binding. The elements of the array are defined in AdatP-4778.8. The tag is also used as part of the magic number in on-disk detached and encapsulating bindings.
+Reference: [Aidan_Murdock]
+Source: heuristic
+
+Tag: 42602
+Words: collection of ncms metadata elements
+Semantics: A collection of NCMS metadata elements. The key value pairs of the map are defined in AdatP-5636.8
+Reference: [Aidan_Murdock]
+Source: heuristic
+
+Tag: 43000
+Words: single complex number
+Semantics: Single complex number: array elements are real (I) and imaginary (Q) components
+Reference: [Saajan_Chana]
+Source: heuristic
+
+Tag: 43001
+Words: array of complex numbers in interleaved form
+Semantics: Array of complex numbers in interleaved form: complex value k is stored with real (I) part at array index 2k and imaginary (Q) part at index (2k + 1)
+Reference: [Saajan_Chana]
+Source: heuristic
+
+Tag: 50000
+Words: platformv is id
+Semantics: PlatformV_IS_ID
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50001
+Words: platformv is name
+Semantics: PlatformV_IS_NAME
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50002
+Words: platformv is value
+Semantics: PlatformV_IS_VALUE
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50003
+Words: platformv has composite value
+Semantics: PlatformV_HAS_COMPOSITE_VALUE
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50004
+Words: platformv has mapped value
+Semantics: PlatformV_HAS_MAPPED_VALUE
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50005
+Words: platformv has obj id
+Semantics: PlatformV_HAS_OBJ_ID
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50006
+Words: platformv has obj tag
+Semantics: PlatformV_HAS_OBJ_TAG
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50007
+Words: platformv has child
+Semantics: PlatformV_HAS_CHILD
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50008
+Words: platformv has property
+Semantics: PlatformV_HAS_PROPERTY
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50009
+Words: platformv has meta
+Semantics: PlatformV_HAS_META
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50010
+Words: platformv has event
+Semantics: PlatformV_HAS_EVENT
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50011
+Words: platformv has action
+Semantics: PlatformV_HAS_ACTION
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 50012
+Words: platformv is type
+Semantics: PlatformV_IS_TYPE
+Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
+Source: heuristic
+
+Tag: 55799
+Words: self described cbor
+Semantics: Self-described CBOR; see Section 3.4.6
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 55800
+Words: indicates that file contains cbor sequences
+Semantics: indicates that the file contains CBOR Sequences
+Reference: [RFC9277]
+Source: heuristic
+
+Tag: 55801
+Words: indicates that file starts with cbor labeled non cbor data label
+Semantics: indicates that the file starts with a CBOR-Labeled Non-CBOR Data label.
+Reference: [RFC9277]
+Source: heuristic
+
+Tag: 56500
+Words: compressed byte string
+Semantics: Compressed byte string
+Reference: [https://github.com/dectris/documentation/blob/main/cbor/dectris-compression-tag.md][Dirk_Boye]
+Source: heuristic
+
+Tag: 57342
+Words: ident define set of rec strct that can be ref as tags in inc val
+Semantics: Identify and define a set of record structures (each a sequence of property names) that can be referenced as tags in the included value (and the scope for the record tag definitions)
+Reference: [https://github.com/kriszyp/cbor-records][Kris_Zyp]
+Source: heuristic
+
+Tag: 57343
+Words: ident define rec strct use that rec strct def interpret inc vals
+Semantics: Identify and define a record structure (a sequence of property names), and use that record structure definition to interpret the included values.
+Reference: [https://github.com/kriszyp/cbor-records][Kris_Zyp]
+Source: heuristic
+
+Tag: 60000
+Words: tagged cbor array contains attest evidence data with an intel tee quote
+Semantics: The tagged CBOR array contains attestation evidence data with an Intel TEE quote.
+Reference: [Shanwei_Cen]
+Source: heuristic
+
+Tag: 60001
+Words: tagged cbor array contains attest evidence data with an intel tee rpt
+Semantics: The tagged CBOR array contains attestation evidence data with an Intel TEE report.
+Reference: [Shanwei_Cen]
+Source: heuristic
+
+Tag: 60002
+Words: tagged cbor array contains attest evidence data with an intel sgx rpt
+Semantics: The tagged CBOR array contains attestation evidence data with an Intel SGX report.
+Reference: [Shanwei_Cen]
+Source: heuristic
 
 Tag: 65535
 Words: invalid 16bit
-Semantics: Always invalid 16-bit max marker
+Semantics: always invalid; see Section 10.1
 Reference: [draft-bormann-cbor-notable-tags-02]
 Source: manual
 
+Tag: 15309736
+Words: rains msg
+Semantics: RAINS Message
+Reference: [https://britram.github.io/rains-prototype][Brian_Trammell]
+Source: heuristic
+
+Tag: 1146111423
+Words: tcg dice protection env profile descriptor
+Semantics: TCG DICE Protection Environment profile descriptor
+Reference: [TCG DICE Protection Environment][TCG]
+Source: heuristic
+
+Tag: 1298360423
+Words: moat change of status marker
+Semantics: MoaT change-of-status marker
+Reference: [https://github.com/M-o-a-T/moat/blob/main/doc/common/cbor.rst][Matthias_Urlichs]
+Source: heuristic
+
+Tag: 1298493254
+Words: moat end of file marker
+Semantics: MoaT end-of-file marker
+Reference: [https://github.com/M-o-a-T/moat-util/][Matthias_Urlichs]
+Source: heuristic
+
+Tag: 1299145044
+Words: moat file id details
+Semantics: MoaT file identifier / details
+Reference: [https://github.com/M-o-a-T/moat-util/][Matthias_Urlichs]
+Source: heuristic
+
+Tag: 1330664270
+Words: cbor enc openswan config file as stored on disk forunit test cases
+Semantics: A CBOR encoded Openswan configuration file, as stored on disk forunit test cases.
+Reference: [Michael_Richardson][Samir_Hussain]
+Source: heuristic
+
+Tag: 1347571542
+Words: ur provenance provenance mark
+Semantics: ur:provenance, Provenance Mark
+Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
+Source: heuristic
+
+Tag: 1398229316
+Words: concise software id
+Semantics: Concise Software Identifier (CoSWID)
+Reference: [RFC9393]
+Source: heuristic
+
+Tag: 1701996915
+Words: array of content addr blocks eris read cap
+Semantics: Array of content-addressed blocks and ERIS read capabilities
+Reference: [Endo_Renberg]
+Source: heuristic
+
+Tag: 1701996916
+Words: eris fs image header
+Semantics: ERIS-FS image header
+Reference: [Endo_Renberg]
+Source: heuristic
+
+Tag: 4294967295
+Words: invalid 32bit
+Semantics: always invalid; see Section 10.1
+Reference: [draft-bormann-cbor-notable-tags-02]
+Source: manual
+
+Tag: 4294967296
+Words: intel fpga spdm manifest
+Semantics: Intel FPGA SPDM Manifest
+Reference: [Andrew_Draper]
+Source: heuristic
+
+Tag: 18446744073709551615
+Words: invalid 64bit
+Semantics: always invalid; Section 10.1
+Reference: [draft-bormann-cbor-notable-tags-02]
+Source: manual
+
+# --- Not in the 2025-04-30 header baseline; names come from the old iana_cbor_tag_override_semantic() table.
+# Semantics/Reference here are placeholders: the next `make sync` reports IANA's real text as UPDATED.
 Tag: 32870
 Words: logical operator none or not
 Semantics: A CBOR tag that contains: Logical operator NONE or NOT
@@ -122,14 +1372,16 @@ Semantics: A CBOR tag that contains: Fraction Both NaN signals
 Reference: [IANA]
 Source: manual
 
-Tag: 4294967295
-Words: invalid 32bit
-Semantics: Always invalid 32-bit max marker
-Reference: [RFC8949]
-Source: manual
+# --- Excluded from the headers: IANA describes tags 554 and 555 identically, so no distinct name exists.
+# Source: skip keeps them out and stops `make sync` re-adding them as new. (Text taken from the old generator's notes.)
+Tag: 554
+Words: 
+Semantics: A CBOR tag that contains a PEM encoded SubjectPublicKeyInfo. See Section 13 of [RFC7468].
+Reference: [TCG DICE Endorsement Architecture for Devices][TCG Errata for DICE Endorsement Architecture for Devices Version 1.1][TCG]
+Source: skip
 
-Tag: 18446744073709551615
-Words: invalid 64bit
-Semantics: Always invalid 64-bit max marker
-Reference: [RFC8949]
-Source: manual
+Tag: 555
+Words: 
+Semantics: A CBOR tag that contains a PEM encoded SubjectPublicKeyInfo. See Section 13 of [RFC7468].
+Reference: [TCG DICE Endorsement Architecture for Devices][TCG Errata for DICE Endorsement Architecture for Devices Version 1.1][TCG]
+Source: skip

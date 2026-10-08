@@ -1,0 +1,165 @@
+%rec: CoapResponseCode
+%key: Tag
+%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#response-codes
+
+Tag: 2.01
+Words: success created
+Semantics: Created
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 2.02
+Words: success deleted
+Semantics: Deleted
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 2.03
+Words: success valid
+Semantics: Valid
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 2.04
+Words: success changed
+Semantics: Changed
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 2.05
+Words: success content
+Semantics: Content
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 2.31
+Words: success continue
+Semantics: Continue
+Reference: [RFC7959]
+Source: heuristic
+
+Tag: 4.00
+Words: client error bad request
+Semantics: Bad Request
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.01
+Words: client error unauthorized
+Semantics: Unauthorized
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.02
+Words: client error bad option
+Semantics: Bad Option
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.03
+Words: client error forbidden
+Semantics: Forbidden
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.04
+Words: client error not found
+Semantics: Not Found
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.05
+Words: client error method not allowed
+Semantics: Method Not Allowed
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.06
+Words: client error not acceptable
+Semantics: Not Acceptable
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.08
+Words: client error request entity incomplete
+Semantics: Request Entity Incomplete
+Reference: [RFC7959]
+Source: heuristic
+
+Tag: 4.09
+Words: client error conflict
+Semantics: Conflict
+Reference: [RFC8132]
+Source: heuristic
+
+Tag: 4.12
+Words: client error precondition failed
+Semantics: Precondition Failed
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.13
+Words: client error request entity too large
+Semantics: Request Entity Too Large
+Reference: [RFC7252][RFC7959]
+Source: heuristic
+
+Tag: 4.15
+Words: client error unsupported content format
+Semantics: Unsupported Content-Format
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 4.22
+Words: client error unprocessable entity
+Semantics: Unprocessable Entity
+Reference: [RFC8132]
+Source: heuristic
+
+Tag: 4.29
+Words: client error too many requests
+Semantics: Too Many Requests
+Reference: [RFC8516]
+Source: heuristic
+
+Tag: 5.00
+Words: server error internal server error
+Semantics: Internal Server Error
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 5.01
+Words: server error not implemented
+Semantics: Not Implemented
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 5.02
+Words: server error bad gateway
+Semantics: Bad Gateway
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 5.03
+Words: server error service unavailable
+Semantics: Service Unavailable
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 5.04
+Words: server error gateway timeout
+Semantics: Gateway Timeout
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 5.05
+Words: server error proxying not supported
+Semantics: Proxying Not Supported
+Reference: [RFC7252]
+Source: heuristic
+
+Tag: 5.08
+Words: server error hop limit reached
+Semantics: Hop Limit Reached
+Reference: [RFC8768]
+Source: heuristic

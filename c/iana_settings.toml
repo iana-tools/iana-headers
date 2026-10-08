@@ -37,8 +37,8 @@ style_override = ""
 generated_header_filepath = './src/http_constants.h'
 cache_directory_path = './cache/http/'
 
-[coap.http_status_code]
+[http.http_status_code]
 name = "http_status_code"
 
-[coap.http_field_name]
+[http.http_field_name]
 name = "http_field_name"

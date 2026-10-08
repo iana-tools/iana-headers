@@ -1,0 +1,81 @@
+%rec: CoapSignalingOption
+%key: Tag
+%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers
+
+Tag: 7.01.2
+Words: max message size
+Semantics: Max-Message-Size
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.01.4
+Words: block wise transfer
+Semantics: Block-Wise-Transfer
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.01.6
+Words: extended token length
+Semantics: Extended-Token-Length
+Reference: [RFC8974]
+Source: heuristic
+
+Tag: 7.01.9
+Words: oscore
+Semantics: OSCORE
+Reference: [RFC8613]
+Source: heuristic
+
+Tag: 7.02.2
+Words: custody
+Semantics: Custody
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.02.9
+Words: oscore
+Semantics: OSCORE
+Reference: [RFC8613]
+Source: heuristic
+
+Tag: 7.03.2
+Words: custody
+Semantics: Custody
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.03.9
+Words: oscore
+Semantics: OSCORE
+Reference: [RFC8613]
+Source: heuristic
+
+Tag: 7.04.2
+Words: alternative address
+Semantics: Alternative-Address
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.04.4
+Words: hold off
+Semantics: Hold-Off
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.04.9
+Words: oscore
+Semantics: OSCORE
+Reference: [RFC8613]
+Source: heuristic
+
+Tag: 7.05.2
+Words: bad csm option
+Semantics: Bad-CSM-Option
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.05.9
+Words: oscore
+Semantics: OSCORE
+Reference: [RFC8613]
+Source: heuristic

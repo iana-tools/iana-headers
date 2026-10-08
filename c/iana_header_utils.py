@@ -1,7 +1,7 @@
 import os
 import re
-import time
-import email
+import email.utils
+import xml.etree.ElementTree as ET
 import requests
 
 '''
@@ -37,7 +37,9 @@ def _download_csv(csv_url: str, cache_file: str) -> str:
     response = requests.get(csv_url)
     response.raise_for_status()
 
-    csv_content = response.text
+    # IANA serves CSV without a charset (requests would guess Latin-1) and may prefix a BOM,
+    # which would otherwise end up inside the first column name
+    csv_content = response.content.decode("utf-8-sig")
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)
     with open(cache_file, "w", encoding="utf-8") as file:
         file.write(csv_content)
@@ -61,17 +63,99 @@ def read_or_download_csv(csv_url: str, cache_file: str) -> str:
             return _download_csv(csv_url, cache_file)
 
         remote_last_modified = response.headers['last-modified']
-        remote_timestamp = time.mktime(email.utils.parsedate_to_datetime(remote_last_modified).timetuple())
+        remote_timestamp = email.utils.parsedate_to_datetime(remote_last_modified).timestamp()
         cached_timestamp = os.path.getmtime(cache_file)
         if remote_timestamp > cached_timestamp:
             return _download_csv(csv_url, cache_file)
 
         return _read_cache_csv(cache_file)
 
-    except requests.RequestException as err:
+    except (requests.RequestException, ValueError, OSError) as err:
         if os.path.exists(cache_file):
             return _read_cache_csv(cache_file)
         raise Exception("Error fetching CSV and no cache available.") from err
+
+###############################################################################
+# XML Handlers
+
+def _download_xml(xml_url: str, cache_file: str) -> str:
+    response = requests.get(xml_url, headers={"Accept": "application/xml"})
+    response.raise_for_status()
+    # IANA serves XML without a charset, so do not let requests guess one
+    xml_content = response.content.decode("utf-8-sig")
+    os.makedirs(os.path.dirname(cache_file), exist_ok=True)
+    with open(cache_file, "w", encoding="utf-8") as f:
+        f.write(xml_content)
+    return xml_content
+
+def read_or_download_xml(xml_url: str, cache_file: str) -> str:
+    """Fetch XML with the same HEAD/timestamp caching logic as read_or_download_csv."""
+    try:
+        response = requests.head(xml_url)
+        if not os.path.exists(cache_file) or 'last-modified' not in response.headers:
+            return _download_xml(xml_url, cache_file)
+        remote_ts = email.utils.parsedate_to_datetime(response.headers['last-modified']).timestamp()
+        if remote_ts > os.path.getmtime(cache_file):
+            return _download_xml(xml_url, cache_file)
+        with open(cache_file, "r", encoding="utf-8") as f:
+            return f.read()
+    except (requests.RequestException, ValueError, OSError) as err:
+        if os.path.exists(cache_file):
+            with open(cache_file, "r", encoding="utf-8") as f:
+                return f.read()
+        raise Exception("Error fetching XML and no cache available.") from err
+
+def format_xrefs(record_elem) -> str:
+    """Render all <xref> elements of a record into a single reference string, e.g. '[RFC9110, Section 15.2.1]'.
+
+    Matches the bracketed style of IANA's CSV exports, minus the CSV's trailing document titles.
+    """
+    parts = []
+    for xref in record_elem.iter('{http://www.iana.org/assignments}xref'):
+        xtype = xref.get('type', '')
+        data = xref.get('data', '')
+        section = xref.get('section', '')
+        if not data:
+            continue
+        if xtype == 'rfc':
+            # 'rfc9110' -> 'RFC9110'; keep the case of anything after the prefix ('rfc-ietf-foo' -> 'RFC-ietf-foo')
+            ref = '[RFC' + data[3:] if data.lower().startswith('rfc') else f'[{data.upper()}'
+            if section:
+                ref += f', Section {section}'
+            ref += ']'
+            parts.append(ref)
+        else:
+            parts.append(f'[{data}]')
+    return ''.join(parts)
+
+def parse_iana_xml_registry(xml_content: str, registry_id: str) -> list:
+    """Return a list of dicts for every <record> under <registry id=registry_id>.
+
+    Each dict maps child element local-names to their text content.
+    The 'xref' key is pre-formatted via format_xrefs().
+    """
+    ns = 'http://www.iana.org/assignments'
+    root = ET.fromstring(xml_content)
+
+    target = None
+    for reg in root.iter(f'{{{ns}}}registry'):
+        if reg.get('id') == registry_id:
+            target = reg
+            break
+    if target is None:
+        return []
+
+    records = []
+    for record in target.findall(f'{{{ns}}}record'):
+        row = {}
+        for child in record:
+            local = child.tag.split('}', 1)[-1]
+            if local == 'xref':
+                continue
+            row[local] = (child.text or '').strip()
+        row['xref'] = format_xrefs(record)
+        records.append(row)
+    return records
 
 ###############################################################################
 # C Code Generation Utilities
@@ -161,7 +245,7 @@ def update_c_typedef_enum(document_content, c_typedef_name, c_enum_name, c_head_
         enumname = "" if enumname is None else (enumname + " ")
         pattern = fr'typedef enum [^{{]*\{{([^}}]*)\}} {typename};'
         replacement = f'typedef enum {enumname}{{\n{c_enum_content}}} {typename};'
-        updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
+        updated_document_content = re.sub(pattern, lambda _: replacement, document_content, flags=re.DOTALL)
         return updated_document_content
 
     # Check if already exist, if not then create one
@@ -192,7 +276,7 @@ def update_c_const_macro(document_content, section_name, c_head_comment, c_macro
         # Search and replace
         pattern = fr'\/\* Start of {section_name} autogenerated section \*\/(.*?)\n\/\* End of {section_name} autogenerated section \*\/'
         replacement = f'/* Start of {section_name} autogenerated section */\n{new_content}/* End of {section_name} autogenerated section */'
-        updated_document_content = re.sub(pattern, replacement, document_content, flags=re.DOTALL)
+        updated_document_content = re.sub(pattern, lambda _: replacement, document_content, flags=re.DOTALL)
         return updated_document_content
 
     # Check if already exist, if not then create one

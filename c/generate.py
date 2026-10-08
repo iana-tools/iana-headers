@@ -12,306 +12,330 @@ import argparse
 import toml
 
 import recfile
+import registry
 import iana_header_utils as utils
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_dir = os.path.dirname(script_dir)
 db_dir = os.path.join(repo_dir, 'db')
 
-try:
-    settings = toml.load(os.path.join(script_dir, 'iana_settings.toml'))
-    sources = toml.load(os.path.join(repo_dir, 'iana_sources.toml'))
-except FileNotFoundError as e:
-    print(f"ERROR: config file not found: {e}", file=sys.stderr)
-    sys.exit(1)
+
+class GenerateError(Exception):
+    """The db cannot be turned into a valid header."""
+
+
+# Written only when a header does not exist yet; an existing header keeps its own preamble.
+HEADER_PREAMBLE = {
+    'cbor': """
+// IANA CBOR Headers
+// Source: https://github.com/mofosyne/iana-headers
+
+""",
+    'coap': """
+// IANA CoAP Headers
+// Source: https://github.com/mofosyne/iana-headers
+
+#define COAP_CODE(CLASS, SUBCLASS) ((((CLASS)&0x07U)<<5)|((SUBCLASS)&0x1FU))
+#define COAP_GET_CODE_CLASS(CODE) (((CODE)>>5U)&0x07U)
+#define COAP_GET_CODE_SUBCLASS(CODE) ((CODE)&0x1FU)
+
+""",
+    'http': """
+// IANA HTTP Headers
+// Source: https://github.com/mofosyne/iana-headers
+
+""",
+}
+
+# Registration procedure ranges, as published by IANA (hardcoded: they change very rarely)
+CBOR_SIMPLE_VALUE_RANGES = [
+    {"start": 0, "end": 19, "description": "Standards Action"},
+    {"start": 32, "end": 255, "description": "Specification Required"},
+]
+CBOR_TAG_RANGES = [
+    {"start": 0, "end": 23, "description": "Standards Action"},
+    {"start": 24, "end": 32767, "description": "Specification Required"},
+    {"start": 32768, "end": 65535, "description": "First Come First Served (16-bit)"},
+    {"start": 65536, "end": 4294967295, "description": "First Come First Served (32-bit)"},
+    {"start": 4294967296, "end": 18446744073709551615, "description": "First Come First Served (64-bit)"},
+]
+# https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#codes
+COAP_CODE_RANGES = [
+    {"start": 0, "end": 0, "description": "Indicates an Empty message. [RFC7252, section 4.1]"},
+    {"start": 1, "end": 31, "description": "Indicates a request. [RFC7252, section 12.1.1]"},
+    {"start": 32, "end": 63, "description": "Reserved [RFC7252]"},
+    {"start": 64, "end": 191, "description": "Indicates a response. [RFC7252, section 12.1.2]"},
+    {"start": 192, "end": 255, "description": "Reserved [RFC7252]"},
+]
+COAP_OPTION_RANGES = [
+    {"start": 0, "end": 255, "description": "IETF Review or IESG Approval"},
+    {"start": 256, "end": 2047, "description": "Specification Required"},
+    {"start": 2048, "end": 64999, "description": "Expert Review"},
+    {"start": 65000, "end": 65535, "description": "Experimental use (no operational use)"},
+]
+COAP_CONTENT_FORMAT_RANGES = [
+    {"start": 0, "end": 255, "description": "Expert Review"},
+    {"start": 256, "end": 9999, "description": "IETF Review or IESG Approval"},
+    {"start": 10000, "end": 64999, "description": "First Come First Served"},
+    {"start": 65000, "end": 65535, "description": "Experimental use (no operational use)"},
+]
+HTTP_STATUS_CODE_RANGES = [
+    {"start": 100, "end": 199, "description": "Informational - Request received, continuing process"},
+    {"start": 200, "end": 299, "description": "Success - The action was successfully received, understood, and accepted"},
+    {"start": 300, "end": 399, "description": "Redirection - Further action must be taken in order to complete the request"},
+    {"start": 400, "end": 499, "description": "Client Error - The request contains bad syntax or cannot be fulfilled"},
+    {"start": 500, "end": 599, "description": "Server Error - The server failed to fulfill an apparently valid request"},
+]
 
 
 # ---------------------------------------------------------------------------
-# Style helpers
+# Naming and comment styles
 # ---------------------------------------------------------------------------
 
 def words_to_screaming_snake(words_str, prefix):
     """'date time string' + 'cbor_tag' -> 'CBOR_TAG_DATE_TIME_STRING'"""
-    tokens = words_str.strip().split()
-    inner = '_'.join(tokens).upper()
-    p = re.sub(r'_{2,}', '_', prefix.upper().rstrip('_') + '_' + inner).strip('_')
-    return p
+    inner = '_'.join(words_str.split()).upper()
+    return re.sub(r'_{2,}', '_', prefix.upper().rstrip('_') + '_' + inner).strip('_')
 
 
-def words_to_pascal(words_str, prefix):
-    """'date time string' + 'cbor_tag' -> 'CborTagDateTimeString'"""
-    p_tokens = [w.capitalize() for w in prefix.split('_') if w]
-    w_tokens = [w.capitalize() for w in words_str.strip().split()]
-    return ''.join(p_tokens + w_tokens)
+def words_to_pascal(words_str):
+    """'date time string' -> 'DateTimeString'"""
+    return ''.join(w.capitalize() for w in words_str.split())
 
 
-def make_enum_name(words_str, name, tiny_cbor=False):
-    if tiny_cbor:
-        return words_to_pascal(words_str, name)
-    return words_to_screaming_snake(words_str, name)
+def _ref(rec):
+    ref = rec.get('Reference', '').strip()
+    return f'Ref: {ref}' if ref else ''
+
+
+def comment_default(rec):
+    return '; '.join(filter(None, [rec.get('Semantics', ''), _ref(rec)]))
+
+
+def comment_coap_code(rec):
+    tag = rec['Tag'].strip()
+    label = registry.coap_class_label(tag)
+    return '; '.join(filter(None, [f'code: {tag}', f"{label}: {rec.get('Semantics', '')}", _ref(rec)]))
+
+
+def comment_http_field(rec):
+    return '; '.join(filter(None, [rec['Tag'].strip(), rec.get('Semantics', ''), _ref(rec)]))
 
 
 # ---------------------------------------------------------------------------
-# db → c_enum_list / c_macro_list builders
+# db -> enum list builders
 # ---------------------------------------------------------------------------
 
-def load_enum_list(db_file, name, value_parser, tiny_cbor=False):
-    """Build c_enum_list dict from a .rec file.
-
-    value_parser(rec) -> (int_key, comment_str) or None to skip
-    """
-    c_enum_list = {}
+def usable_records(db_file):
+    """Records that belong in the header. Anything unnamed is an error, not a silent omission."""
+    fname = os.path.basename(db_file)
+    if not os.path.exists(db_file):
+        raise GenerateError(f"{fname}: not found in db/ (run `make sync`)")
     for rec in recfile.read(db_file):
-        words = rec.get('Words', '').strip()
         source = rec.get('Source', '').strip()
-        if not words or source in ('new', 'needs-manual'):
-            print(f"  WARNING: skipping Tag={rec.get('Tag')!r} — no Words (run `make name` then `make check`)", file=sys.stderr)
+        if source == 'skip':
             continue
-        result = value_parser(rec)
-        if result is None:
-            continue
-        int_key, comment = result
-        enum_name = make_enum_name(words, name, tiny_cbor=tiny_cbor)
-        c_enum_list[int_key] = {"enum_name": enum_name, "comment": comment}
-    return c_enum_list
+        if source in ('new', 'needs-manual') or not rec.get('Words', '').strip():
+            raise GenerateError(f"{fname} Tag={rec.get('Tag')!r}: no Words (run `make name`, then `make check`)")
+        yield rec
 
 
-def load_macro_list(db_file, name, value_parser):
-    """Build c_macro_list dict for X-macro style registries (HTTP field names)."""
-    c_macro_list = {}
-    for rec in recfile.read(db_file):
-        words = rec.get('Words', '').strip()
-        source = rec.get('Source', '').strip()
-        if not words or source in ('new', 'needs-manual'):
-            print(f"  WARNING: skipping Tag={rec.get('Tag')!r} — no Words", file=sys.stderr)
-            continue
-        result = value_parser(rec)
-        if result is None:
-            continue
-        macro_name, macro_value, comment = result
-        c_macro_list[macro_name] = {"value": macro_value, "comment": comment}
-    return c_macro_list
+def build_enum_list(db_file, name_fn, comment_fn=comment_default):
+    """{key: {"enum_name", "comment"}} for one db file; key is the parsed Tag."""
+    fname = os.path.basename(db_file)
+    enum_list = {}
+    for rec in usable_records(db_file):
+        try:
+            key = registry.parse_tag(fname, rec['Tag'])
+            entry = {"enum_name": name_fn(rec['Words']), "comment": comment_fn(rec)}
+        except (ValueError, KeyError) as e:
+            raise GenerateError(f"{fname} Tag={rec.get('Tag')!r}: malformed record ({e!r})")
+        if key in enum_list:
+            raise GenerateError(f"{fname} Tag={rec['Tag']!r}: duplicate Tag")
+        enum_list[key] = entry
+    return enum_list
+
+
+def require_entries(enum_list, what):
+    if not enum_list:
+        raise GenerateError(f"{what}: db has no usable records — an empty C enum is invalid (run `make sync`, `make name`)")
+    return enum_list
 
 
 # ---------------------------------------------------------------------------
 # Per-registry generators
 # ---------------------------------------------------------------------------
 
-def generate_cbor(header_content):
-    cbor_cfg = settings['cbor']
-    spacing = cbor_cfg.get('spacing_string', '  ')
-    tiny_cbor = cbor_cfg.get('style_override', '') == 'tiny_cbor'
+def generate_cbor(header_content, settings, sources):
+    cfg = settings['cbor']
+    spacing = cfg.get('spacing_string', '  ')
+    tiny_cbor = cfg.get('style_override', '') == 'tiny_cbor'
 
     # Simple values
-    sv_name = settings['cbor']['simple_value']['name']
-    sv_src = sources['iana_cbor_simple_value_source']
-    sv_db = os.path.join(db_dir, 'cbor_simple_values.rec')
-
-    def sv_parser(rec):
-        try:
-            val = int(rec['Tag'])
-        except (ValueError, KeyError):
-            return None
-        sem = rec.get('Semantics', '')
-        ref = rec.get('Reference', '')
-        comment = '; '.join(filter(None, [sem, f'Ref: {ref}' if ref else '']))
-        return val, comment
-
-    sv_enum_list = load_enum_list(sv_db, sv_name, sv_parser, tiny_cbor=tiny_cbor)
-    sv_typedef = f"{sv_name}_t"
-    sv_comment = spacing + f"/* Autogenerated {sv_src['title']} (Source: {sv_src['source_url']}) */\n"
-    sv_ranges = [
-        {"start": 0, "end": 19, "description": "Standards Action"},
-        {"start": 32, "end": 255, "description": "Specification Required"},
-    ]
+    name = cfg['simple_value']['name']
+    src = sources['iana_cbor_simple_value_source']
+    if tiny_cbor:
+        typedef = name
+        name_fn = lambda words: name + words_to_pascal(words)
+    else:
+        typedef = f"{name}_t"
+        name_fn = lambda words: words_to_screaming_snake(words, name)
+    enum_list = require_entries(
+        build_enum_list(os.path.join(db_dir, 'cbor_simple_values.rec'), name_fn), 'cbor_simple_values.rec')
+    comment = spacing + f"/* Autogenerated {src['title']} (Source: {src['source_url']}) */\n"
     header_content = utils.update_c_typedef_enum(
-        header_content, sv_typedef, sv_typedef, sv_comment, sv_enum_list,
-        sv_ranges, spacing_string=spacing,
-    )
+        header_content, typedef, typedef, comment, enum_list, CBOR_SIMPLE_VALUE_RANGES, spacing_string=spacing)
 
     # Tags
-    tag_name = settings['cbor']['tag_source']['name']
-    tag_src = sources['iana_cbor_tag_source']
-    tag_db = os.path.join(db_dir, 'cbor_tags.rec')
-
-    def tag_parser(rec):
-        try:
-            val = int(rec['Tag'])
-        except (ValueError, KeyError):
-            return None
-        sem = rec.get('Semantics', '')
-        ref = rec.get('Reference', '')
-        comment = '; '.join(filter(None, [sem, f'Ref: {ref}' if ref else '']))
-        return val, comment
-
-    tag_enum_list = load_enum_list(tag_db, tag_name, tag_parser, tiny_cbor=tiny_cbor)
-    tag_typedef = f"{tag_name}_t"
-    tag_comment = spacing + f"/* Autogenerated {tag_src['title']} (Source: {tag_src['source_url']}) */\n"
+    name = cfg['tag_source']['name']
+    src = sources['iana_cbor_tag_source']
+    if tiny_cbor:
+        # TinyCBOR style: "CborKnownTags" -> "Cbor" + <Words> + "Tag"
+        typedef = name
+        known = name.endswith('KnownTags')
+        base = name[:-len('KnownTags')] if known else name
+        name_fn = lambda words: base + words_to_pascal(words) + ('Tag' if known else '')
+    else:
+        typedef = f"{name}_t"
+        name_fn = lambda words: words_to_screaming_snake(words, name)
+    enum_list = require_entries(
+        build_enum_list(os.path.join(db_dir, 'cbor_tags.rec'), name_fn), 'cbor_tags.rec')
+    names = [e["enum_name"] for e in enum_list.values()]
+    dupes = sorted({n for n in names if names.count(n) > 1})
+    if dupes:
+        raise GenerateError(f"cbor_tags.rec: duplicate enum names {dupes} (give one of the tags distinct Words)")
+    comment = spacing + f"/* Autogenerated {src['title']} (Source: {src['source_url']}) */\n"
     header_content = utils.update_c_typedef_enum(
-        header_content, tag_typedef, tag_typedef, tag_comment, tag_enum_list,
-        spacing_string=spacing, int_suffix='ULL',
-    )
+        header_content, typedef, typedef, comment, enum_list, CBOR_TAG_RANGES, spacing_string=spacing, int_suffix='ULL')
 
     return header_content
 
 
-def generate_coap(header_content):
-    coap_cfg = settings['coap']
-    spacing = coap_cfg.get('spacing_string', '  ')
-    src_rr = sources['iana_coap_request_response_source']
+def generate_coap(header_content, settings, sources):
+    cfg = settings['coap']
+    spacing = cfg.get('spacing_string', '  ')
 
-    def coap_code_parser(rec):
-        code_str = rec.get('Tag', '').strip()
-        # Convert dot-notation "0.01" -> integer (class * 32 + detail)
-        if '.' in code_str:
-            try:
-                cls, detail = code_str.split('.')
-                val = int(cls) * 32 + int(detail)
-            except ValueError:
-                return None
-        else:
-            try:
-                val = int(code_str)
-            except ValueError:
-                return None
-        sem = rec.get('Semantics', '')
-        ref = rec.get('Reference', '')
-        comment = '; '.join(filter(None, [sem, f'Ref: {ref}' if ref else '']))
-        return val, comment
-
-    code_name = settings['coap']['request_response']['name']
-    code_typedef = f"{code_name}_t"
-    code_comment = spacing + f"/* Autogenerated {src_rr['title']} */\n"
-
-    # Merge request + response + signaling codes into one enum
+    # Request + response + signaling codes share one enum
+    code_name = cfg['request_response']['name']
+    src = sources['iana_coap_request_response_source']
+    name_fn = lambda words: words_to_screaming_snake(words, code_name)
     combined = {}
     for kind in ('request', 'response', 'signaling'):
-        db_file = os.path.join(db_dir, f'coap_{kind}_codes.rec')
-        if os.path.exists(db_file):
-            combined.update(load_enum_list(db_file, code_name, coap_code_parser))
-
-    coap_ranges = [
-        {"start": 0,   "end": 31,  "description": "Requests (0.xx)"},
-        {"start": 32,  "end": 95,  "description": "Success (2.xx)"},
-        {"start": 160, "end": 191, "description": "Client Error (4.xx)"},
-        {"start": 192, "end": 223, "description": "Server Error (5.xx)"},
-        {"start": 224, "end": 255, "description": "Signaling (7.xx)"},
-    ]
+        fname = f'coap_{kind}_codes.rec'
+        # each file must contribute: a registry emptied by mistake must not silently vanish from the header
+        entries = require_entries(build_enum_list(os.path.join(db_dir, fname), name_fn, comment_coap_code), fname)
+        for key, entry in entries.items():
+            if key in combined:
+                raise GenerateError(f"{fname}: code {key} is already defined by another coap_*_codes.rec file")
+            combined[key] = entry
+    typedef = f"{code_name}_t"
+    comment = spacing + f"/* Autogenerated {src['title']}\n"
+    comment += spacing + f"   Request Source: {src['request_source']}\n"
+    comment += spacing + f"   Response Source: {src['response_source']}\n"
+    comment += spacing + f"   Signaling Source: {src['signaling_source']}\n"
+    comment += spacing + "   */\n"
     header_content = utils.update_c_typedef_enum(
-        header_content, code_typedef, code_typedef, code_comment, combined,
-        coap_ranges, spacing_string=spacing,
-    )
+        header_content, typedef, typedef, comment, combined, COAP_CODE_RANGES, spacing_string=spacing)
 
-    # Options
-    opt_name = settings['coap']['option']['name']
-    opt_src = sources['iana_coap_option_source']
-    opt_db = os.path.join(db_dir, 'coap_options.rec')
+    # Options and content formats
+    for key, fname, ranges in (
+        ('option', 'coap_options.rec', COAP_OPTION_RANGES),
+        ('content_format', 'coap_content_formats.rec', COAP_CONTENT_FORMAT_RANGES),
+    ):
+        name = cfg[key]['name']
+        src = sources[f'iana_coap_{key}_source']
+        enum_list = require_entries(
+            build_enum_list(os.path.join(db_dir, fname), lambda words, n=name: words_to_screaming_snake(words, n)), fname)
+        typedef = f"{name}_t"
+        comment = spacing + f"/* Autogenerated {src['title']} (Source: {src['source']}) */\n"
+        header_content = utils.update_c_typedef_enum(
+            header_content, typedef, typedef, comment, enum_list, ranges, spacing_string=spacing)
 
-    def opt_parser(rec):
+    return generate_coap_signaling_options(header_content, settings, sources)
+
+
+def generate_coap_signaling_options(header_content, settings, sources):
+    """One enum per CoAP signaling code, e.g. coap_code_signaling_code_csm_option_number_t."""
+    cfg = settings['coap']
+    spacing = cfg.get('spacing_string', '  ')
+    code_name = cfg['request_response']['name']
+    opt_name = cfg['signaling_option_numbers']['name']
+    src = sources['iana_coap_signaling_option_numbers_source']
+
+    code_words = {rec['Tag'].strip(): rec['Words'].strip()
+                  for rec in usable_records(os.path.join(db_dir, 'coap_signaling_codes.rec'))}
+
+    fname = 'coap_signaling_option_numbers.rec'
+    per_code = {}
+    for rec in usable_records(os.path.join(db_dir, fname)):
         try:
-            val = int(rec['Tag'])
-        except (ValueError, KeyError):
-            return None
-        sem = rec.get('Semantics', '')
-        ref = rec.get('Reference', '')
-        comment = '; '.join(filter(None, [sem, f'Ref: {ref}' if ref else '']))
-        return val, comment
+            code_int, number = registry.parse_tag(fname, rec['Tag'])
+        except ValueError as e:
+            raise GenerateError(f"{fname} Tag={rec['Tag']!r}: malformed Tag ({e})")
+        code = rec['Tag'].strip().rsplit('.', 1)[0]
+        if code not in code_words:
+            raise GenerateError(f"{fname} Tag={rec['Tag']!r}: {code} is not in coap_signaling_codes.rec")
+        short = '_'.join(code_words[code].split())
+        entries = per_code.setdefault(code, {"short": short, "enum_list": {}})["enum_list"]
+        if number in entries:
+            raise GenerateError(f"{fname} Tag={rec['Tag']!r}: duplicate Tag")
+        entries[number] = {
+            "enum_name": words_to_screaming_snake(rec['Words'], f"{code_name}_{short}_{opt_name}"),
+            "comment": comment_default(rec),
+        }
 
-    opt_enum_list = load_enum_list(opt_db, opt_name, opt_parser)
-    opt_typedef = f"{opt_name}_t"
-    opt_comment = spacing + f"/* Autogenerated {opt_src['title']} (Source: {opt_src.get('source', '')}) */\n"
-    header_content = utils.update_c_typedef_enum(
-        header_content, opt_typedef, opt_typedef, opt_comment, opt_enum_list,
-        spacing_string=spacing,
-    )
-
-    # Content formats
-    cf_name = settings['coap']['content_format']['name']
-    cf_src = sources['iana_coap_content_format_source']
-    cf_db = os.path.join(db_dir, 'coap_content_formats.rec')
-
-    def cf_parser(rec):
-        try:
-            val = int(rec['Tag'])
-        except (ValueError, KeyError):
-            return None
-        sem = rec.get('Semantics', '')
-        ref = rec.get('Reference', '')
-        comment = '; '.join(filter(None, [sem, f'Ref: {ref}' if ref else '']))
-        return val, comment
-
-    cf_enum_list = load_enum_list(cf_db, cf_name, cf_parser)
-    cf_typedef = f"{cf_name}_t"
-    cf_comment = spacing + f"/* Autogenerated {cf_src['title']} (Source: {cf_src.get('source', '')}) */\n"
-    header_content = utils.update_c_typedef_enum(
-        header_content, cf_typedef, cf_typedef, cf_comment, cf_enum_list,
-        spacing_string=spacing,
-    )
+    require_entries(per_code, fname)
+    for code in sorted(per_code, key=registry.coap_code_to_int):
+        short = per_code[code]["short"]
+        typedef = f"{code_name}_{short}_{opt_name}_t".lower()
+        comment = spacing + (f"/* Autogenerated {src['title']} for CoAP Signaling Code "
+                             f"{short.upper()} ({code}) (Source: {src['source']}) */\n")
+        header_content = utils.update_c_typedef_enum(
+            header_content, typedef, typedef, comment, per_code[code]["enum_list"], spacing_string=spacing)
 
     return header_content
 
 
-def generate_http(header_content):
-    http_cfg = settings['http']
-    spacing = http_cfg.get('spacing_string', '  ')
+def generate_http(header_content, settings, sources):
+    cfg = settings['http']
+    spacing = cfg.get('spacing_string', '  ')
 
-    sc_section = settings['http'].get('http_status_code', {})
-    sc_name = sc_section.get('name', 'http_status_code')
-    sc_src = sources['iana_http_status_code_source']
-    sc_db = os.path.join(db_dir, 'http_status_codes.rec')
-
-    def sc_parser(rec):
-        try:
-            val = int(rec['Tag'])
-        except (ValueError, KeyError):
-            return None
-        sem = rec.get('Semantics', '')
-        ref = rec.get('Reference', '')
-        comment = '; '.join(filter(None, [sem, f'Ref: {ref}' if ref else '']))
-        return val, comment
-
-    sc_enum_list = load_enum_list(sc_db, sc_name, sc_parser)
-    sc_typedef = f"{sc_name}_t"
-    sc_comment = spacing + f"/* Autogenerated {sc_src['title']} (Source: {sc_src['source_url']}) */\n"
-    sc_ranges = [
-        {"start": 100, "end": 199, "description": "Informational - Request received, continuing process"},
-        {"start": 200, "end": 299, "description": "Success - The action was successfully received, understood, and accepted"},
-        {"start": 300, "end": 399, "description": "Redirection - Further action must be taken in order to complete the request"},
-        {"start": 400, "end": 499, "description": "Client Error - The request contains bad syntax or cannot be fulfilled"},
-        {"start": 500, "end": 599, "description": "Server Error - The server failed to fulfill an apparently valid request"},
-    ]
+    # Status codes
+    name = cfg['http_status_code']['name']
+    src = sources['iana_http_status_code_source']
+    enum_list = require_entries(
+        build_enum_list(os.path.join(db_dir, 'http_status_codes.rec'), lambda words: words_to_screaming_snake(words, name)),
+        'http_status_codes.rec')
+    typedef = f"{name}_t"
+    comment = spacing + f"/* Autogenerated {src['title']} (Source: {src['source_url']}) */\n"
     header_content = utils.update_c_typedef_enum(
-        header_content, sc_typedef, sc_typedef, sc_comment, sc_enum_list,
-        sc_ranges, spacing_string=spacing,
-    )
+        header_content, typedef, typedef, comment, enum_list, HTTP_STATUS_CODE_RANGES, spacing_string=spacing)
 
     # Field names (X-macro)
-    fn_section = settings['http'].get('http_field_name', {})
-    fn_name = fn_section.get('name', 'http_field_name')
-    fn_src = sources['iana_http_field_name_source']
-    fn_db = os.path.join(db_dir, 'http_field_names.rec')
-
-    def fn_macro_name(rec):
-        words = rec.get('Words', '').strip()
-        return words_to_screaming_snake(words, fn_name)
-
+    name = cfg['http_field_name']['name']
+    src = sources['iana_http_field_name_source']
+    fname = 'http_field_names.rec'
     c_macro_list = {}
-    for rec in recfile.read(fn_db):
-        words = rec.get('Words', '').strip()
-        source = rec.get('Source', '').strip()
-        if not words or source in ('new', 'needs-manual'):
-            continue
-        tag = rec.get('Tag', '')  # field name string e.g. "Content-Type"
-        sem = rec.get('Semantics', '')
-        ref = rec.get('Reference', '')
-        comment = '; '.join(filter(None, [tag, sem, f'Ref: {ref}' if ref else '']))
-        macro_name = words_to_screaming_snake(words, fn_name)
-        c_macro_list[macro_name] = {"value": f'"{tag}"', "comment": comment}
-
-    fn_comment = f"/* Autogenerated {fn_src['title']} (Source: {fn_src['source_url']}) */\n"
-    header_content = utils.update_c_const_macro(header_content, fn_name, fn_comment, c_macro_list)
+    for rec in usable_records(os.path.join(db_dir, fname)):
+        tag = rec['Tag'].strip()
+        if '"' in tag or '\\' in tag:
+            raise GenerateError(f"{fname} Tag={tag!r}: cannot be emitted as a C string literal")
+        macro_name = words_to_screaming_snake(rec['Words'], name)
+        if macro_name in c_macro_list:
+            raise GenerateError(f"{fname} Tag={tag!r}: duplicate macro name {macro_name}")
+        c_macro_list[macro_name] = {"value": f'"{tag}"', "comment": comment_http_field(rec)}
+    require_entries(c_macro_list, fname)
+    comment = f"/* Autogenerated {src['title']} (Source: {src['source_url']}) */\n"
+    header_content = utils.update_c_const_macro(header_content, name, comment, c_macro_list)
 
     return header_content
+
+
+GENERATORS = (
+    ('cbor', 'cbor_constants.h', generate_cbor),
+    ('coap', 'coap_constants.h', generate_coap),
+    ('http', 'http_constants.h', generate_http),
+)
 
 
 # ---------------------------------------------------------------------------
@@ -320,38 +344,43 @@ def generate_http(header_content):
 
 def main():
     parser = argparse.ArgumentParser(description='Generate C headers from db/*.rec')
-    parser.add_argument('--settings', default=os.path.join(script_dir, 'iana_settings.toml'))
+    parser.add_argument('--sources', default=os.path.join(repo_dir, 'iana_sources.toml'),
+                        help='Path to the IANA sources TOML file')
+    parser.add_argument('--settings', default=os.path.join(script_dir, 'iana_settings.toml'),
+                        help='Path to the IANA settings TOML file')
     args = parser.parse_args()
 
-    if not os.path.isdir(db_dir):
-        print(f"ERROR: db/ not found. Run `make sync` and `make name` first.", file=sys.stderr)
+    try:
+        settings = toml.load(args.settings)
+        sources = toml.load(args.sources)
+    except (FileNotFoundError, toml.TomlDecodeError) as e:
+        print(f"ERROR: cannot load config: {e}", file=sys.stderr)
         sys.exit(1)
 
-    cbor_out = os.path.join(script_dir, settings['cbor']['generated_header_filepath'])
-    coap_out = os.path.join(script_dir, settings['coap']['generated_header_filepath'])
-    http_out = os.path.join(script_dir, settings['http']['generated_header_filepath'])
+    if not os.path.isdir(db_dir):
+        print("ERROR: db/ not found. Run `make sync` and `make name` first.", file=sys.stderr)
+        sys.exit(1)
 
-    for path in (cbor_out, coap_out, http_out):
+    # Build every header in memory first so a failure leaves all outputs untouched
+    outputs = []
+    try:
+        for section, label, generate in GENERATORS:
+            path = os.path.join(script_dir, settings[section]['generated_header_filepath'])
+            if os.path.exists(path):
+                with open(path, 'r', encoding='utf-8') as f:
+                    content = f.read()
+            else:
+                content = HEADER_PREAMBLE[section]
+            print(f"Generating {os.path.basename(path)} ...")
+            outputs.append((path, generate(content, settings, sources)))
+    except GenerateError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
+
+    for path, content in outputs:
         os.makedirs(os.path.dirname(path), exist_ok=True)
-        if not os.path.exists(path):
-            open(path, 'w').close()
-
-    def _load(path):
-        with open(path, 'r', encoding='utf-8') as f:
-            return f.read()
-
-    def _save(path, content):
         with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
-
-    print("Generating cbor_constants.h ...")
-    _save(cbor_out, generate_cbor(_load(cbor_out)))
-
-    print("Generating coap_constants.h ...")
-    _save(coap_out, generate_coap(_load(coap_out)))
-
-    print("Generating http_constants.h ...")
-    _save(http_out, generate_http(_load(http_out)))
 
     print("Done.")
 

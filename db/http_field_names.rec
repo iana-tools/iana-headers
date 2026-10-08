@@ -133,6 +133,8 @@ Words: activate storage access
 Semantics: Item; provisional
 Reference: [https://privacycg.github.io/storage-access-headers]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Age
 Words: age
@@ -175,6 +177,8 @@ Words: amp cache transform
 Semantics: provisional
 Reference: [AMP-Cache-Transform HTTP request header]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Apply-To-Redirect-Ref
 Words: apply to redirect ref
@@ -295,36 +299,48 @@ Words: cmcd object
 Semantics: provisional
 Reference: [CTA][CTA-5004 Common Media Client Data]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: CMCD-Request
 Words: cmcd request
 Semantics: provisional
 Reference: [CTA][CTA-5004 Common Media Client Data]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: CMCD-Session
 Words: cmcd session
 Semantics: provisional
 Reference: [CTA][CTA-5004 Common Media Client Data]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: CMCD-Status
 Words: cmcd status
 Semantics: provisional
 Reference: [CTA][CTA-5004 Common Media Client Data]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: CMSD-Dynamic
 Words: cmsd dynamic
 Semantics: provisional
 Reference: [CTA][CTA-5006 Common Media Server Data (CMSD)]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: CMSD-Static
 Words: cmsd static
 Semantics: provisional
 Reference: [CTA][CTA-5006 Common Media Server Data (CMSD)]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Concealed-Auth-Export
 Words: concealed auth export
@@ -337,6 +353,8 @@ Words: configuration context
 Semantics: provisional
 Reference: [OSLC Configuration Management Version 1.0. Part 3: Configuration Specification]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Connection
 Words: connection
@@ -487,6 +505,8 @@ Words: cta common access token
 Semantics: provisional
 Reference: [CTA][Chris_Lemmons]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: C-Ext
 Words: c ext
@@ -619,6 +639,8 @@ Words: ediint features
 Semantics: provisional
 Reference: [RFC 6017: Electronic Data Interchange - Internet Integration (EDIINT) Features Header Field]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: ETag
 Words: etag
@@ -745,6 +767,8 @@ Words: isolation
 Semantics: provisional
 Reference: [OData Version 4.01 Part 1: Protocol][OASIS][Chet_Ensign]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Keep-Alive
 Words: keep alive
@@ -943,6 +967,8 @@ Words: permissions policy
 Semantics: provisional
 Reference: [Permissions Policy]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: PICS-Label
 Words: pics label
@@ -1117,24 +1143,32 @@ Words: repeatability client id
 Semantics: provisional
 Reference: [Repeatable Requests Version 1.0][OASIS][Chet_Ensign]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Repeatability-First-Sent
 Words: repeatability first sent
 Semantics: provisional
 Reference: [Repeatable Requests Version 1.0][OASIS][Chet_Ensign]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Repeatability-Request-ID
 Words: repeatability request id
 Semantics: provisional
 Reference: [Repeatable Requests Version 1.0][OASIS][Chet_Ensign]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Repeatability-Result
 Words: repeatability result
 Semantics: provisional
 Reference: [Repeatable Requests Version 1.0][OASIS][Chet_Ensign]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Replay-Nonce
 Words: replay nonce
@@ -1147,6 +1181,8 @@ Words: reporting endpoints
 Semantics: provisional
 Reference: [Reporting API]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Repr-Digest
 Words: repr digest
@@ -1207,6 +1243,8 @@ Words: sec fetch storage access
 Semantics: Token; provisional
 Reference: [https://privacycg.github.io/storage-access-headers]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Sec-Fetch-User
 Words: sec fetch user
@@ -1219,6 +1257,8 @@ Words: sec gpc
 Semantics: provisional
 Reference: [Global Privacy Control (GPC)]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Sec-Purpose
 Words: sec purpose
@@ -1339,12 +1379,16 @@ Words: surrogate capability
 Semantics: provisional
 Reference: [Edge Architecture Specification]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Surrogate-Control
 Words: surrogate control
 Semantics: provisional
 Reference: [Edge Architecture Specification]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: TCN
 Words: tcn
@@ -1369,6 +1413,8 @@ Words: timing allow origin
 Semantics: provisional
 Reference: [Resource Timing Level 1]
 Source: heuristic
+Lifecycle: provisional
+Review: monitor
 
 Tag: Topic
 Words: topic

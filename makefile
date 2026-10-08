@@ -19,17 +19,23 @@ update: venv
 	@echo "Updating dependencies"
 	. venv/bin/activate && venv/bin/pip install --upgrade -r requirements.txt
 
-# Fetch IANA registries → append empty-Words entries to db/ (needs network)
+# Fetch IANA registries → append empty-Words entries to db/ and save used source files near db/ (needs network)
 .PHONY: sync
 sync: venv
-	@echo "Syncing IANA registries"
-	. venv/bin/activate && cd c && python3 sync.py
+	@echo "Syncing IANA registries and saving a dated source snapshot"
+	. venv/bin/activate && cd c && python3 sync.py --snapshot
 
 # Fill Words on new db entries via heuristic (or --llm for Ollama)
 .PHONY: name
 name: venv
 	@echo "Naming new entries"
 	. venv/bin/activate && cd c && python3 name.py
+
+# Review new or unresolved names interactively; choices are written to db/
+.PHONY: review
+review: venv
+	@echo "Reviewing new IANA names"
+	. venv/bin/activate && cd c && python3 name.py --interactive
 
 # Validate db/ integrity — blocks generate on errors
 .PHONY: check
@@ -65,8 +71,9 @@ help:
 	@echo "Targets:"
 	@echo "  install     : Create virtual environment and install dependencies"
 	@echo "  update      : Update project dependencies"
-	@echo "  sync        : Fetch IANA registries → db/ (needs network)"
-	@echo "  name        : Fill Words on new db entries (heuristic/LLM)"
+	@echo "  sync        : Fetch IANA registries → db/ and save a dated snapshot under iana/ (needs network)"
+	@echo "  name        : Fill Words on new db entries automatically (heuristic/LLM)"
+	@echo "  review      : Interactively accept, edit, or skip new/unresolved names"
 	@echo "  check       : Validate db/ integrity"
 	@echo "  generate    : db/ → c/src/*.h (no network; runs check first)"
 	@echo "  verify      : generate, then compile the headers"

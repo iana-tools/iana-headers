@@ -3,24 +3,31 @@
 sync.py — fetch IANA registries and append new entries to db/ with empty Words.
 
 Does NO name generation. Run `name.py` afterward to fill Words.
-Existing records are never rewritten: if IANA changes the Semantics of one, it is only reported.
+Existing Semantics and Words are never rewritten. Changes to lifecycle-tracked records set Review: pending so `check` blocks generation until they are reviewed.
 """
 
+import argparse
+import csv
+import io
 import os
 import re
-import csv
+import shutil
 import sys
-import argparse
-import io
+import tempfile
+from datetime import datetime, timezone
+
 import toml
 
 import iana_header_utils as utils
+import lifecycle
 import recfile
 import registry
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_dir = os.path.dirname(script_dir)
 db_dir = os.path.join(repo_dir, 'db')
+cache_dir = os.path.join(script_dir, 'cache')
+_snapshot_sources = {}
 
 
 class SyncError(Exception):
@@ -37,11 +44,18 @@ def _cache_path(subdir, filename):
     return path
 
 
+def _register_snapshot_source(cache_file, url):
+    relative_path = os.path.relpath(cache_file, cache_dir)
+    _snapshot_sources[relative_path] = url
+
+
 def _xml_loader(url, subdir, filename, verbose):
     def load():
         if verbose:
             print(f"  Fetching XML: {url}")
-        return utils.read_or_download_xml(url, _cache_path(subdir, filename))
+        cache_file = _cache_path(subdir, filename)
+        _register_snapshot_source(cache_file, url)
+        return utils.read_or_download_xml(url, cache_file)
     return load
 
 
@@ -49,13 +63,54 @@ def _csv_loader(url, subdir, filename, verbose):
     def load():
         if verbose:
             print(f"  Fetching CSV: {url}")
-        content = utils.read_or_download_csv(url, _cache_path(subdir, filename))
+        cache_file = _cache_path(subdir, filename)
+        _register_snapshot_source(cache_file, url)
+        content = utils.read_or_download_csv(url, cache_file)
         return list(csv.DictReader(io.StringIO(content)))
     return load
 
 
+def _write_snapshot(snapshot_dir, snapshot_date=None):
+    """Copy only source files used by this sync, plus a URL manifest, into a new dated directory."""
+    if not _snapshot_sources:
+        raise SyncError('no IANA source files were used; refusing to create an empty snapshot')
+    if os.path.exists(snapshot_dir):
+        raise SyncError(f'snapshot directory already exists: {snapshot_dir}; snapshots are immutable')
+
+    parent = os.path.dirname(snapshot_dir) or '.'
+    os.makedirs(parent, exist_ok=True)
+    temporary_dir = tempfile.mkdtemp(prefix='.iana-snapshot-', dir=parent)
+    try:
+        manifest = [
+            f'# IANA source snapshot — {snapshot_date or datetime.now(timezone.utc).date().isoformat()}',
+            '',
+            'Captured by `python3 c/sync.py --snapshot`. These are the source files used by this sync, copied from `c/cache/` after UTF-8 decoding. The snapshot is immutable; ordinary syncs do not overwrite it.',
+            '',
+            '| Snapshot file | IANA source |',
+            '| --- | --- |',
+        ]
+        for relative_path, url in sorted(_snapshot_sources.items()):
+            cached = os.path.join(cache_dir, relative_path)
+            if not os.path.isfile(cached):
+                raise SyncError(f'source used by sync is missing from cache: {cached}')
+            destination = os.path.join(temporary_dir, relative_path)
+            os.makedirs(os.path.dirname(destination), exist_ok=True)
+            shutil.copyfile(cached, destination)
+            manifest.append(f'| `{relative_path}` | {url} |')
+
+        with open(os.path.join(temporary_dir, 'README.md'), 'w', encoding='utf-8') as output:
+            output.write('\n'.join(manifest) + '\n')
+        os.rename(temporary_dir, snapshot_dir)
+    except SyncError:
+        shutil.rmtree(temporary_dir, ignore_errors=True)
+        raise
+    except OSError as exc:
+        shutil.rmtree(temporary_dir, ignore_errors=True)
+        raise SyncError(f'could not save IANA source snapshot to {snapshot_dir}: {exc}') from exc
+
+
 def _fetch_entries(label, xml_loader, xml_registry_id, csv_loader, parse_rows):
-    """Return parsed (tag, semantics, reference) entries.
+    """Return parsed entries with tag, semantics, reference, and optional registry metadata.
 
     XML is preferred, but is only accepted if it yields usable entries: an XML schema that
     differs from what parse_rows expects must fall back to CSV, not silently produce nothing.
@@ -84,8 +139,8 @@ def _fetch_entries(label, xml_loader, xml_registry_id, csv_loader, parse_rows):
 
 
 # ---------------------------------------------------------------------------
-# Row parsing: one function per registry. Each returns [(tag, semantics, reference), ...]
-# and applies the same exclusions the original csv generators did.
+# Row parsing: one function per registry. Each returns (tag, semantics, reference), optionally
+# followed by registry-specific fields; parsers also apply the original generator exclusions.
 # ---------------------------------------------------------------------------
 
 def _text(value):
@@ -121,7 +176,7 @@ def _parse_cbor_tags(rows, used_xml):
     out = []
     for row in rows:
         tag = _col(row, used_xml, ('value',), 'Tag')
-        item = _col(row, used_xml, ('data_item',), 'Data Item')
+        item = _col(row, used_xml, ('data_item', 'description'), 'Data Item')
         sem = _col(row, used_xml, ('semantics', 'description'), 'Semantics')
         ref = _col(row, used_xml, ('xref',), 'Reference')
         if not tag or tag.lower() == 'tag' or '-' in tag or not sem:
@@ -131,7 +186,7 @@ def _parse_cbor_tags(rows, used_xml):
         if 'earmarked' in sem.lower():
             # Reserved for a future registration by an organisation, e.g. "Earmarked for CoRIM,[draft-...]"
             continue
-        out.append((tag, sem, ref))
+        out.append((tag, sem, ref, item))
     return out
 
 
@@ -220,7 +275,7 @@ def _parse_http_field_names(rows, used_xml):
     out = []
     for row in rows:
         tag = _col(row, used_xml, ('value', 'name', 'field_name'), 'Field Name')
-        structured_type = _col(row, used_xml, ('structured_type', 'type'), 'Structured Type')
+        structured_type = _col(row, used_xml, ('structured_type', 'structured', 'type'), 'Structured Type')
         status = _col(row, used_xml, ('status',), 'Status')
         ref = _col(row, used_xml, ('xref',), 'Reference')
         if not tag:
@@ -243,43 +298,102 @@ def _key(fname, tag):
 
 def _load_existing(db_file):
     fname = os.path.basename(db_file)
-    return {_key(fname, rec['Tag']): rec.get('Semantics', '')
+    return {_key(fname, rec['Tag']): rec
             for rec in recfile.read(db_file) if rec.get('Tag', '').strip()}
 
 
+def _set_record_field(db_file, tag, field, value):
+    """Set one metadata field on an existing record without rewriting its other fields."""
+    with open(db_file, 'r', encoding='utf-8') as f:
+        lines = f.readlines()
+
+    for start, line in enumerate(lines):
+        if not line.startswith('Tag:') or line[4:].strip() != tag:
+            continue
+        end = start + 1
+        while end < len(lines) and lines[end].strip():
+            end += 1
+        field_prefix = f'{field}:'
+        for index in range(start + 1, end):
+            if lines[index].startswith(field_prefix):
+                lines[index] = f'{field}: {value}\n'
+                break
+        else:
+            source_index = next(
+                (index for index in range(start + 1, end) if lines[index].startswith('Source:')),
+                end,
+            )
+            lines.insert(source_index + 1 if source_index < end else end, f'{field}: {value}\n')
+        with open(db_file, 'w', encoding='utf-8') as f:
+            f.writelines(lines)
+        return
+    raise SyncError(f"cannot mark {db_file} Tag={tag!r}: record not found")
+
+
+def _mark_review_pending(db_file, record, dry_run):
+    if not dry_run and record.get('Review', '').strip() != 'pending':
+        _set_record_field(db_file, record['Tag'].strip(), 'Review', 'pending')
+        record['Review'] = 'pending'
+
+
 def _apply(db_file, rec_type, doc_url, entries, dry_run):
-    """Append entries missing from db_file. Returns (added tags, warnings)."""
+    """Append new entries and mark changed lifecycle entries for review."""
     fname = os.path.basename(db_file)
     if not dry_run:
         recfile.write_header(db_file, rec_type, 'Tag', doc_url)
     existing = _load_existing(db_file)
     added, warnings = [], []
 
-    for tag, semantics, reference in entries:
+    for entry in entries:
+        tag, semantics, reference = entry[:3]
+        extra_fields = entry[3:]
         try:
             key = registry.parse_tag(fname, tag)
         except (ValueError, KeyError):
             warnings.append(f"  SKIPPED {fname} Tag {tag!r}: not a valid Tag for this registry")
             continue
         if key in existing:
-            # Words are derived from Semantics, so that is what a human needs to re-review.
-            # (References are not compared: the XML and CSV renderings of them differ.)
-            if _text(existing[key]) != semantics:
+            record = existing[key]
+            old_semantics = record.get('Semantics', '')
+            old_lifecycle = record.get('Lifecycle', '').strip() or lifecycle.from_semantics(old_semantics)
+            new_lifecycle = lifecycle.from_semantics(semantics)
+            semantics_changed = _text(old_semantics) != semantics
+            lifecycle_changed = old_lifecycle != new_lifecycle and bool(old_lifecycle or new_lifecycle)
+
+            # References are not compared: XML and CSV renderings differ. A lifecycle entry's
+            # semantics/name must be reviewed whenever IANA changes its description or status.
+            if semantics_changed:
                 warnings.append(
                     f"  UPDATED {fname} Tag {tag}: Semantics changed in IANA\n"
-                    f"    db:   {_text(existing[key])!r}\n"
+                    f"    db:   {_text(old_semantics)!r}\n"
                     f"    IANA: {semantics!r}"
                 )
-            continue  # never rewrite existing records
-        existing[key] = semantics
+            if lifecycle_changed or (semantics_changed and (old_lifecycle or new_lifecycle)):
+                action = 'would mark' if dry_run else 'marked'
+                warnings.append(
+                    f"  LIFECYCLE REVIEW {fname} Tag {tag}: "
+                    f"{old_lifecycle or 'unmarked'} -> {new_lifecycle or 'stable/unspecified'}; "
+                    f"{action} Review: pending"
+                )
+                _mark_review_pending(db_file, record, dry_run)
+            continue  # never rewrite existing Semantics, Words, or References
+
+        record = {
+            'Tag': tag,
+            'Words': '',
+            'Semantics': semantics,
+            'Reference': reference,
+        }
+        if extra_fields and extra_fields[0]:
+            record['Data Item'] = extra_fields[0]
+        record['Source'] = 'new'
+        new_lifecycle = lifecycle.from_semantics(semantics)
+        if new_lifecycle:
+            record['Lifecycle'] = new_lifecycle
+            record['Review'] = 'monitor'
+        existing[key] = record
         if not dry_run:
-            recfile.append_record(db_file, {
-                'Tag': tag,
-                'Words': '',
-                'Semantics': semantics,
-                'Reference': reference,
-                'Source': 'new',
-            })
+            recfile.append_record(db_file, record)
         added.append(tag)
     return added, warnings
 
@@ -377,8 +491,19 @@ def main():
                         help='Path to the IANA sources TOML file')
     parser.add_argument('--dry-run', action='store_true', help='Print what would be added without writing')
     parser.add_argument('--verbose', action='store_true', help='Print fetch URLs')
+    parser.add_argument('--snapshot', action='store_true', help='Save the source files used by this run in a new dated iana/snapshots directory')
+    parser.add_argument('--snapshot-dir', help='Snapshot destination (also enables --snapshot); must not already exist')
     args = parser.parse_args()
 
+    snapshot_dir = None
+    snapshot_date = datetime.now(timezone.utc).date().isoformat()
+    if args.snapshot or args.snapshot_dir:
+        snapshot_dir = os.path.abspath(args.snapshot_dir) if args.snapshot_dir else os.path.join(
+            repo_dir, 'iana', 'snapshots', snapshot_date)
+        if os.path.exists(snapshot_dir):
+            parser.error(f'snapshot directory already exists: {snapshot_dir}; choose another --snapshot-dir')
+
+    _snapshot_sources.clear()
     try:
         sources = toml.load(args.sources)
     except (FileNotFoundError, toml.TomlDecodeError) as e:
@@ -420,6 +545,10 @@ def main():
         ):
             print(f"=== {title} ===")
             report(title, fn(sources, verbose=args.verbose, dry_run=args.dry_run))
+
+        if snapshot_dir:
+            _write_snapshot(snapshot_dir, snapshot_date)
+            print(f"IANA source snapshot saved to {os.path.relpath(snapshot_dir, repo_dir)}")
     except SyncError as e:
         print(f"ERROR: {e}", file=sys.stderr)
         sys.exit(1)

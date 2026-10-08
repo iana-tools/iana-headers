@@ -31,6 +31,8 @@ Words: upload resumption supported
 Semantics: Upload Resumption Supported (TEMPORARY - registered 2024-11-13, expires 2025-11-13)
 Reference: [draft-ietf-httpbis-resumable-upload-05]
 Source: heuristic
+Lifecycle: temporary
+Review: monitor
 
 Tag: 200
 Words: ok

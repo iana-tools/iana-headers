@@ -409,6 +409,8 @@ Words: application voucher as cose
 Semantics: application/voucher+cose (TEMPORARY - registered 2022-04-12, extension registered 2025-03-07, expires 2026-04-12)
 Reference: [draft-ietf-anima-constrained-voucher-23]
 Source: heuristic
+Lifecycle: temporary
+Review: monitor
 
 Tag: 10000
 Words: application vnd ocf as cbor

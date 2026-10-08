@@ -3,16 +3,20 @@
 import csv
 import io
 import os
+import tempfile
 import unittest
 
 import iana_header_utils as utils
+import recfile
 import sync
+from experimental_namer import format_xml_name_fields
 
 
 FIXTURE_DIR = os.path.join(
-    os.path.dirname(os.path.abspath(__file__)),
-    'testdata',
-    'iana-2026-10-08',
+    os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+    'iana',
+    'snapshots',
+    '2026-10-08',
 )
 
 
@@ -55,6 +59,67 @@ class IanaSnapshotTests(unittest.TestCase):
         self.assertFalse(sync._parse_coap_content_formats(content_format_rows, True))
         signaling_option_rows = _read_xml('coap/core-parameters.xml', 'signaling-option-numbers')
         self.assertFalse(_usable_signaling_option_rows(signaling_option_rows, True))
+
+    def test_cbor_xml_fields_remain_separate_for_llm_prompt(self):
+        rows = _read_xml('cbor/cbor-tags.xml', 'tags')
+        record = next(row for row in rows if row.get('value') == '107')
+
+        prompt_fields = format_xml_name_fields(record)
+
+        self.assertIn('Data item/description: map', prompt_fields)
+        self.assertIn('Semantics: SUIT_Envelope as defined in Appendix A of', prompt_fields)
+        self.assertIn('Reference (citation only):', prompt_fields)
+
+        database_row = next(row for row in sync._parse_cbor_tags(rows, True) if row[0] == '107')
+        self.assertEqual(database_row[1], record['semantics'])
+        self.assertEqual(database_row[3], record['description'])
+
+    def test_new_cbor_database_records_keep_the_iana_data_item(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_file = os.path.join(tmpdir, 'cbor_tags.rec')
+            sync._apply(db_file, 'CborTag', 'https://example.test/registry',
+                        [('107', 'SUIT_Envelope semantics', '[RFC]', 'map')], False)
+
+            record = recfile.read(db_file)[0]
+            self.assertEqual(record['Data Item'], 'map')
+            self.assertEqual(record['Semantics'], 'SUIT_Envelope semantics')
+
+    def test_sync_snapshot_captures_only_used_cached_sources_with_manifest(self):
+        with tempfile.TemporaryDirectory() as tmpdir:
+            cache_dir = os.path.join(tmpdir, 'cache')
+            os.makedirs(os.path.join(cache_dir, 'cbor'))
+            source_path = os.path.join(cache_dir, 'cbor', 'cbor-tags.xml')
+            with open(source_path, 'w', encoding='utf-8') as source:
+                source.write('<registry>captured source</registry>')
+
+            old_cache_dir = sync.cache_dir
+            old_sources = dict(sync._snapshot_sources)
+            snapshot_dir = os.path.join(tmpdir, 'snapshot')
+            try:
+                sync.cache_dir = cache_dir
+                sync._snapshot_sources.clear()
+                sync._snapshot_sources['cbor/cbor-tags.xml'] = 'https://www.iana.org/cbor-tags.xml'
+                sync._write_snapshot(snapshot_dir)
+            finally:
+                sync.cache_dir = old_cache_dir
+                sync._snapshot_sources.clear()
+                sync._snapshot_sources.update(old_sources)
+
+            with open(os.path.join(snapshot_dir, 'cbor', 'cbor-tags.xml'), encoding='utf-8') as saved:
+                self.assertEqual(saved.read(), '<registry>captured source</registry>')
+            with open(os.path.join(snapshot_dir, 'README.md'), encoding='utf-8') as manifest:
+                self.assertIn('https://www.iana.org/cbor-tags.xml', manifest.read())
+
+    def test_http_structured_xml_field_matches_csv_column(self):
+        xml_rows = _read_xml('http/http-field-names.xml', 'field-names')
+        csv_rows = _read_csv('http/field-names.csv')
+        xml_entry = next(row for row in sync._parse_http_field_names(xml_rows, True)
+                         if row[0] == 'Activate-Storage-Access')
+        csv_entry = next(row for row in sync._parse_http_field_names(csv_rows, False)
+                         if row[0] == 'Activate-Storage-Access')
+
+        self.assertEqual(xml_entry, csv_entry)
+        self.assertEqual(xml_entry[1], 'Item; provisional')
 
     def test_csv_fallback_snapshots_produce_usable_registry_entries(self):
         cases = [

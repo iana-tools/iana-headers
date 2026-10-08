@@ -1,0 +1,39 @@
+%rec: CborTagNameParts
+%key: Tag
+%doc: Curated experimental namespace/label decomposition for CBOR tag naming
+
+Tag: 16
+Namespace: COSE
+Label: single recipient encrypted data object
+
+Tag: 17
+Namespace: COSE
+Label: mac w o recipients object
+
+Tag: 18
+Namespace: COSE
+Label: single signer data object
+
+Tag: 19
+Namespace: COSE
+Label: standalone v2 countersignature
+
+Tag: 96
+Namespace: COSE
+Label: encrypted data object
+
+Tag: 97
+Namespace: COSE
+Label: maced data object
+
+Tag: 98
+Namespace: COSE
+Label: signed data object
+
+Tag: 107
+Namespace: SUIT
+Label: envelope
+
+Tag: 1070
+Namespace: SUIT
+Label: manifest

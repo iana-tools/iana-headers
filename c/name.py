@@ -28,6 +28,7 @@ import registry
 script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_dir = os.path.dirname(script_dir)
 db_dir = os.path.join(repo_dir, 'db')
+_review_quit_requested = False
 
 
 # ---------------------------------------------------------------------------
@@ -112,38 +113,33 @@ _LONG_ABBREV = {
     "security": "sec",
 }
 _STOPWORDS = {"algorithm", "and", "to", "a", "from", "the", "bare"}
-_CBOR_BOILERPLATE_PREFIXES = (
-    "A CBOR tag that contains a ",
-    "A CBOR tag that contains an ",
-    "A CBOR tag that contains either ",
-)
+_CBOR_TAG_WORD_OVERRIDES = {
+    '65535': 'invalid 16bit',
+    '4294967295': 'invalid 32bit',
+    '18446744073709551615': 'invalid 64bit',
+}
+_CBOR_TAG_WORD_SKIPS = {'554', '555'}
 
 
 def _clean(s):
-    s = re.sub(r'[.,].* defined in .*', '', s)
-    return s
-
-
-def _strip_brackets(original, s):
-    """A description that is entirely wrapped in [...] or (...) keeps its content."""
-    if original and ((original[0] == '[' and original[-1] == ']') or (original[0] == '(' and original[-1] == ')')):
-        return s[1:-1]
+    s = re.sub(r'\s+as defined in\b.*$', '', s, flags=re.IGNORECASE)
+    s = re.sub(r'\(\s*[−-]\s*NaN\b', '(negative NaN', s, flags=re.IGNORECASE)
+    s = re.sub(r'\(\s*\+\s*NaN\b', '(positive NaN', s, flags=re.IGNORECASE)
+    s = re.sub(r'\bBoth NaNs signal\b', 'Both NaN signals', s, flags=re.IGNORECASE)
+    s = re.sub(r'(?i)(Logical operator:\s*NONE)\s*/\s*(NOT)', r'\1 or \2', s)
+    s = re.sub(r'(?i)\b(Logical operator):\s*', r'\1 ', s)
+    s = re.sub(r'^A CBOR tag that contains(?: either| a| an)?\s*:?\s*', '', s, flags=re.IGNORECASE)
     return s
 
 
 def cbor_text_words(semantics):
     """Return lowercase space separated words for a CBOR tag semantics string ('' if none)."""
-    s = semantics
-    for pfx in _CBOR_BOILERPLATE_PREFIXES:
-        if s.startswith(pfx):
-            s = s[len(pfx):]
-            break
-
-    original = s
+    s = semantics.strip()
+    if s and ((s[0] == '[' and s[-1] == ']') or (s[0] == '(' and s[-1] == ')')):
+        s = s[1:-1]
     s = _clean(s)
-    s = _strip_brackets(original, s)
-    s = re.sub(r'\(.*?\)', '', s)
-    s = re.sub(r'\[.*?\]', '', s)
+    s = re.sub(r'\[[^\]]*\]', '', s)
+    s = re.sub(r'\((?:RFC|draft|section)\b[^)]*\)', '', s, flags=re.IGNORECASE)
     s = re.sub(r'[()\[\]]', ' ', s).strip()
 
     # Drop a description after ':' unless the colon is glued to a word ("ur:digest") or starts a URI ("https://")
@@ -169,6 +165,11 @@ def cbor_text_words(semantics):
 
 
 def cbor_tag_words(rec):
+    tag = rec.get('Tag', '').strip()
+    if tag in _CBOR_TAG_WORD_SKIPS:
+        return ''
+    if tag in _CBOR_TAG_WORD_OVERRIDES:
+        return _CBOR_TAG_WORD_OVERRIDES[tag]
     return cbor_text_words(rec.get('Semantics', ''))
 
 
@@ -266,12 +267,13 @@ def llm_words(semantics, existing_examples, fallback_fn):
 # Core naming logic
 # ---------------------------------------------------------------------------
 
-def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False):
+def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False, interactive=False):
     records = recfile.read(db_file)
 
     for r in records:  # keys must match what _apply_assignments sees after stripping
         r['Tag'] = r.get('Tag', '').strip()
-    new_entries = [r for r in records if r.get('Source', '').strip() == 'new']
+    pending_sources = ('new', 'needs-manual') if interactive else ('new',)
+    new_entries = [r for r in records if r.get('Source', '').strip() in pending_sources]
     if not new_entries:
         return []
 
@@ -332,6 +334,9 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False):
         colliding_tags.update(tags)
     colliding_tags.update(collision_with_existing)
 
+    if interactive:
+        return _review_candidates(db_file, new_entries, candidates, scoped, existing_words, dry_run)
+
     # Build rewrite map: tag -> (new Words, Source). Empty Words means needs-manual.
     assignments = {}
     for tag, cand in candidates.items():
@@ -346,27 +351,128 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False):
     return _report(new_entries, collision_groups, collision_with_existing, candidates)
 
 
+def _review_candidates(db_file, entries, candidates, scoped, existing_words, dry_run):
+    global _review_quit_requested
+    assignments = {}
+    occupied_words = set(existing_words)
+    pending = []
+
+    for index, record in enumerate(entries):
+        tag = record['Tag']
+        candidate = candidates.get(tag, '')
+        collision = bool(candidate and scoped(record, candidate) in occupied_words)
+        print(f"[{index + 1}/{len(entries)}] Tag {tag}")
+        if record.get('Data Item', '').strip():
+            print(f"  IANA Data Item: {record['Data Item'].strip()}")
+        print(f"  IANA Semantics: {record.get('Semantics', '')}")
+        if record.get('Reference', '').strip():
+            print(f"  Reference: {record['Reference'].strip()}")
+        print(f"  Suggested Words: {candidate or '(no suggestion)'}")
+        if collision:
+            print('  This suggestion collides with an existing or already accepted name.')
+
+        decision = _prompt_name_decision(record, candidate, collision, occupied_words, scoped)
+        if decision is None:
+            _review_quit_requested = True
+            pending = entries[index:]
+            break
+
+        words, source, note = decision
+        assignments[tag] = (words, source, note)
+        if source != 'skip' and words:
+            occupied_words.add(scoped(record, words))
+
+    if assignments and not dry_run:
+        _apply_assignments(db_file, assignments)
+
+    if pending:
+        print(f"\nReview paused; {len(pending)} record(s) remain unchanged.")
+        return [f"  REVIEW PENDING Tag {record['Tag']}" for record in pending]
+    if dry_run and assignments:
+        print('\nDry run: review choices were not saved.')
+    return []
+
+
+def _prompt_name_decision(record, candidate, candidate_collides, occupied_words, scoped):
+    while True:
+        can_accept = bool(candidate and not candidate_collides)
+        choices = '[a]ccept, [e]dit, [s]kip, [q]uit' if can_accept else '[e]dit, [s]kip, [q]uit'
+        try:
+            choice = input(f"  Choice ({choices}): ").strip().lower()
+        except EOFError:
+            return None
+
+        if choice in ('a', 'accept') and can_accept:
+            return candidate, 'manual', ''
+        if choice in ('e', 'edit'):
+            words = input('  Words (lowercase tokens): ').strip()
+            tokens = words.split()
+            if not tokens or any(not re.fullmatch(r'[a-z0-9_]+', token) for token in tokens):
+                print('  Use one or more lowercase [a-z0-9_] tokens.')
+                continue
+            if scoped(record, words) in occupied_words:
+                print('  That name is already used in this enum; choose a distinct name.')
+                continue
+            return words, 'manual', ''
+        if choice in ('s', 'skip'):
+            note = input('  Reason to skip this registration: ').strip()
+            if not note:
+                print('  Please enter a short reason so the exclusion is documented.')
+                continue
+            return '', 'skip', note
+        if choice in ('q', 'quit'):
+            return None
+        print('  Choose one of the listed actions.')
+
+
 def _apply_assignments(db_file, assignments):
-    """Rewrite db_file, updating Words/Source for the Source:new entries named in assignments."""
+    """Update Words/Source and optional Note fields without rewriting other record data."""
     with open(db_file, 'r', encoding='utf-8') as f:
         raw_lines = f.readlines()
 
+    fields_by_tag = {}
+    for tag, values in assignments.items():
+        fields = {'Words': values[0], 'Source': values[1]}
+        if len(values) > 2 and values[2]:
+            fields['Note'] = values[2]
+        fields_by_tag[tag] = fields
+
     lines = []
     current_tag = None
+    written_fields = set()
+
+    def append_missing_fields():
+        if current_tag not in fields_by_tag:
+            return
+        for field, value in fields_by_tag[current_tag].items():
+            if field not in written_fields:
+                lines.append(f'{field}: {value}\n')
+                written_fields.add(field)
+
     for line in raw_lines:
-        # Tolerate editors that strip trailing whitespace ("Words: " -> "Words:") or leave some
         stripped = line.rstrip()
-
         if stripped.startswith('Tag:'):
+            append_missing_fields()
             current_tag = stripped[4:].strip()
+            written_fields = set()
             lines.append(line)
-        elif stripped.startswith('Words:') and current_tag in assignments:
-            lines.append(f'Words: {assignments[current_tag][0]}\n')
-        elif stripped.replace(' ', '') == 'Source:new' and current_tag in assignments:
-            lines.append(f'Source: {assignments[current_tag][1]}\n')
-        else:
+            continue
+        if not stripped:
+            append_missing_fields()
+            current_tag = None
+            written_fields = set()
             lines.append(line)
+            continue
 
+        if current_tag in fields_by_tag:
+            field = stripped.partition(':')[0]
+            if field in fields_by_tag and (stripped.endswith(':') or ': ' in stripped):
+                lines.append(f'{field}: {fields_by_tag[current_tag][field]}\n')
+                written_fields.add(field)
+                continue
+        lines.append(line)
+
+    append_missing_fields()
     with open(db_file, 'w', encoding='utf-8') as f:
         f.writelines(lines)
 
@@ -407,9 +513,10 @@ def _report(new_entries, collision_groups, collision_with_existing, candidates):
 # ---------------------------------------------------------------------------
 
 def main():
-    parser = argparse.ArgumentParser(description='Fill Words on Source:new db entries')
+    parser = argparse.ArgumentParser(description='Fill Words on new db entries or review them interactively')
     parser.add_argument('--tfidf', action='store_true', help='Experimental: for CBOR tags the rules cannot name, keep the rarest words of the description')
     parser.add_argument('--llm', action='store_true', help='Use local Ollama LLM for CBOR tag text (falls back to the rules)')
+    parser.add_argument('--interactive', action='store_true', help='Review each new or needs-manual record; accept, edit, skip, or quit')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be written without modifying files')
     args = parser.parse_args()
 
@@ -417,23 +524,35 @@ def main():
         print(f"ERROR: db/ directory not found at {db_dir}. Run sync.py first.", file=sys.stderr)
         sys.exit(1)
 
+    global _review_quit_requested
+    _review_quit_requested = False
     all_issues = []
     for fname in sorted(os.listdir(db_dir)):
         if not fname.endswith('.rec'):
             continue
         db_file = os.path.join(db_dir, fname)
-        issues = fill_words_for_file(db_file, use_llm=args.llm, use_tfidf=args.tfidf, dry_run=args.dry_run)
+        issues = fill_words_for_file(
+            db_file, use_llm=args.llm, use_tfidf=args.tfidf,
+            dry_run=args.dry_run, interactive=args.interactive,
+        )
         if issues:
             print(f"\n{fname}:")
             for iss in issues:
                 print(iss)
             all_issues.extend(issues)
+        if args.interactive and _review_quit_requested:
+            break
 
     if all_issues:
         print(f"\n{'='*60}")
-        print(f"{len(all_issues)} entr(ies) need manual Words — edit db/*.rec (set Source: manual) then run `make check`.")
-        if not args.dry_run:
+        if args.interactive:
+            print(f"{len(all_issues)} entr(ies) remain for review — rerun `make review` or edit db/*.rec, then run `make check`.")
+        else:
+            print(f"{len(all_issues)} entr(ies) need manual Words — edit db/*.rec (set Source: manual) then run `make check`.")
+        if not args.dry_run and not (args.interactive and _review_quit_requested):
             sys.exit(1)
+    elif args.interactive:
+        print("Interactive review complete." + (" (dry-run)" if args.dry_run else ""))
     else:
         print("All new entries named successfully." + (" (dry-run)" if args.dry_run else ""))
 

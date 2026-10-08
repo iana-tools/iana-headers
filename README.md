@@ -32,7 +32,7 @@ IANA registries --sync--> db/*.rec --name--> db/*.rec --check--> --generate--> c
  (XML, CSV fallback)      (Words empty)      (Words filled)       (no network, deterministic)
 ```
 
-1. **sync** fetches the registries (XML, falling back to CSV) and appends entries that are missing from `db/` with empty `Words`. It never rewrites an existing record; if IANA changed the text of one, it is only reported.
+1. **sync** fetches the registries (XML, falling back to CSV) and appends entries that are missing from `db/` with empty `Words`. It never rewrites existing `Semantics` or `Words`; if IANA changes a lifecycle-tracked entry, it sets `Review: pending` so `check` blocks generation until it is reviewed.
 2. **name** fills `Words` for new entries using per-registry rules. Anything ambiguous (two entries that would get the same name) is left empty for a human.
 3. **check** validates the database: no unnamed entries, no duplicate names, no HTML entities (issue #9), well-formed tags.
 4. **generate** turns the database into the C headers, preserving any values already defined in an existing header.
@@ -75,14 +75,15 @@ Use the provided Makefile (it creates the virtual environment on first use):
 
 - `install`: Create a virtual environment and install dependencies.
 - `update`: Update project dependencies.
-- `sync`: Fetch IANA registries and add new entries to `db/` (needs network).
-- `name`: Fill `Words` for new entries (`python3 c/name.py --llm` can ask a local Ollama model for CBOR tag names).
+- `sync`: Fetch IANA registries, add new entries to `db/`, and save the exact source inputs used in a dated `iana/snapshots/YYYY-MM-DD/` directory (needs network).
+- `name`: Fill `Words` for new entries automatically (`python3 c/name.py --llm` can ask a local Ollama model for CBOR tag names).
+- `review`: Interactively review new or unresolved names; accept a suggestion, enter a name, skip with a reason, or quit and resume later.
 - `check`: Validate `db/`.
 - `generate`: Generate headers from `db/` (runs `check` first, no network).
 - `verify`: Generate headers, then compile them.
 - `clean`: Clean generated files.
 
-Updating after IANA publishes new entries: `make sync name`, resolve anything `name` could not decide (edit `db/*.rec`, set `Source: manual`), then `make generate` and commit `db/` together with the regenerated headers. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format.
+Updating after IANA publishes new entries: run `make sync review`, then `make generate`. Review choices are saved in `db/*.rec`; the dated IANA source snapshot in `iana/snapshots/`, database changes, and regenerated headers can be reviewed and committed together. `make sync` never stages or commits files automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format and snapshot details.
 
 ---
 

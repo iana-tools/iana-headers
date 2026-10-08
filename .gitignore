@@ -1,4 +1,6 @@
 *.csv
+
+!iana/snapshots/**/*.csv
 venv/
 c/cache/
 __pycache__/

@@ -9,6 +9,7 @@ import os
 import re
 import sys
 
+import lifecycle
 import recfile
 import registry
 
@@ -57,9 +58,31 @@ def check_file(db_file):
         source = rec.get('Source', '').strip()
         semantics = rec.get('Semantics', '').strip()
 
-        # 3. Source valid
+        # 3. Source and registration lifecycle metadata
         if source not in VALID_SOURCES:
             errors.append(f"{loc}: invalid Source={source!r} (must be one of {sorted(VALID_SOURCES)})")
+
+        lifecycle_state = rec.get('Lifecycle', '').strip().lower()
+        review_state = rec.get('Review', '').strip().lower()
+        detected_lifecycle = lifecycle.from_semantics(semantics)
+        if lifecycle_state and lifecycle_state not in lifecycle.LIFECYCLE_VALUES:
+            errors.append(f"{loc}: invalid Lifecycle={lifecycle_state!r}")
+        if review_state and review_state not in lifecycle.REVIEW_VALUES:
+            errors.append(f"{loc}: invalid Review={review_state!r}")
+        if review_state == 'pending':
+            errors.append(f"{loc}: Review=pending — update Semantics/Words and resolve Lifecycle before generate")
+        elif detected_lifecycle:
+            if lifecycle_state != detected_lifecycle:
+                errors.append(
+                    f"{loc}: Semantics indicates Lifecycle={detected_lifecycle!r}, "
+                    f"but db has {lifecycle_state or '(unset)'!r}; review the IANA status"
+                )
+            if review_state != 'monitor':
+                errors.append(f"{loc}: Lifecycle={detected_lifecycle!r} requires Review=monitor")
+        elif lifecycle_state and (lifecycle_state != 'stable' or review_state != 'resolved'):
+            errors.append(f"{loc}: Lifecycle no longer appears in Semantics; resolve it as Lifecycle=stable, Review=resolved")
+        elif review_state and (lifecycle_state != 'stable' or review_state != 'resolved'):
+            errors.append(f"{loc}: Review requires a matching Lifecycle state")
 
         # 4. HTML entities (issue #9 regression guard)
         for field_name, value in (('Semantics', semantics), ('Words', words)):

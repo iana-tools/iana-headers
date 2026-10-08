@@ -1,0 +1,10 @@
+Value,Semantics,Reference
+0-19,Unassigned,
+20,False,[RFC8949]
+21,True,[RFC8949]
+22,Null,[RFC8949]
+23,Undefined,[RFC8949]
+24-31,Reserved,[RFC8949]
+58-255,Unassigned,
+59,"This value as a map key indicates that the Claim Value is an array of redacted Claim Keys at the same level as the map key. (TEMPORARY - registered 2025-12-16, expires 2026-12-16)","[draft-ietf-spice-sd-cwt-06, Section 5.1]"
+60-255,Unassigned,

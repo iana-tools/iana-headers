@@ -1,0 +1,2742 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<?xml-stylesheet type="text/xsl" href="cbor-tags.xsl"?>
+<?xml-model href="cbor-tags.rng" schematypens="http://relaxng.org/ns/structure/1.0" ?>
+<registry xmlns="http://www.iana.org/assignments" id="cbor-tags">
+  <title>Concise Binary Object Representation (CBOR) Tags</title>
+  <created>2013-09-19</created>
+  <updated>2026-09-18</updated>
+  <category>Concise Binary Object Representation (CBOR)</category>
+  
+  <registry id="tags">
+    <title>CBOR Tags</title>
+    <xref type="rfc" data="rfc8949"/>
+    <expert>Christian Amsüss, Thomas Fossati, Francesca Palombini, Carsten Bormann (backup)</expert>
+    <note>All registration requests must include the template from <xref type="rfc" data="rfc8949"/>.
+    </note>
+    <range>
+      <value>0-23</value>
+      <registration_rule>Standards Action</registration_rule>
+    </range>    
+    <range>
+      <value>24-32767</value>
+      <registration_rule>Specification Required</registration_rule>
+    </range>
+    <range>
+      <value>32768-18446744073709551615</value>
+      <registration_rule>First Come First Served</registration_rule>
+      
+    </range> 
+    <record updated="2020-10-10">
+      <value>0</value>
+      <description>text string</description>
+      <semantics>Standard date/time string; see Section 3.4.1</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>1</value>
+      <description>integer or float</description>
+      <semantics>Epoch-based date/time; see Section 3.4.2</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>2</value>
+      <description>byte string</description>
+      <semantics>Unsigned bignum; see Section 3.4.3</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>3</value>
+      <description>byte string</description>
+      <semantics>Negative bignum; see Section 3.4.3</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>
+    <record updated="2020-10-10">
+      <value>4</value>
+      <description>array</description>
+      <semantics>Decimal fraction; see Section 3.4.4</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>5</value>
+      <description>array</description>
+      <semantics>Bigfloat; see Section 3.4.4</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record>
+      <value>6-15</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2017-01-11">
+      <value>16</value>
+      <description>COSE_Encrypt0</description>
+      <semantics>COSE Single Recipient Encrypted Data Object</semantics>
+      <xref type="rfc" data="rfc9052"/>
+    </record>
+    <record date="2017-01-11">
+      <value>17</value>
+      <description>COSE_Mac0</description>
+      <semantics>COSE Mac w/o Recipients Object</semantics>
+      <xref type="rfc" data="rfc9052"/>
+    </record>
+    <record date="2017-01-11">
+      <value>18</value>
+      <description>COSE_Sign1</description>
+      <semantics>COSE Single Signer Data Object</semantics>
+      <xref type="rfc" data="rfc9052"/>
+    </record>
+    <record date="2022-10-24">
+      <value>19</value>
+      <description>COSE_Countersignature</description>
+      <semantics>COSE standalone V2 countersignature</semantics>
+      <xref type="rfc" data="rfc9338"/>
+    </record>
+    <record>
+      <value>20</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record updated="2020-10-10">
+      <value>21</value>
+      <description>(any)</description>
+      <semantics>Expected conversion to base64url encoding; see Section 3.4.5.2 </semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>22</value>
+      <description>(any)</description>
+      <semantics>Expected conversion to base64 encoding; see Section 3.4.5.2 </semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>23</value>
+      <description>(any)</description>
+      <semantics>Expected conversion to base16 encoding; see Section 3.4.5.2</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>24</value>
+      <description>byte string</description>
+      <semantics>Encoded CBOR data item; see Section 3.4.5.1</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>
+    <record date="2013-11-26">
+      <value>25</value>
+      <description>unsigned integer</description>
+      <semantics>reference the nth previously seen string</semantics>
+      <xref type="uri" data="http://cbor.schmorp.de/stringref"/>
+      <xref type="person" data="Marc_A._Lehmann"/>
+    </record>
+    <record date="2013-11-26">
+      <value>26</value>
+      <description>array</description>
+      <semantics>Serialised Perl object with classname and constructor arguments</semantics>
+      <xref type="uri" data="http://cbor.schmorp.de/perl-object"/>
+      <xref type="person" data="Marc_A._Lehmann"/>
+    </record>
+    <record date="2013-11-26">
+      <value>27</value>
+      <description>array</description>
+      <semantics>Serialised language-independent object with type name and constructor arguments</semantics>
+      <xref type="uri" data="http://cbor.schmorp.de/generic-object"/>
+      <xref type="person" data="Marc_A._Lehmann"/>
+    </record>
+    <record date="2013-11-26">
+      <value>28</value>
+      <description>multiple</description>
+      <semantics>mark value as (potentially) shared</semantics>
+      <xref type="uri" data="http://cbor.schmorp.de/value-sharing"/>
+      <xref type="person" data="Marc_A._Lehmann"/>
+    </record>
+    <record date="2013-11-26">
+      <value>29</value>
+      <description>unsigned integer</description>
+      <semantics>reference nth marked value</semantics>
+      <xref type="uri" data="http://cbor.schmorp.de/value-sharing"/>
+      <xref type="person" data="Marc_A._Lehmann"/>
+    </record>
+    <record date="2014-02-21">
+      <value>30</value>
+      <description>array</description>
+      <semantics>Rational number</semantics>
+      <xref type="uri" data="http://peteroupc.github.io/CBOR/rational.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>  
+    <record date="2019-11-22" updated="2019-12-18">
+      <value>31</value>
+      <description>Undefined (0xf7)</description>
+      <semantics>Absent value in a CBOR Array</semantics>
+      <xref type="uri" data="https://github.com/svaarala/cbor-specs/blob/master/cbor-absent-tag.rst"/>
+      <xref type="person" data="Sami_Vaarala"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>32</value>
+      <description>text string</description>
+      <semantics>URI; see Section 3.4.5.3</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>    
+    <record updated="2020-10-10">
+      <value>33</value>
+      <description>text string</description>
+      <semantics>base64url; see Section 3.4.5.3</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>
+    <record updated="2020-10-10">
+      <value>34</value>
+      <description>text string</description>
+      <semantics>base64; see Section 3.4.5.3</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>
+    <record>
+      <value>35</value>
+      <description>UTF-8 string</description>
+      <semantics>Regular expression; see Section 2.4.4.3</semantics>
+      <xref type="rfc" data="rfc7049"/>
+    </record>
+    <record updated="2020-10-10">
+      <value>36</value>
+      <description>text string</description>
+      <semantics>MIME message; see Section 3.4.5.3</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>
+    <record date="2014-05-09">
+      <value>37</value>
+      <description>byte string</description>
+      <semantics>Binary UUID (<xref type="rfc" data="rfc9562">RFC9562, Section 4</xref>)</semantics>
+      <xref type="uri" data="https://github.com/lucas-clemente/cbor-specs/blob/master/uuid.md"/>
+      <xref type="person" data="Lucas_Clemente"/>
+    </record>
+    <record date="2014-07-01" updated="2022-07-12">
+      <value>38</value>
+      <description>array</description>
+      <semantics>Language-tagged string</semantics>
+      <xref type="rfc" data="rfc9290">RFC9290, Appendix A</xref>
+    </record>
+    <record date="2014-07-01">
+      <value>39</value>
+      <description>multiple</description>
+      <semantics>Identifier</semantics>
+      <xref type="uri" data="https://github.com/lucas-clemente/cbor-specs/blob/master/id.md"/>
+      <xref type="person" data="Lucas_Clemente"/>
+    </record>
+    <record date="2019-02-28">
+      <value>40</value>
+      <description>array of two arrays <xref type="note" data="1"/></description>
+      <semantics>Multi-dimensional Array, row-major order</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>41</value>
+      <description>array</description>
+      <semantics>Homogeneous Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-08-23">
+      <value>42</value>
+      <description>byte string</description>
+      <semantics>IPLD content identifier</semantics>
+      <xref type="uri" data="https://github.com/ipld/cid-cbor/"/>
+      <xref type="person" data="Volker_Mische"/>
+    </record>
+    <record date="2019-04-11" updated="2022-04-13">
+      <value>43</value>
+      <description>text string</description>
+      <semantics>YANG bits datatype; see Section 6.7.</semantics>
+      <xref type="rfc" data="rfc9254"/>
+    </record>
+    <record date="2019-04-11" updated="2022-04-13">
+      <value>44</value>
+      <description>text string</description>
+      <semantics>YANG enumeration datatype; see Section 6.6.</semantics>
+      <xref type="rfc" data="rfc9254"/>
+    </record>
+    <record date="2019-04-11" updated="2022-04-13">
+      <value>45</value>
+      <description>unsigned integer or text string</description>
+      <semantics>YANG identityref datatype; see Section 6.10.</semantics>
+      <xref type="rfc" data="rfc9254"/>
+    </record>
+    <record date="2019-04-11" updated="2022-04-13">
+      <value>46</value>
+      <description>unsigned integer or text string or array</description>
+      <semantics>YANG instance-identifier datatype; see Section 6.13.</semantics>
+      <xref type="rfc" data="rfc9254"/>
+    </record>
+    <record date="2019-08-19" updated="2022-04-13">
+      <value>47</value>
+      <description>unsigned integer</description>
+      <semantics>YANG Schema Item iDentifier (sid); see Section 3.2.</semantics>
+      <xref type="rfc" data="rfc9254"/>
+    </record>
+    <record date="2023-11-13">
+      <value>48</value>
+      <description>byte string</description>
+      <semantics>IEEE MAC Address</semantics>
+      <xref type="rfc" data="rfc9542"/>
+    </record>
+    <record>
+      <value>49-51</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2021-03-25" updated="2021-10-22">
+      <value>52</value>
+      <description>byte string or array</description>
+      <semantics>IPv4, [prefixlen,IPv4], [IPv4,prefixpart]</semantics>
+      <xref type="rfc" data="rfc9164"/>
+    </record>
+    <record>
+      <value>53</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2021-03-25" updated="2021-10-22">
+      <value>54</value>
+      <description>byte string or array</description>
+      <semantics>IPv6, [prefixlen,IPv6], [IPv6,prefixpart]</semantics>
+      <xref type="rfc" data="rfc9164"/>
+    </record>
+    <record>
+      <value>55-57</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-12-09" updated="2026-01-15">
+      <value>58</value>
+      <description>(any)</description>
+      <semantics>An array claim element intended to be redacted, or a map key whose key and value are intended to be redacted. (TEMPORARY - registered 2025-12-09, expires 2026-12-09)</semantics>
+      <xref type="draft" data="draft-ietf-spice-sd-cwt-06" section="11.1"/>
+    </record>
+    <record>
+      <value>59</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-12-09" updated="2026-01-15">
+      <value>60</value>
+      <description>byte string</description>
+      <semantics>A selective disclosure redacted (array) claim element. (TEMPORARY - registered 2025-12-09, expires 2026-12-09)</semantics>
+      <xref type="draft" data="draft-ietf-spice-sd-cwt-06" section="5.1"/>
+    </record>
+    <record date="2017-09-08">
+      <value>61</value>
+      <description>CBOR Web Token (CWT)</description>
+      <semantics>CBOR Web Token (CWT)</semantics>
+      <xref type="rfc" data="rfc8392"/>
+      <xref type="person" data="Michael_B._Jones"/>
+    </record>
+    <record date="2026-01-27">
+      <value>62</value>
+      <description>uint .gt 0</description>
+      <semantics>A marker of a location in a map or an array where a decoy is intended to be inserted. (TEMPORARY - registered 2026-01-27, expires 2027-01-27)</semantics>
+      <xref type="draft" data="draft-ietf-spice-sd-cwt-06" section="11.2"/>
+    </record>
+    <record date="2020-06-26">
+      <value>63</value>
+      <description>byte string</description>
+      <semantics>Encoded CBOR Sequence <xref type="rfc" data="rfc8742"/></semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-02">draft-bormann-cbor-notable-tags-02, 
+      Section 2.1</xref>
+    </record>
+    <record date="2019-02-28">
+      <value>64</value>
+      <description>byte string</description>
+      <semantics>uint8 Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>65</value>
+      <description>byte string</description>
+      <semantics>uint16, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>66</value>
+      <description>byte string</description>
+      <semantics>uint32, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>67</value>
+      <description>byte string</description>
+      <semantics>uint64, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>68</value>
+      <description>byte string</description>
+      <semantics>uint8 Typed Array, clamped arithmetic</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>69</value>
+      <description>byte string</description>
+      <semantics>uint16, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>70</value>
+      <description>byte string</description>
+      <semantics>uint32, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>71</value>
+      <description>byte string</description>
+      <semantics>uint64, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>72</value>
+      <description>byte string</description>
+      <semantics>sint8 Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>73</value>
+      <description>byte string</description>
+      <semantics>sint16, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>74</value>
+      <description>byte string</description>
+      <semantics>sint32, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>75</value>
+      <description>byte string</description>
+      <semantics>sint64, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>76</value>
+      <description>byte string</description>
+      <semantics>(reserved)</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>77</value>
+      <description>byte string</description>
+      <semantics>sint16, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>78</value>
+      <description>byte string</description>
+      <semantics>sint32, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>79</value>
+      <description>byte string</description>
+      <semantics>sint64, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>80</value>
+      <description>byte string</description>
+      <semantics>IEEE 754 binary16, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>81</value>
+      <description>byte string</description>
+      <semantics>IEEE 754 binary32, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>82</value>
+      <description>byte string</description>
+      <semantics>IEEE 754 binary64, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>83</value>
+      <description>byte string</description>
+      <semantics>IEEE 754 binary128, big endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>84</value>
+      <description>byte string</description>
+      <semantics>IEEE 754 binary16, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>85</value>
+      <description>byte string</description>
+      <semantics>IEEE 754 binary32, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>86</value>
+      <description>byte string</description>
+      <semantics>IEEE 754 binary64, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record date="2019-02-28">
+      <value>87</value>
+      <description>byte string</description>
+      <semantics>IEEE 754 binary128, little endian, Typed Array</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record>
+      <value>88-95</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2017-01-11">
+      <value>96</value>
+      <description>COSE_Encrypt</description>
+      <semantics>COSE Encrypted Data Object</semantics>
+      <xref type="rfc" data="rfc9052"/>
+    </record>
+    <record date="2017-01-11">
+      <value>97</value>
+      <description>COSE_Mac</description>
+      <semantics>COSE MACed Data Object</semantics>
+      <xref type="rfc" data="rfc9052"/>
+    </record>
+    <record date="2017-01-11">
+      <value>98</value>
+      <description>COSE_Sign</description>
+      <semantics>COSE Signed Data Object</semantics>
+      <xref type="rfc" data="rfc9052"/>
+    </record>
+    <record date="2025-11-14">
+      <value>99</value>
+      <description>array</description>
+      <semantics>CRI Reference</semantics>
+      <xref type="draft" data="RFC-ietf-core-href-29"/>
+    </record>
+    <record date="2020-06-05">
+      <value>100</value>
+      <description>Unsigned or negative integer</description>
+      <semantics>Number of days since the epoch date 1970-01-01</semantics>
+      <xref type="rfc" data="rfc8943"/>
+    </record>
+    <record date="2022-07-20">
+      <value>101</value>
+      <description>array [uint, any]</description>
+      <semantics>alternatives as given by the uint + 128; see Section 9.1</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-07"/>
+    </record>
+    <record>
+      <value>102</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2018-04-17">
+      <value>103</value>
+      <description>array</description>
+      <semantics>Geographic Coordinates</semantics>
+      <xref type="uri" data="https://github.com/allthingstalk/cbor/blob/master/CBOR-Tag103-Geographic-Coordinates.md"/>
+      <xref type="person" data="Danilo_Vidovic"/>
+    </record>
+    <record date="2020-03-17">
+      <value>104</value>
+      <description>multiple</description>
+      <semantics>Geographic Coordinate Reference System WKT or EPSG number</semantics>
+      <xref type="draft" data="draft-clarke-cbor-crs-01"/>
+    </record>
+    <record>
+      <value>105-106</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-04-03">
+      <value>107</value>
+      <description>map</description>
+      <semantics>SUIT_Envelope as defined in Appendix A of <xref type="draft" data="RFC-ietf-suit-manifest-34"/></semantics>
+      <xref type="draft" data="RFC-ietf-suit-manifest-34"/>
+    </record>
+    <record date="2025-02-13">
+      <value>108</value>
+      <description>byte string</description>
+      <semantics>Expected conversion to base16 encoding (lowercase)</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-12">draft-bormann-cbor-notable-tags-12, Section 2.1, Paragraph 2, Item 2</xref>
+    </record>
+    <record>
+      <value>109</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2021-05-26" updated="2021-05-28">
+      <value>110</value>
+      <description>byte string, array, or map</description>
+      <semantics>relative object identifier (BER encoding); SDNV <xref type="rfc" data="rfc6256"/> sequence</semantics>
+      <xref type="rfc" data="rfc9090"/>
+    </record>
+    <record date="2021-05-26" updated="2021-05-28">
+      <value>111</value>
+      <description>byte string, array, or map</description>
+      <semantics>object identifier (BER encoding)</semantics>
+      <xref type="rfc" data="rfc9090"/>
+    </record>
+    <record date="2021-05-26" updated="2021-05-28">
+      <value>112</value>
+      <description>byte string, array, or map</description>
+      <semantics>object identifier (BER encoding), relative to 1.3.6.1.4.1</semantics>
+      <xref type="rfc" data="rfc9090"/>
+    </record>
+    <record>
+      <value>113-119</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2018-04-17">
+      <value>120</value>
+      <description>multiple</description>
+      <semantics>Internet of Things Data Point</semantics>
+      <xref type="uri" data="https://github.com/allthingstalk/cbor/blob/master/CBOR-Tag120-Internet-of-Things-Data-Points.md"/>
+      <xref type="person" data="Danilo_Vidovic"/>
+    </record>
+    <record date="2022-07-20">
+      <value>121-127</value>
+      <description>any</description>
+      <semantics>alternatives 0..6, 1+1 encoding; see Section 9.1</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-07"/>
+    </record>
+    <record>
+      <value>128-199</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-08-24">
+      <value>200</value>
+      <description>multiple</description>
+      <semantics>Gordian Envelope</semantics>
+      <xref type="draft" data="draft-mcnally-envelope-05"/>
+    </record>
+    <record date="2024-07-11">
+      <value>201</value>
+      <description>any</description>
+      <semantics>enclosed dCBOR</semantics>
+      <xref type="draft" data="draft-mcnally-deterministic-cbor-10"/>
+    </record>
+    <record>
+      <value>202-255</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2013-11-26">
+      <value>256</value>
+      <description>multiple</description>
+      <semantics>mark value as having string references</semantics>
+      <xref type="uri" data="http://cbor.schmorp.de/stringref"/>
+      <xref type="person" data="Marc_A._Lehmann"/>
+    </record>
+    <record date="2014-03-27">
+      <value>257</value>
+      <description>byte string</description>
+      <semantics>Binary MIME message</semantics>
+      <xref type="uri" data="http://peteroupc.github.io/CBOR/binarymime.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>
+    <record date="2017-08-25">
+      <value>258</value>
+      <description>array</description>
+      <semantics>Mathematical finite set</semantics>
+      <xref type="uri" data="https://github.com/input-output-hk/cbor-sets-spec/blob/master/CBOR_SETS.md"/>
+      <xref type="person" data="Alfredo_Di_Napoli"/>
+    </record>
+    <record date="2018-10-25">
+      <value>259</value>
+      <description>map</description>
+      <semantics>Map datatype with key-value operations (e.g. `.get()/.set()/.delete()`)</semantics>
+      <xref type="uri" data="https://github.com/shanewholloway/js-cbor-codec/blob/master/docs/CBOR-259-spec--explicit-maps.md"/>
+      <xref type="person" data="Shane_Holloway"/>
+    </record>
+    <record date="2018-03-06" updated="2021-10-22">
+      <value>260</value>
+      <description>byte string</description>
+      <semantics>Network Address (IPv4 or IPv6 or MAC Address) (DEPRECATED in favor of 52 and 54
+        for IP addresses)</semantics>
+      <xref type="uri" data="http://www.employees.org/~ravir/cbor-network.txt"/>
+      <xref type="person" data="Ravi_Raju"/>
+      <xref type="rfc" data="rfc9164"/>
+    </record>
+    <record date="2018-03-28" updated="2021-10-22">
+      <value>261</value>
+      <description>map (IPAddress + Mask Length)</description>
+      <semantics>Network Address Prefix (IPv4 or IPv6 Address + Mask Length) (DEPRECATED in favor of 52 and 54
+        for IP addresses)</semantics>
+      <xref type="uri" data="https://github.com/toravir/CBOR-Tag-Specs/blob/master/networkPrefix.md"/>
+      <xref type="person" data="Ravi_Raju"/>
+      <xref type="rfc" data="rfc9164"/>
+    </record>
+    <record date="2018-03-28">
+      <value>262</value>
+      <description>byte string</description>
+      <semantics>Embedded JSON Object</semantics>
+      <xref type="uri" data="https://github.com/toravir/CBOR-Tag-Specs/blob/master/embeddedJSON.md"/>
+      <xref type="person" data="Ravi_Raju"/>
+    </record>
+    <record date="2018-03-28">
+      <value>263</value>
+      <description>byte string</description>
+      <semantics>Hexadecimal string</semantics>
+      <xref type="uri" data="https://github.com/toravir/CBOR-Tag-Specs/blob/master/hexString.md"/>
+      <xref type="person" data="Ravi_Raju"/>
+    </record>
+    <record date="2014-05-30">
+      <value>264</value>
+      <description>array</description>
+      <semantics>Decimal fraction with arbitrary exponent</semantics>
+      <xref type="uri" data="http://peteroupc.github.io/CBOR/bigfrac.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>
+    <record date="2014-05-30">
+      <value>265</value>
+      <description>array</description>
+      <semantics>Bigfloat with arbitrary exponent</semantics>
+      <xref type="uri" data="http://peteroupc.github.io/CBOR/bigfrac.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>
+    <record date="2018-11-06">
+      <value>266</value>
+      <description>text string</description>
+      <semantics>Internationalized resource identifier (IRI)</semantics>
+      <xref type="uri" data="https://peteroupc.github.io/CBOR/iri.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>
+    <record date="2018-11-09">
+      <value>267</value>
+      <description>text string</description>
+      <semantics>Internationalized resource identifier reference (IRI reference)</semantics>
+      <xref type="uri" data="https://peteroupc.github.io/CBOR/iri.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>
+    <record date="2019-07-18">
+      <value>268</value>
+      <description>array</description>
+      <semantics>Extended decimal fraction</semantics>
+      <xref type="uri" data="https://peteroupc.github.io/CBOR/extended.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>
+    <record date="2019-07-18">
+      <value>269</value>
+      <description>array</description>
+      <semantics>Extended bigfloat</semantics>
+      <xref type="uri" data="https://peteroupc.github.io/CBOR/extended.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>
+    <record date="2019-07-18">
+      <value>270</value>
+      <description>array</description>
+      <semantics>Extended rational number</semantics>
+      <xref type="uri" data="https://peteroupc.github.io/CBOR/extended.html"/>
+      <xref type="person" data="Peter_Occil"/>
+    </record>
+    <record date="2020-01-16" updated="2021-06-11">
+      <value>271</value>
+      <description>DDoS Open Threat Signaling (DOTS) signal channel object</description>
+      <semantics>DDoS Open Threat Signaling (DOTS) signal channel object, 
+        as defined in <xref type="rfc" data="rfc9132"/></semantics>
+      <xref type="rfc" data="rfc9132"/>
+    </record>
+    <record date="2020-03-18">
+      <value>272</value>
+      <description>byte string</description>
+      <semantics>Non-UTF-8 CESU-8 string</semantics>
+      <xref type="uri" data="https://github.com/svaarala/cbor-specs/blob/master/cbor-nonutf8-string-tags.rst"/>
+      <xref type="person" data="Sami_Vaarala"/>
+    </record>
+    <record date="2020-03-18">
+      <value>273</value>
+      <description>byte string</description>
+      <semantics>Non-UTF-8 WTF-8 string</semantics>
+      <xref type="uri" data="https://github.com/svaarala/cbor-specs/blob/master/cbor-nonutf8-string-tags.rst"/>
+      <xref type="person" data="Sami_Vaarala"/>
+    </record>
+    <record date="2020-03-18">
+      <value>274</value>
+      <description>byte string</description>
+      <semantics>Non-UTF-8 MUTF-8 string</semantics>
+      <xref type="uri" data="https://github.com/svaarala/cbor-specs/blob/master/cbor-nonutf8-string-tags.rst"/>
+      <xref type="person" data="Sami_Vaarala"/>
+    </record>
+    <record date="2020-03-30">
+      <value>275</value>
+      <description>map (major type 5)</description>
+      <semantics>Map contains only keys that are of type Text String (major type 3)</semantics>
+      <xref type="uri" data="https://github.com/ecorm/cbor-tag-text-key-map"/>
+      <xref type="person" data="Emile_Cormier"/>
+    </record>
+    <record date="2021-01-05">
+      <value>276</value>
+      <description>byte string</description>
+      <semantics>ERIS binary read capability</semantics>
+      <xref type="uri" data="http://purl.org/eris"/>
+    </record>
+    <record date="2021-02-01">
+      <value>277</value>
+      <description>byte string</description>
+      <semantics>Universal Geographical Area Description (GAD) shape; see Section 5</semantics>
+      <xref type="uri" data="https://portal.3gpp.org/desktopmodules/Specifications/SpecificationDetails.aspx?specificationId=742">TS 23.032</xref>
+      <xref type="person" data="Mathew_Meins"/>
+    </record>
+    <record date="2021-02-01">
+      <value>278</value>
+      <description>byte string</description>
+      <semantics>Universal Geographical Area Description (GAD) description of velocity; see Section 8</semantics>
+      <xref type="uri" data="https://portal.3gpp.org/desktopmodules/Specifications/SpecificationDetails.aspx?specificationId=742">TS 23.032</xref>
+      <xref type="person" data="Mathew_Meins"/>
+    </record>
+    <record date="2024-06-11">
+      <value>279</value>
+      <description>array</description>
+      <semantics>Coordinate Reference System Wrapper</semantics>
+      <xref type="uri" data="https://shop.cta.tech/collections/standards/products/fast-and-readable-geographical-hashing-cta-5009">Fast and Readable Geographical Hashing (CTA-5009-A)</xref>
+      <xref type="person" data="Consumer_Technology_Association"/>
+    </record>
+    <record date="2025-04-03">
+      <value>280</value>
+      <description>string or array</description>
+      <semantics>Symbol</semantics>
+      <xref type="uri" data="https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt"/>
+      <xref type="person" data="Mihai_Bazon"/>
+    </record>
+    <record date="2025-04-03">
+      <value>281</value>
+      <description>array</description>
+      <semantics>Linked list</semantics>
+      <xref type="uri" data="https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt"/>
+      <xref type="person" data="Mihai_Bazon"/>
+    </record>
+    <record date="2025-04-03">
+      <value>282</value>
+      <description>unsigned integer</description>
+      <semantics>Character</semantics>
+      <xref type="uri" data="https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt"/>
+      <xref type="person" data="Mihai_Bazon"/>
+    </record>
+    <record date="2025-04-03">
+      <value>283</value>
+      <description>array</description>
+      <semantics>Object</semantics>
+      <xref type="uri" data="https://github.com/mishoo/cbor.lisp/blob/e1428a5/clext-spec.txt"/>
+      <xref type="person" data="Mihai_Bazon"/>
+    </record>
+    <record date="2025-05-16">
+      <value>284</value>
+      <description>text string or byte string</description>
+      <semantics>JSON Numeric Value, Represented as its JSON Text</semantics>
+      <xref type="uri" data="https://gist.github.com/theory/ef667af1c725240e6e30d525786d58e6"/>
+      <xref type="person" data="David_Wheeler"/>
+    </record>
+    <record date="2025-12-17">
+      <value>285</value>
+      <description>array</description>
+      <semantics>SUIT_Report_Protected</semantics>
+      <xref type="draft" data="RFC-ietf-suit-report-19"/>
+    </record>
+    <record date="2025-12-17">
+      <value>286</value>
+      <description>array</description>
+      <semantics>SUIT_Reference</semantics>
+      <xref type="draft" data="RFC-ietf-suit-report-19"/>
+    </record>
+    <record date="2025-12-17">
+      <value>287</value>
+      <description>map</description>
+      <semantics>SUIT_Capability_Report</semantics>
+      <xref type="draft" data="RFC-ietf-suit-report-19"/>
+    </record>
+    <record>
+      <value>288-295</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-10-25">
+      <value>296</value>
+      <description>any</description>
+      <semantics>isolate shared values within this scope</semantics>
+      <xref type="uri" data="https://cbor.is4.site/sharedref-namespace"/>
+      <xref type="person" data="IS4"/>
+    </record>
+    <record>
+      <value>297-300</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-06-11">
+      <value>301</value>
+      <description>text string or array</description>
+      <semantics>Geohash String</semantics>
+      <xref type="uri" data="https://shop.cta.tech/collections/standards/products/fast-and-readable-geographical-hashing-cta-5009">Fast and Readable Geographical Hashing (CTA-5009-A)</xref>
+      <xref type="person" data="Consumer_Technology_Association"/>
+    </record>
+    <record>
+      <value>302-499</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-06-10">
+      <value>500</value>
+      <description>any</description>
+      <semantics>Earmarked for CoRIM</semantics>
+      <xref type="draft" data="draft-ietf-rats-corim-07"/>
+    </record>
+    <record date="2025-06-10">
+      <value>501</value>
+      <description>map</description>
+      <semantics>A CBOR tag that contains a corim-map.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2024-03-20" updated="2025-06-10">
+      <value>502-504</value>
+      <description>any</description>
+      <semantics>Earmarked for CoRIM</semantics>
+      <xref type="draft" data="draft-ietf-rats-corim-07"/>
+    </record>
+    <record date="2025-06-10">
+      <value>505</value>
+      <description>bytes</description>
+      <semantics>A CBOR tag that contains a conciseswid-tag-map.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2025-06-10">
+      <value>506</value>
+      <description>bytes</description>
+      <semantics>A CBOR tag that contains a concisemid-tag-map.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2024-03-20" updated="2025-06-10">
+      <value>507-525</value>
+      <description>any</description>
+      <semantics>Earmarked for CoRIM</semantics>
+      <xref type="draft" data="draft-ietf-rats-corim-07"/>
+    </record>
+    <record date="2025-06-10">
+      <value>526</value>
+      <description>map</description>
+      <semantics>A CBOR tag that contains an xcorim-map.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2025-06-10">
+      <value>527</value>
+      <description>tagged signature block</description>
+      <semantics>A CBOR tag that contains either: xcorimmap, or signed-xcorim.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2024-03-20" updated="2025-06-10">
+      <value>528-549</value>
+      <description>any</description>
+      <semantics>Earmarked for CoRIM</semantics>
+      <xref type="draft" data="draft-ietf-rats-corim-07"/>
+    </record>
+    <record date="2025-06-10">
+      <value>550</value>
+      <description>bytes</description>
+      <semantics>A CBOR tag that contains a UEID between 7 and 33 bytes.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2024-03-20" updated="2025-06-10">
+      <value>551</value>
+      <description>any</description>
+      <semantics>Earmarked for CoRIM</semantics>
+      <xref type="draft" data="draft-ietf-rats-corim-07"/>
+    </record>
+    <record date="2025-06-10">
+      <value>552</value>
+      <description>unsigned integer</description>
+      <semantics>A CBOR tag that contains a security version number that is evaluated with equivalence semantics.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2025-06-10">
+      <value>553</value>
+      <description>unsigned integer</description>
+      <semantics>A CBOR tag that contains min-svn that identifies a security version number that is evaluated with greater than or equals semantics</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2025-06-10">
+      <value>554</value>
+      <description>string</description>
+      <semantics>A CBOR tag that contains a PEM encoded SubjectPublicKeyInfo. See Section 13 of <xref type="rfc" data="rfc7468"/>.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2025-06-10">
+      <value>555</value>
+      <description>string</description>
+      <semantics>A CBOR tag that contains a PEM encoded SubjectPublicKeyInfo. See Section 13 of <xref type="rfc" data="rfc7468"/>.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2025-06-10">
+      <value>556</value>
+      <description>string</description>
+      <semantics>A CBOR tag that contains an X.509 certificate chain created by the concatenation of as many PEM encoded X.509 certificates as needed. The certificates MUST be concatenated in order that each directly certifies the one preceding.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2025-06-10">
+      <value>557-559</value>
+      <description>any</description>
+      <semantics>Earmarked for CoRIM</semantics>
+      <xref type="draft" data="draft-ietf-rats-corim-07"/>
+    </record>
+    <record date="2025-06-10">
+      <value>560</value>
+      <description>bytes</description>
+      <semantics>A CBOR tag that contains a byte string interpreted as an array of bits.</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-Endorsement-Architecture-for-Devices-V1-R38_pub.pdf">TCG DICE Endorsement Architecture for Devices</xref>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/Errata-for-DICE-Endorsement-Architecture-for-Devices-Version-1.1-Revision1_pub.pdf">TCG Errata for DICE Endorsement Architecture for Devices Version 1.1</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2024-03-20" updated="2025-06-10">
+      <value>561-569</value>
+      <description>any</description>
+      <semantics>Earmarked for CoRIM</semantics>
+      <xref type="draft" data="draft-ietf-rats-corim-07"/>
+    </record>
+    <record date="2024-03-20">
+      <value>570</value>
+      <description>map (spdm-toc-map, see CDDL)</description>
+      <semantics>spdm-toc-map</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-DICE-Concise-Evidence-Binding-for-SPDM-Version-1.0-Revision-53_1August2023.pdf">TCG DICE Concise Evidence Binding for SPDM</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2024-03-20">
+      <value>571</value>
+      <description>map (concise-evidence-map, see CDDL)</description>
+      <semantics>concise-evidence-map</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/TCG-DICE-Concise-Evidence-Binding-for-SPDM-Version-1.0-Revision-53_1August2023.pdf">TCG DICE Concise Evidence Binding for SPDM</xref>
+      <xref type="person" data="TCG"/>
+    </record>
+    <record date="2024-03-20">
+      <value>572-599</value>
+      <description>any</description>
+      <semantics>Earmarked for CoRIM</semantics>
+      <xref type="draft" data="draft-ietf-rats-corim-07"/>
+    </record>
+    <record>
+      <value>600</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-11-26">
+      <value>601</value>
+      <description>map (Claims-Set as per Appendix A of <xref type="rfc" data="rfc9781"/>)</description>
+      <semantics>Unprotected CWT Claims Set <xref type="rfc" data="rfc9781"/></semantics>
+      <xref type="rfc" data="rfc9781"/>
+    </record>
+    <record date="2023-12-21">
+      <value>602</value>
+      <description>array</description>
+      <semantics>Detached EAT Bundle</semantics>
+      <xref type="rfc" data="rfc9711">RFC9711, Section 5</xref>
+    </record>
+    <record>
+      <value>603-1000</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2017-06-14" updated="2024-07-25">
+      <value>1001</value>
+      <description>map</description>
+      <semantics>extended time</semantics>
+      <xref type="rfc" data="rfc9581">RFC9581, Section 3</xref>
+    </record>
+    <record date="2017-06-14" updated="2024-07-25">
+      <value>1002</value>
+      <description>map</description>
+      <semantics>duration</semantics>
+      <xref type="rfc" data="rfc9581">RFC9581, Section 4</xref>
+    </record>
+    <record date="2017-06-14" updated="2024-07-25">
+      <value>1003</value>
+      <description>array</description>
+      <semantics>period</semantics>
+      <xref type="rfc" data="rfc9581">RFC9581, Section 5</xref>
+    </record>
+    <record date="2020-06-05">
+      <value>1004</value>
+      <description>UTF-8 text string</description>
+      <semantics><xref type="rfc" data="rfc3339"/> full-date string</semantics>
+      <xref type="rfc" data="rfc8943"/>
+    </record>
+    <record>
+      <value>1005-1009</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-03-14">
+      <value>1010</value>
+      <description>array: [id: text string, obj: any]</description>
+      <semantics>Object type identifier</semantics>
+      <xref type="draft" data="draft-rundgren-cotx-04"/>
+    </record>
+    <record>
+      <value>1011-1039</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2019-02-28">
+      <value>1040</value>
+      <description>array of two arrays <xref type="note" data="1"/></description>
+      <semantics>Multi-dimensional Array, column-major order</semantics>
+      <xref type="rfc" data="rfc8746"/>
+    </record>
+    <record>
+      <value>1041-1047</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-11-13">
+      <value>1048</value>
+      <description>byte string</description>
+      <semantics>IEEE OUI/CID</semantics>
+      <xref type="rfc" data="rfc9542"/>
+    </record>
+    <record>
+      <value>1049-1069</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-04-03">
+      <value>1070</value>
+      <description>map</description>
+      <semantics>SUIT_Manifest as defined in Appendix A of <xref type="draft" data="RFC-ietf-suit-manifest-34"/></semantics>
+      <xref type="draft" data="RFC-ietf-suit-manifest-34"/>
+    </record>
+    <record>
+      <value>1071-1279</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-07-20">
+      <value>1280-1400</value>
+      <description>any</description>
+      <semantics>alternatives 7..127, 1+2 encoding; see Section 9.1</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-07"/>
+    </record>
+    <record>
+      <value>1401-18299</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-08-09">
+      <value>18300-18555</value>
+      <description>byte string</description>
+      <semantics>Bare Hash value (COSE algorithm -256 to -1)</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-09">draft-bormann-cbor-notable-tags-09, Section 3.1.1</xref>
+    </record>
+    <record date="2023-08-09">
+      <value>18556</value>
+      <description>array</description>
+      <semantics>[COSE algorithm identifier, Base Hash value]</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-09">draft-bormann-cbor-notable-tags-09, Section 3.1.1</xref>
+    </record>
+    <record date="2023-08-09">
+      <value>18557-18811</value>
+      <description>byte string</description>
+      <semantics>Bare Hash value (COSE algorithm 1 to 255)</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-09">draft-bormann-cbor-notable-tags-09, Section 3.1.1</xref>
+    </record>
+    <record>
+      <value>18812-20852</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-03-06">
+      <value>20853</value>
+      <description>any</description>
+      <semantics>description of the value instead of the value itself</semantics>
+      <xref type="uri" data="https://cbor.is4.site/quoted"/>
+      <xref type="person" data="IS4"/>
+    </record>
+    <record>
+      <value>20854-21064</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-08-04" updated="2023-08-09">
+      <value>21065</value>
+      <description>text string</description>
+      <semantics>I-Regexp</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-11">draft-bormann-cbor-notable-tags-11, Section 2.1</xref>
+      <xref type="rfc" data="rfc9485"/>
+    </record>
+    <record date="2023-08-04">
+      <value>21066</value>
+      <description>Array[UTF8string, UTF8string?]</description>
+      <semantics>ECMAScript RegExp <xref type="uri" data="https://262.ecma-international.org/14.0/#sec-regexp-regular-expression-objects"/></semantics>
+      <xref type="uri" data="https://github.com/hildjj/cbor-specs/blob/main/regexp.md"/>
+      <xref type="person" data="Joe_Hildebrand"/>
+    </record>
+    <record>
+      <value>21067-21333</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-02-13">
+      <value>21334</value>
+      <description>uint</description>
+      <semantics>(always invalid in interchange) programming aid for simple values</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-12">draft-bormann-cbor-notable-tags-12, Section 10.2 </xref>
+    </record>
+    <record>
+      <value>21335-21606</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-10-25">
+      <value>21607</value>
+      <description>unsigned integer</description>
+      <semantics>a CBOR Tag identifier</semantics>
+      <xref type="uri" data="https://cbor.is4.site/cbor-tag"/>
+      <xref type="person" data="IS4"/>
+    </record>
+    <record>
+      <value>21608-22097</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2013-11-26">
+      <value>22098</value>
+      <description>multiple</description>
+      <semantics>hint that indicates an additional level of indirection</semantics>
+      <xref type="uri" data="http://cbor.schmorp.de/indirection"/>
+      <xref type="person" data="Marc_A._Lehmann"/>
+    </record>
+    <record>
+      <value>22099-25440</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2021-11-09">
+      <value>25441</value>
+      <description>Array containing at most one array followed by at most one map</description>
+      <semantics>Capture [3]</semantics>
+      <xref type="uri" data="https://github.com/japhb/cbor-specs/blob/main/capture.md"/>
+      <xref type="person" data="Geoffrey_Broadwell"/>
+    </record>
+    <record>
+      <value>25442-32767</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-12-09">
+      <value>32768</value>
+      <description>unsigned integer</description>
+      <semantics>Identifier for a FHIR constant</semantics>
+      <xref type="person" data="Stefan_Genchev"/>
+      <file type="template">template/32768</file>
+    </record>
+    <record date="2022-12-28">
+      <value>32769</value>
+      <description>multiple</description>
+      <semantics>External reference</semantics>
+      <xref type="uri" data="https://gitlab.com/Hawk777/cbor-specs/-/blob/main/external-reference.md"/>
+      <xref type="person" data="Christopher_Head"/>
+    </record>
+    <record date="2024-06-28" updated="2025-01-09">
+      <value>32770-32869</value>
+      <description>unsigned integer</description>
+      <semantics>Used to mark pointers in PSA Crypto API IPC implementation</semantics>
+      <xref type="person" data="Ole_Saether"/>
+      <file type="template">template/32770-32869</file>
+    </record>
+    <record date="2025-09-08">
+      <value>32870</value>
+      <description>multiple</description>
+      <semantics>Logical operator: NONE / NOT. Encodes the logical operation (!item1&amp;&amp;!item2&amp;&amp;!item3&amp;&amp;..., if array), otherwise (!item).</semantics>
+      <xref type="person" data="Jon_Caruana"/>
+      <file type="template">template/32870</file>
+    </record>
+    <record date="2025-09-08">
+      <value>32871</value>
+      <description>array</description>
+      <semantics>Logical operator: ANY. Encodes the logical operation (item1||item2||item3||...).</semantics>
+      <xref type="person" data="Jon_Caruana"/>
+      <file type="template">template/32871</file>
+    </record>
+    <record date="2025-09-08">
+      <value>32872</value>
+      <description>array</description>
+      <semantics>Logical operator: ALL. Encodes the logical operation (item1&amp;&amp;item2&amp;&amp;item3&amp;&amp;...).</semantics>
+      <xref type="person" data="Jon_Caruana"/>
+      <file type="template">template/32872</file>
+    </record>
+    <record>
+      <value>32873-39999</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-12-07">
+      <value>40000</value>
+      <description>unsigned integer</description>
+      <semantics>ur:known-value, Semantic signifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40001</value>
+      <description>byte string</description>
+      <semantics>ur:digest, 32-byte SHA-256 digest</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40002</value>
+      <description>array</description>
+      <semantics>ur:encrypted, IETF ChaCha20-Poly1305 (<xref type="rfc" data="rfc8439"/>) encrypted message</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40003</value>
+      <description>array</description>
+      <semantics>ur:compressed, <xref type="rfc" data="rfc1951"/> DEFLATE-compressed message</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2024-04-03">
+      <value>40004</value>
+      <description>multiple</description>
+      <semantics>ur:request, Transaction Request identifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2024-04-03">
+      <value>40005</value>
+      <description>multiple</description>
+      <semantics>ur:response, Transaction response identifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40006</value>
+      <description>unsigned integer or text string</description>
+      <semantics>ur:function, Envelope expression function identifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40007</value>
+      <description>unsigned integer or text string</description>
+      <semantics>ur:parameter, Envelope expression parameter identifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40008</value>
+      <description>unsigned integer or text string</description>
+      <semantics>ur:placeholder, Envelope expression placeholder identifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40009</value>
+      <description>unsigned integer or text string</description>
+      <semantics>ur:replacement, Envelope expression replacement identifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40010</value>
+      <description>byte string</description>
+      <semantics>ur:agreement-private-key, Curve25519 private key for X25519 key agreement</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40011</value>
+      <description>byte string</description>
+      <semantics>ur:agreement-public-key, Curve25519 public key for X25519 key agreement</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40012</value>
+      <description>byte string</description>
+      <semantics>ur:arid, Apparently Random Identifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40013</value>
+      <description>array</description>
+      <semantics>ur:crypto-prvkeys, Private keys for cryptographic operations</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40014</value>
+      <description>byte string</description>
+      <semantics>ur:nonce, Cryptographic nonce</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40015</value>
+      <description>array</description>
+      <semantics>ur:password, Scrypt-hashed password</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40016</value>
+      <description>byte string</description>
+      <semantics>ur:crypto-prvkeys, Private key base (key material)</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40017</value>
+      <description>array</description>
+      <semantics>ur:crypto-pubkeys, Public key base (signing and agreement public key bundle)</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40018</value>
+      <description>byte string</description>
+      <semantics>ur:salt, Random salt used for hash tree decorrelation</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40019</value>
+      <description>array</description>
+      <semantics>ur:crypto-sealed, Encrypted message and ephemeral public key</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40020</value>
+      <description>multiple</description>
+      <semantics>ur:signature, Cryptographic signature</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40021</value>
+      <description>byte string</description>
+      <semantics>ur:signing-private-key, Cryptographic private key used for signing</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40022</value>
+      <description>multiple</description>
+      <semantics>ur:signing-public-key, Cryptographic public key used for signing</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40023</value>
+      <description>byte string</description>
+      <semantics>ur:crypto-key, Cryptographic key used for symmetric encryption</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40024</value>
+      <description>multiple</description>
+      <semantics>ur:xid, Extensible identifier or XID Document</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40025</value>
+      <description>byte string</description>
+      <semantics>ur:reference, Cryptographically secure reference to an object</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40026</value>
+      <description>unsigned integer or text string</description>
+      <semantics>ur:event, Event identifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40027</value>
+      <description>tagged array</description>
+      <semantics>ur:encrypted-key, Content key encrypted with a derivation function</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record>
+      <value>40028-40099</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-04-28">
+      <value>40100</value>
+      <description>array</description>
+      <semantics>ur:mlkem-private-key, Private key for MLKEM key encapsulation</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40101</value>
+      <description>array</description>
+      <semantics>ur:mlkem-public-key, Public key for MLKEM key encapsulation</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40102</value>
+      <description>array</description>
+      <semantics>ur:mlkem-ciphertext, Ciphertext for MLKEM key encapsulation</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40103</value>
+      <description>array</description>
+      <semantics>ur:mldsa-private-key, Private key for MLDSA signature generation</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40104</value>
+      <description>array</description>
+      <semantics>ur:mldsa-public-key, Public key for MLDSA signature verification</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2025-04-28">
+      <value>40105</value>
+      <description>array</description>
+      <semantics>ur:mldsa-signature, MLDSA signature</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record>
+      <value>40106-40299</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-12-07">
+      <value>40300</value>
+      <description>map</description>
+      <semantics>ur:seed, Cryptographic seed</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record>
+      <value>40301-40302</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-12-07">
+      <value>40303</value>
+      <description>map</description>
+      <semantics>ur:hdkey, Bitcoin BIP-32 HD key</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40304</value>
+      <description>map</description>
+      <semantics>ur:keypath, Bitcoin BIP-32 key derivation path</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40305</value>
+      <description>map</description>
+      <semantics>ur:coin-info, Cryptographic asset and network specifier</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40306</value>
+      <description>map</description>
+      <semantics>ur:eckey, Bitcoin elliptic curve key (private or public)</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40307</value>
+      <description>map</description>
+      <semantics>ur:address, Cryptocurrency address</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40308</value>
+      <description>map</description>
+      <semantics>ur:output-descriptor, Bitcoin output descriptor</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07" updated="2025-04-28">
+      <value>40309</value>
+      <description>byte string</description>
+      <semantics>ur:sskr, Sharded Secret Key Reconstruction (SSKR) share</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07">
+      <value>40310</value>
+      <description>byte string</description>
+      <semantics>ur:psbt, Partially Signed Bitcoin Transaction</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2023-12-07" updated="2025-04-28">
+      <value>40311</value>
+      <description>map</description>
+      <semantics>ur:account-descriptor, Bitcoin account descriptor</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record>
+      <value>40312-40799</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-04-03">
+      <value>40800</value>
+      <description>text string</description>
+      <semantics>ur:ssh-private, Text format SSH private key</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2024-04-03">
+      <value>40801</value>
+      <description>text string</description>
+      <semantics>ur:ssh-public, Text format SSH public key</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2024-04-03">
+      <value>40802</value>
+      <description>text string</description>
+      <semantics>ur:ssh-signature, Text format SSH signature</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record date="2024-04-03">
+      <value>40803</value>
+      <description>text string</description>
+      <semantics>ur:ssh-certificate, Text format SSH certificate</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record>
+      <value>40804-40918</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-08-18">
+      <value>40919</value>
+      <description>multiple (uint or array [uint, uint])</description>
+      <semantics>Concordium smart contract address</semantics>
+      <xref type="uri" data="https://proposals.concordium.com/CIS/cis-7.html#smart-contract-address"/>
+      <xref type="person" data="Thomas_Dinsdale-Young"/>
+      <file type="template">template/40919</file>
+    </record>
+    <record>
+      <value>40920-41727</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2026-04-02">
+      <value>41728</value>
+      <description>array, unsigned integer or unsigned bignum</description>
+      <semantics>Fraction</semantics>
+      <xref type="uri" data="https://medyro.eu/specification/IANA/CBOR%20Tags/Fraction/"/>
+      <xref type="person" data="Medyro"/>
+      <file type="template">template/41728</file>
+    </record>
+    <record date="2026-04-02">
+      <value>41729</value>
+      <description>array, unsigned integer or unsigned bignum</description>
+      <semantics>Fraction (-NaN signals)</semantics>
+      <xref type="uri" data="https://medyro.eu/specification/IANA/CBOR%20Tags/Fraction/"/>
+      <xref type="person" data="Medyro"/>
+      <file type="template">template/41729</file>
+    </record>
+    <record date="2026-04-02">
+      <value>41730</value>
+      <description>array, unsigned integer or unsigned bignum</description>
+      <semantics>Fraction (+NaN signals)</semantics>
+      <xref type="uri" data="https://medyro.eu/specification/IANA/CBOR%20Tags/Fraction/"/>
+      <xref type="person" data="Medyro"/>
+      <file type="template">template/41730</file>
+    </record>
+    <record date="2026-04-02">
+      <value>41731</value>
+      <description>array, unsigned integer or unsigned bignum</description>
+      <semantics>Fraction (Both NaNs signal)</semantics>
+      <xref type="uri" data="https://medyro.eu/specification/IANA/CBOR%20Tags/Fraction/"/>
+      <xref type="person" data="Medyro"/>
+      <file type="template">template/41731</file>
+    </record>
+    <record>
+      <value>41732-42599</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-05-24" updated="2024-11-26">
+      <value>42600</value>
+      <description>map</description>
+      <semantics>A confidentiality clearance. The key value pairs of the map are defined in ADatP-4774.8</semantics>
+      <xref type="person" data="Aidan_Murdock"/>
+      <file type="template">template/42600</file>
+    </record>
+    <record date="2022-05-24" updated="2024-11-26">
+      <value>42601</value>
+      <description>array</description>
+      <semantics>A metadata binding. The elements of the array are defined in AdatP-4778.8. 
+        The tag is also used as part of the magic number in on-disk detached and encapsulating bindings.</semantics>
+      <xref type="person" data="Aidan_Murdock"/>
+      <file type="template">template/42601</file>
+    </record>
+    <record date="2022-05-24" updated="2024-11-26">
+      <value>42602</value>
+      <description>map</description>
+      <semantics>A collection of NCMS metadata elements. The key value pairs of the map are defined in AdatP-5636.8</semantics>
+      <xref type="person" data="Aidan_Murdock"/>
+      <file type="template">template/42602</file>
+    </record>
+    <record>
+      <value>42603-42999</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-07-20">
+      <value>43000</value>
+      <description>array</description>
+      <semantics>Single complex number: array elements are real (I) and imaginary (Q) components</semantics>
+      <xref type="person" data="Saajan_Chana"/>
+      <file type="template">template/43000</file>
+    </record>
+    <record date="2022-07-20">
+      <value>43001</value>
+      <description>array</description>
+      <semantics>Array of complex numbers in interleaved form: complex value k is stored with real (I) part 
+at array index 2k and imaginary (Q) part at index (2k + 1)</semantics>
+      <xref type="person" data="Saajan_Chana"/>
+      <file type="template">template/43001</file>
+    </record>
+    <record>
+      <value>43002-44251</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>    
+    <record date="2026-08-19">
+      <value>44252</value>
+      <description>array</description>
+      <semantics>Metrological value (quantity value with unit of measure, SI prefix and GUM measurement 
+uncertainty)
+      </semantics>
+      <xref type="uri" data="https://github.com/OpenChargingTechnology/Whitepapers/blob/master/MetrologicalCBOR/README.md"/>
+      <xref type="person" data="Achim_Friedland"/>
+      <file type="template">template/44252</file>
+    </record>
+    <record>
+      <value>44253-46009</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2026-09-18">
+      <value>46010</value>
+      <description>byte string, exactly 4 bytes</description>
+      <semantics>CRC-32/ISO-HDLC digest</semantics>
+      <xref type="person" data="Hans_Larsen"/>
+      <file type="template">template/46010</file>
+    </record>
+    <record date="2026-09-18">
+      <value>46011</value>
+      <description>byte string, exactly 16 bytes</description>
+      <semantics>MD5 digest</semantics>
+      <xref type="person" data="Hans_Larsen"/>
+      <file type="template">template/46011</file>
+    </record>
+    <record>
+      <value>46012-49999</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2021-02-03">
+      <value>50000</value>
+      <description>integer</description>
+      <semantics>PlatformV_IS_ID</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50001</value>
+      <description>text string</description>
+      <semantics>PlatformV_IS_NAME</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50002</value>
+      <description>any</description>
+      <semantics>PlatformV_IS_VALUE</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50003</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_COMPOSITE_VALUE</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50004</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_MAPPED_VALUE</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50005</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_OBJ_ID</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50006</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_OBJ_TAG</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50007</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_CHILD</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50008</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_PROPERTY</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50009</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_META</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50010</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_EVENT</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2021-02-03">
+      <value>50011</value>
+      <description>array</description>
+      <semantics>PlatformV_HAS_ACTION</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record date="2022-10-20">
+      <value>50012</value>
+      <description>integer</description>
+      <semantics>PlatformV_IS_TYPE</semantics>
+      <xref type="uri" data="https://github.com/arthurwangtz/platformv-cbor"/>
+      <xref type="person" data="Wang_Tongzhou"/>
+    </record>
+    <record>
+      <value>50013-51996</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record updated="2025-05-05">
+      <value>51997</value>
+      <description>array</description>
+      <semantics>A tag value of 51997 indicates that the payload is CBOR-LD.</semantics>
+      <xref type="uri" data="https://json-ld.github.io/cbor-ld-spec/#cbor-tags-for-cbor-ld"/>
+      <xref type="person" data="Wesley_Smith"/>
+      <file type="template">template/51997</file>
+    </record>
+    <record>
+      <value>51998-55798</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record updated="2020-10-10">
+      <value>55799</value>
+      <description>(any)</description>
+      <semantics>Self-described CBOR; see Section 3.4.6</semantics>
+      <xref type="rfc" data="rfc8949"/>
+    </record>
+    <record date="2021-03-08" updated="2022-05-23">
+      <value>55800</value>
+      <description>tagged byte string</description>
+      <semantics>indicates that the file contains CBOR Sequences</semantics>
+      <xref type="rfc" data="rfc9277"/>
+    </record>
+    <record date="2022-05-23">
+      <value>55801</value>
+      <description>tagged byte string</description>
+      <semantics>indicates that the file starts with a CBOR-Labeled Non-CBOR Data label.</semantics>
+      <xref type="rfc" data="rfc9277"/>
+    </record>
+    <record>
+      <value>55802-56499</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-08-26" updated="2024-02-12">
+      <value>56500</value>
+      <description>array (major type 4)</description>
+      <semantics>Compressed byte string</semantics>
+      <xref type="uri" data="https://github.com/dectris/documentation/blob/main/cbor/dectris-compression-tag.md"/>
+      <xref type="person" data="Dirk_Boye"/>
+    </record>
+    <record>
+      <value>56501-57341</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-05-23">
+      <value>57342</value>
+      <description>array</description>
+      <semantics>Identify and define a set of record structures (each a sequence of 
+        property names) that can be referenced as tags in the included value (and 
+        the scope for the record tag definitions)</semantics>
+      <xref type="uri" data="https://github.com/kriszyp/cbor-records"/>
+      <xref type="person" data="Kris_Zyp"/>
+    </record>
+    <record date="2022-05-23">
+      <value>57343</value>
+      <description>array</description>
+      <semantics>Identify and define a record structure (a sequence of property 
+        names), and use that record structure definition to interpret the included 
+        values.</semantics>
+      <xref type="uri" data="https://github.com/kriszyp/cbor-records"/>
+      <xref type="person" data="Kris_Zyp"/>
+    </record>
+    <record date="2022-05-23">
+      <value>57344-57599</value>
+      <description>array</description>
+      <semantics>References a defined record structure, using that referenced 
+        record definition to interpret the included values.</semantics>
+      <xref type="uri" data="https://github.com/kriszyp/cbor-records"/>
+      <xref type="person" data="Kris_Zyp"/>
+    </record>
+    <record>
+      <value>57600-59999</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-01-12">
+      <value>60000</value>
+      <description>array</description>
+      <semantics>The tagged CBOR array contains attestation evidence data with an Intel TEE quote.</semantics>
+      <xref type="person" data="Shanwei_Cen"/>
+      <file type="template">template/60000</file>
+    </record>
+    <record date="2023-01-12">
+      <value>60001</value>
+      <description>array</description>
+      <semantics>The tagged CBOR array contains attestation evidence data with an Intel TEE report.</semantics>
+      <xref type="person" data="Shanwei_Cen"/>
+      <file type="template">template/60001</file>
+    </record>
+    <record date="2023-01-12">
+      <value>60002</value>
+      <description>array</description>
+      <semantics>The tagged CBOR array contains attestation evidence data with an Intel SGX report.</semantics>
+      <xref type="person" data="Shanwei_Cen"/>
+      <file type="template">template/60002</file>
+    </record>
+    <record>
+      <value>60003-60009</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-05-12">
+      <value>60010</value>
+      <description>array</description>
+      <semantics>The tagged CBOR array containing a numeric expression.</semantics>
+      <xref type="uri" data="https://github.com/nedmsmith/draft-cds-rats-intel-corim-profile/blob/main/draft-cds-rats-intel-corim-profile.md"/>
+      <xref type="person" data="Ned_Smith"/>
+    </record>
+    <record>
+      <value>60011-60019</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-05-12">
+      <value>60020</value>
+      <description>array</description>
+      <semantics>The tagged CBOR array containing a set of digests expression.</semantics>
+      <xref type="uri" data="https://github.com/nedmsmith/draft-cds-rats-intel-corim-profile/blob/main/draft-cds-rats-intel-corim-profile.md"/>
+      <xref type="person" data="Ned_Smith"/>
+    </record>
+    <record date="2025-05-12">
+      <value>60021</value>
+      <description>array</description>
+      <semantics>The tagged CBOR array containing a set of strings expression.</semantics>
+      <xref type="uri" data="https://github.com/nedmsmith/draft-cds-rats-intel-corim-profile/blob/main/draft-cds-rats-intel-corim-profile.md"/>
+      <xref type="person" data="Ned_Smith"/>
+    </record>
+    <record>
+      <value>60022-65534</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2020-05-13">
+      <value>65535</value>
+      <description>(none valid)</description>
+      <semantics>always invalid; see Section 10.1</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-02"/>
+    </record>
+    <record>
+      <value>65536-79999</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2023-04-26">
+      <value>80000-80099</value>
+      <description>byte string, array or map</description>
+      <semantics>Private tags as suggested in <xref type="uri" data="https://mailarchive.ietf.org/arch/msg/cbor/NJlskB63pjXFt5a6S37tiwJBbCM"/>.</semantics>
+      <xref type="person" data="Tony_Putman"/>
+      <file type="template">template/80000-80099</file>
+    </record>
+    <record date="2024-10-28" updated="2025-09-29">
+      <value>80100-80149</value>
+      <description>byte string, array or map</description>
+      <semantics>Private tags as suggested in <xref type="uri" data="https://mailarchive.ietf.org/arch/msg/cbor/NJlskB63pjXFt5a6S37tiwJBbCM/"/>.</semantics>
+      <xref type="person" data="Unchained_Infra_Ops"/>
+      <file type="template">template/80100-80149</file>
+    </record>
+    <record date="2025-07-14" updated="2025-09-05">
+      <value>80150-80199</value>
+      <description>byte string, array or map</description>
+      <semantics>Private tags as suggested in <xref type="uri" data="https://mailarchive.ietf.org/arch/msg/cbor/NJlskB63pjXFt5a6S37tiwJBbCM/"/>.</semantics>
+      <xref type="person" data="Janis_Danisevskis"/>
+      <file type="template">template/80150-80199</file>
+    </record>
+    <record>
+      <value>80200-133132</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2026-07-20">
+      <value>133133</value>
+      <description>array</description>
+      <semantics>ZeWIF (Zcash Wallet Interchange Format) document; the tag encloses 
+a two-element array [version, payload] whose payload is a CBOR map conforming to the 
+version's ZeWIF schema. In a stored document this tag is enclosed in tag 55799 (Self-Described CBOR).</semantics>
+      <xref type="person" data="Kris_Nuttycombe"/>
+      <xref type="uri" data="https://github.com/zcash/zewif">ZeWIF: Zcash Wallet Interchange Format</xref>
+      <file type="template">template/133133</file>
+    </record>
+    <record>
+      <value>133134-14245119</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-08-28">
+      <value>14245120-14245220</value>
+      <description>array or map</description>
+      <semantics>A tag within this range will indicate that a CBOR-encoded payload 
+contains a W3C verifiable credential, data integrity proof value. The additional 
+specificity of the tag in this range is use to identify a particular cryptographic 
+suite, cryptographic feature, or proof role (base or derived).</semantics>
+      <xref type="person" data="Greg_Bernstein"/>
+      <file type="template">template/14245120-14245220</file>
+    </record>
+    <record>
+      <value>14245221-15309735</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record>
+      <value>15309736</value>
+      <description>map (major type 5)</description>
+      <semantics>RAINS Message</semantics>
+      <xref type="uri" data="https://britram.github.io/rains-prototype"/>
+      <xref type="person" data="Brian_Trammell"/>
+    </record>
+    <record>
+      <value>15309737-827539797</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2026-09-18">
+      <value>827539798</value>
+      <description>array</description>
+      <semantics>Universal Saves Format bundle</semantics>
+      <xref type="person" data="Hans_Larsen"/>
+      <file type="template">template/827539798</file>
+    </record>
+    <record>
+      <value>827539799-1146111422</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-11-21">
+      <value>1146111423</value>
+      <description>map</description>
+      <semantics>TCG DICE Protection Environment profile descriptor</semantics>
+      <xref type="uri" data="https://trustedcomputinggroup.org/wp-content/uploads/DICE-Protection-Environment-Version-1.0_pub.pdf">TCG DICE Protection Environment</xref>
+      <xref type="person" data="TCG"/>
+      <file type="template">template/1146111423</file>
+    </record>
+    <record>
+      <value>1146111424-1298360422</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-02-13">
+      <value>1298360423</value>
+      <description>map</description>
+      <semantics>MoaT change-of-status marker</semantics>
+      <xref type="uri" data="https://github.com/M-o-a-T/moat/blob/main/doc/common/cbor.rst"/>
+      <xref type="person" data="Matthias_Urlichs"/>
+    </record>
+    <record>
+      <value>1298360424-1298493253</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-11-19">
+      <value>1298493254</value>
+      <description>map</description>
+      <semantics>MoaT end-of-file marker</semantics>
+      <xref type="uri" data="https://github.com/M-o-a-T/moat-util/"/>
+      <xref type="person" data="Matthias_Urlichs"/>
+    </record>
+    <record>
+      <value>1298493255-1299145043</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2024-11-19">
+      <value>1299145044</value>
+      <description>array</description>
+      <semantics>MoaT file identifier / details</semantics>
+      <xref type="uri" data="https://github.com/M-o-a-T/moat-util/"/>
+      <xref type="person" data="Matthias_Urlichs"/>
+    </record>
+    <record>
+      <value>1299145045-1330664269</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record>
+      <value>1330664270</value>
+      <description>byte-string</description>
+      <semantics>A CBOR encoded Openswan configuration file, as stored on disk for
+unit test cases.</semantics>
+      <xref type="person" data="Michael_Richardson"/>
+      <xref type="person" data="Samir_Hussain"/>
+      <file type="template">template/1330664270</file>
+    </record>
+    <record>
+      <value>1330664271-1347571279</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2026-02-06" updated="2026-02-09">
+      <value>1347571280</value>
+      <description>Proof of Process Packet (PPPP)</description>
+      <semantics>A cryptographically anchored data structure used for digital 
+authorship attestation, capturing the authorship process through entangled 
+Verifiable Delay Functions (VDFs) and behavioral biometrics.</semantics>
+      <xref type="uri" data="https://writerslogic.com/rats/pop/spec/1.3.0/">witnessd Proof of Process Evidence Format, Version 1.3.0</xref>
+      <xref type="person" data="David_Lee_Condrey"/>
+      <file type="template">template/1347571280</file>
+    </record>
+    <record date="2026-02-06">
+      <value>1347571281</value>
+      <description>Compact Evidence Reference</description>
+      <semantics>A cryptographic pointer to a full Proof of Process Evidence 
+Packet, used for embedding authorship claims in space-constrained contexts 
+(e.g., metadata, QR codes).</semantics>
+      <xref type="uri" data="https://writerslogic.com/rats/pop/spec/1.3.0/">witnessd Proof of Process Evidence Format, Version 1.3.0</xref>
+      <xref type="person" data="David_Lee_Condrey"/>
+      <file type="template">template/1347571281</file>
+    </record>
+    <record>
+      <value>1347571282-1347571541</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-04-28">
+      <value>1347571542</value>
+      <description>array</description>
+      <semantics>ur:provenance, Provenance Mark</semantics>
+      <xref type="uri" data="https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md"/>
+      <xref type="person" data="Wolf_McNally"/>
+    </record>
+    <record>
+      <value>1347571543-1398229315</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-08-01">
+      <value>1398229316</value>
+      <description>map</description>
+      <semantics>Concise Software Identifier (CoSWID)</semantics>
+      <xref type="rfc" data="rfc9393"/>
+    </record>
+    <record>
+      <value>1398229317-1413829459</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2026-02-11" updated="2026-02-12">
+      <value>1413829460</value>
+      <description>any</description>
+      <semantics>Explicitly none.</semantics>
+      <xref type="uri" data="https://www.ietf.org/archive/id/draft-bormann-cbor-notable-tags-15.html#name-test-tag">draft-bormann-cbor-notable-tags-15, Section 10.3</xref>
+      <xref type="person" data="Joe_Hildebrand"/>
+      <file type="template">template/1413829460</file>
+    </record>
+    <record>
+      <value>1413829461-1463894559</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2026-02-06">
+      <value>1463894560</value>
+      <description>Writers Authenticity Report (WAR)</description>
+      <semantics>An Attestation Result structure produced by Verifiers 
+appraising Proof of Process Evidence, conveying verification verdicts, 
+confidence scores, and forensic assessments per the IETF RATS architecture.</semantics>
+      <xref type="uri" data="https://writerslogic.com/rats/pop/spec/1.3.0/">witnessd Proof of Process Evidence Format, Version 1.3.0</xref>
+      <xref type="person" data="David_Lee_Condrey"/>
+      <file type="template">template/1463894560</file>
+    </record>
+    <record>
+      <value>1463894561-1482048303</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2025-09-08">
+      <value>1482048304-1482048346</value>
+      <description>integer or map</description>
+      <semantics>Xbox Virtual Container identifiers for use with <xref type="rfc" data="rfc9277">RFC 9277</xref></semantics>
+      <xref type="person" data="Jon_Caruana"/>
+      <file type="template">template/1482048304-1482048346</file>
+    </record>
+    <record>
+      <value>1482048347-1668546816</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-05-23">
+      <value>1668546817-1668612095</value>
+      <description>byte string or any CBOR data item (see Appendix B of <xref type="rfc" data="rfc9277"/>)</description>
+      <semantics>the representation of content-format ct &lt; 65025 is indicated by tag number TN(ct) = 0x63740101 + (ct / 255) * 256 + ct % 255</semantics>
+      <xref type="rfc" data="rfc9277"/>
+    </record>
+    <record>
+      <value>1668612096-1701996914</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2022-09-12">
+      <value>1701996915</value>
+      <description>array</description>
+      <semantics>Array of content-addressed blocks and ERIS read capabilities</semantics>
+      <xref type="person" data="Endo_Renberg"/>
+      <file type="template">template/1701996915</file>
+    </record>
+    <record date="2023-07-31">
+      <value>1701996916</value>
+      <description>array</description>
+      <semantics>ERIS-FS image header</semantics>
+      <xref type="person" data="Endo_Renberg"/>
+      <file type="template">template/1701996916</file>
+    </record>
+    <record>
+      <value>1701996917-1735551331</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2026-07-20">
+      <value>1735551332</value>
+      <description>array</description>
+      <semantics>PromiseGrid message envelope</semantics>
+      <xref type="person" data="Steve_Traugott"/>
+      <file type="template">template/1735551332</file>
+    </record>
+    <record>
+      <value>1735551333-4294967294</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2020-05-18">
+      <value>4294967295</value>
+      <description>(none valid)</description>
+      <semantics>always invalid; see Section 10.1</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-02"/>
+    </record>
+    <record>
+      <value>4294967296</value>
+      <description>map</description>
+      <semantics>Intel FPGA SPDM Manifest</semantics>
+      <xref type="person" data="Andrew_Draper"/>
+      <file type="template">template/4294967296</file>
+    </record>
+    <record>
+      <value>4294967297-18446744073709551614</value>
+      <description>Unassigned</description>
+      <semantics/>
+    </record>
+    <record date="2020-05-18">
+      <value>18446744073709551615</value>
+      <description>(none valid)</description>
+      <semantics>always invalid; Section 10.1</semantics>
+      <xref type="draft" data="draft-bormann-cbor-notable-tags-02"/>
+    </record>
+    <footnote anchor="1">second element of outer array in data item is native CBOR array 
+(major type 4) or Typed Array (one of Tag 64..87)
+    </footnote>
+  </registry>
+
+  <registry id="timescales">
+    <title>Timescales</title>
+    <xref type="rfc" data="rfc9581"/>
+    <expert>Henk Birkholz, Esko Dijk</expert>
+    <registration_rule>RFC and Expert Review Required</registration_rule>
+    <record date="2023-11-08">
+      <timescale>UTC</timescale>
+      <value>0</value>
+      <semantics>UTC with POSIX Epoch</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <timescale>TAI</timescale>
+      <value>1</value>
+      <semantics>TAI with PTP Epoch</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record>
+      <timescale>Unassigned</timescale>
+      <value>2-18446744073709551615</value>
+      <semantics/>
+    </record>
+  </registry>
+
+  <registry id="time-tag-map-keys">
+    <title>Time Tag Map Keys</title>
+    <xref type="rfc" data="rfc9581"/>
+    <expert>Henk Birkholz, Esko Dijk</expert>
+    <registration_rule>Specification Required</registration_rule>
+    <record>
+      <value>-18446744073709551616..-19</value>
+      <semantics>Unassigned</semantics>
+    </record>
+    <record date="2023-11-08">
+      <value>-18</value>
+      <semantics>attoseconds</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record>
+      <value>-17..-16</value>
+      <semantics>Unassigned</semantics>
+    </record>
+    <record date="2023-11-08">
+      <value>-15</value>
+      <semantics>femtoseconds</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record>
+      <value>-14</value>
+      <semantics>Unassigned</semantics>
+    </record>
+    <record date="2024-07-25">
+      <value>-13</value>
+      <semantics>timescale (elective)</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-12</value>
+      <semantics>picoseconds</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-11</value>
+      <semantics>IXDTF Suffix Information (elective)</semantics>
+      <xref type="rfc" data="rfc9581"/><xref type="rfc" data="rfc9557"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-10</value>
+      <semantics>IXDTF Time Zone Hint (elective)</semantics>
+      <xref type="rfc" data="rfc9581"/><xref type="rfc" data="rfc9557"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-9</value>
+      <semantics>nanoseconds</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-8</value>
+      <semantics>Guarantee</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-7</value>
+      <semantics>Uncertainty</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-6</value>
+      <semantics>microseconds</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-5</value>
+      <semantics>Offset-Scaled Log Variance</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-4</value>
+      <semantics>Clock Accuracy</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-3</value>
+      <semantics>milliseconds</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>-2</value>
+      <semantics>Clock Class</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2024-07-25">
+      <value>-1</value>
+      <semantics>timescale (elective) legacy</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record>
+      <value>0</value>
+      <semantics>Unassigned</semantics>
+    </record>
+    <record date="2023-11-08">
+      <value>1</value>
+      <semantics>base time value as in CBOR Tag 1</semantics>
+      <xref type="rfc" data="rfc8949"/><xref type="rfc" data="rfc9581"/>
+    </record>
+    <record>
+      <value>2-3</value>
+      <semantics>Unassigned</semantics>
+    </record>
+    <record date="2023-11-08">
+      <value>4</value>
+      <semantics>base time value as in CBOR Tag 4</semantics>
+      <xref type="rfc" data="rfc8949"/><xref type="rfc" data="rfc9581"/>
+    </record>
+    <record date="2023-11-08">
+      <value>5</value>
+      <semantics>base time value as in CBOR Tag 5</semantics>
+      <xref type="rfc" data="rfc8949"/><xref type="rfc" data="rfc9581"/>
+    </record>
+    <record>
+      <value>6-9</value>
+      <semantics>Unassigned</semantics>
+    </record>
+    <record date="2023-11-08">
+      <value>10</value>
+      <semantics>IXDTF Time Zone Hint (critical)</semantics>
+      <xref type="rfc" data="rfc9581"/><xref type="rfc" data="rfc9557"/>
+    </record>
+    <record date="2023-11-08">
+      <value>11</value>
+      <semantics>IXDTF Suffix Information (critical)</semantics>
+      <xref type="rfc" data="rfc9581"/><xref type="rfc" data="rfc9557"/>
+    </record>
+    <record>
+      <value>12</value>
+      <semantics>Unassigned</semantics>
+    </record>
+    <record date="2024-07-25">
+      <value>13</value>
+      <semantics>timescale (critical)</semantics>
+      <xref type="rfc" data="rfc9581"/>
+    </record>
+    <record>
+      <value>14-18446744073709551615</value>
+      <semantics>Unassigned</semantics>
+    </record>
+  </registry>
+  
+  <people>
+    <person id="Achim_Friedland">
+      <name>Achim Friedland</name>
+      <uri>mailto:achim.friedland&amp;graphdefined.com</uri>
+      <updated>2026-08-19</updated>
+    </person>
+    <person id="Aidan_Murdock">
+      <name>Aidan Murdock</name>
+      <uri>mailto:aidan.murdock&amp;ncia.nato.int</uri>
+      <updated>2022-05-24</updated>
+    </person>
+    <person id="Alfredo_Di_Napoli">
+      <name>Alfredo Di Napoli</name>
+      <uri>mailto:alfredo.dinapoli&amp;iohk.io</uri>
+      <updated>2017-08-25</updated>
+    </person>
+    <person id="Andrew_Draper">
+      <name>Andrew Draper</name>
+      <uri>mailto:andrew.draper&amp;intel.com</uri>
+      <updated>2021-12-10</updated>
+    </person>
+    <person id="Brian_Trammell">
+      <name>Brian Trammell</name>
+      <uri>mailto:ietf&amp;trammell.ch</uri>
+      <updated>2016-08-17</updated>
+    </person>
+    <person id="Christopher_Head">
+      <name>Christopher Head</name>
+      <uri>mailto:chead&amp;chead.ca</uri>
+      <updated>2022-12-28</updated>
+    </person>
+    <person id="Consumer_Technology_Association">
+      <name>Consumer Technology Association</name>
+      <uri>mailto:standards&amp;cta.tech</uri>
+      <updated>2024-06-11</updated>
+    </person>
+    <person id="Danilo_Vidovic">
+      <name>Danilo Vidovic</name>
+      <uri>mailto:cbor&amp;allthingstalk.com</uri>
+      <updated>2018-04-17</updated>
+    </person>
+    <person id="David_Lee_Condrey">
+      <name>David Lee Condrey</name>
+      <uri>mailto:david&amp;writerslogic.com</uri>
+      <updated>2026-02-06</updated>
+    </person>
+    <person id="David_Wheeler">
+      <name>David_Wheeler</name>
+      <uri>mailto:david&amp;justatheory.com</uri>
+      <updated>2025-05-16</updated>
+    </person>
+    <person id="Dirk_Boye">
+      <name>Dirk Boye</name>
+      <uri>mailto:dirk.boye&amp;dectris.com</uri>
+      <updated>2024-02-12</updated>
+    </person>
+    <person id="Emile_Cormier">
+      <name>Emile Cormier</name>
+      <uri>mailto:emile.cormier.jr&amp;gmail.com</uri>
+      <updated>2020-03-30</updated>
+    </person>
+    <person id="Endo_Renberg">
+      <name>Endo Renberg</name>
+      <uri>mailto:pukkamustard&amp;posteo.net</uri>
+      <updated>2023-07-31</updated>
+    </person>
+    <person id="Geoffrey_Broadwell">
+      <name>Geoffrey Broadwell</name>
+      <uri>mailto:gjb&amp;sonic.net</uri>
+      <updated>2021-11-09</updated>
+    </person>
+    <person id="Greg_Bernstein">
+      <name>Greg Bernstein</name>
+      <uri>mailto:gregb&amp;grotto-networking.com</uri>
+      <updated>2024-08-28</updated>
+    </person>
+    <person id="Hans_Larsen">
+      <name>Hans Larsen</name>
+      <uri>mailto:spec&amp;1retro.com</uri>
+      <updated>2026-09-18</updated>
+    </person>
+    <person id="IS4">
+      <name>IS4</name>
+      <uri>mailto:is4.site&amp;gmail.com</uri>
+      <updated>2025-03-06</updated>
+    </person>
+    <person id="Janis_Danisevskis">
+      <name>Janis Danisevskis</name>
+      <uri>mailto:jdanisevskis&amp;aurora.tech</uri>
+      <updated>2025-09-04</updated>
+    </person>
+    <person id="Joe_Hildebrand">
+      <name>Joe Hildebrand</name>
+      <uri>mailto:joe-ietf&amp;cursive.net</uri>
+      <updated>2026-02-11</updated>
+    </person>
+    <person id="Jon_Caruana">
+      <name>Jon Caruana</name>
+      <uri>mailto:joncar&amp;xbox.com</uri>
+      <updated>2025-09-08</updated>
+    </person>
+    <person id="Kris_Nuttycombe">
+      <name>Kris Nuttycombe</name>
+      <uri>mailto:kris&amp;zodl.com</uri>
+      <updated>2026-07-20</updated>
+    </person>
+    <person id="Kris_Zyp">
+      <name>Kris Zyp</name>
+      <uri>mailto:kriszyp&amp;gmail.com</uri>
+      <updated>2022-05-23</updated>
+    </person>
+    <person id="Lucas_Clemente">
+      <name>Lucas Clemente</name>
+      <uri>mailto:lucas&amp;clemente.io</uri>
+      <updated>2014-07-01</updated>
+    </person>
+    <person id="Marc_A._Lehmann">
+      <name>Marc A. Lehmann</name>
+      <uri>mailto:cbor&amp;schmorp.de</uri>
+      <updated>2013-11-26</updated>
+    </person>
+    <person id="Mathew_Meins">
+      <name>Mathew Meins</name>
+      <uri>mailto:mm&amp;blackhelicopters.net</uri>
+      <updated>2021-02-01</updated>
+    </person>
+    <person id="Matthias_Urlichs">
+      <name>Matthias Urlichs</name>
+      <uri>mailto:matthias&amp;urlichs.de</uri>
+      <updated>2025-02-13</updated>
+    </person>
+    <person id="Medyro">
+      <name>Medyro</name>
+      <uri>mailto:Curious.Charr&amp;web.de</uri>
+      <updated>2026-04-02</updated>
+    </person>
+    <person id="Michael_B._Jones">
+      <name>Michael B. Jones</name>
+      <uri>mailto:mbj&amp;microsoft.com</uri>
+      <updated>2018-05-04</updated>
+    </person>
+    <person id="Michael_Richardson">
+      <name>Michael Richardson</name>
+      <uri>mailto:mcr&amp;xelerance.com</uri>
+      <updated>2021-01-25</updated>
+    </person>
+    <person id="Mihai_Bazon">
+      <name>Mihai Bazon</name>
+      <uri>mailto:mihai.bazon&amp;gmail.com</uri>
+      <updated>2025-04-03</updated>
+    </person>
+    <person id="Ned_Smith">
+      <name>Ned Smith</name>
+      <uri>mailto:ned.smith&amp;intel.com</uri>
+      <updated>2025-05-12</updated>
+    </person>
+    <person id="Ole_Saether">
+      <name>Ole Saether</name>
+      <uri>mailto:ole.saether&amp;nordicsemi.no</uri>
+      <updated>2024-06-28</updated>
+    </person>
+    <person id="Peter_Occil">
+      <name>Peter Occil</name>
+      <uri>mailto:poccil14&amp;gmail.com</uri>
+      <updated>2018-11-09</updated>
+    </person>
+    <person id="Ravi_Raju">
+      <name>Ravi Raju</name>
+      <uri>mailto:ravir&amp;employees.org</uri>
+      <updated>2018-03-06</updated>
+    </person>
+    <person id="Saajan_Chana">
+      <name>Saajan Chana</name>
+      <uri>mailto:saajan.chana&amp;cambridgeconsultants.com</uri>
+      <updated>2022-07-20</updated>
+    </person>
+    <person id="Sami_Vaarala">
+      <name>Sami Vaarala</name>
+      <uri>mailto:sami.vaarala&amp;iki.fi</uri>
+      <updated>2020-03-18</updated>
+    </person>
+    <person id="Samir_Hussain">
+      <name>Samir Hussain</name>
+      <uri>mailto:shussain&amp;xelerance.com</uri>
+      <updated>2021-01-25</updated>
+    </person>
+    <person id="Shane_Holloway">
+      <name>Shane Holloway</name>
+      <uri>mailto:shane.holloway&amp;ieee.org</uri>
+      <updated>2018-10-25</updated>
+    </person>
+    <person id="Shanwei_Cen">
+      <name>Shanwei Cen</name>
+      <uri>mailto:shanwei.cen&amp;intel.com</uri>
+      <updated>2023-01-12</updated>
+    </person>
+    <person id="Stefan_Genchev">
+      <name>Stefan Genchev</name>
+      <uri>mailto:stefan.genchev&amp;tum.de</uri>
+      <updated>2022-12-09</updated>
+    </person>
+    <person id="Steve_Traugott">
+      <name>Steve Traugott</name>
+      <uri>mailto:ietf-poc&amp;t7a.org</uri>
+      <updated>2026-07-20</updated>
+    </person>
+    <person id="TCG">
+      <name>Trusted Computing Group</name>
+      <uri>mailto:iana-requests&amp;trustedcomputinggroup.org</uri>
+      <updated>2024-03-20</updated>
+    </person>
+    <person id="Thomas_Dinsdale-Young">
+      <name>Thomas Dinsdale-Young</name>
+      <uri>mailto:ty&amp;concordium.com</uri>
+      <updated>2025-08-18</updated>
+    </person>
+    <person id="Tony_Putman">
+      <name>Tony Putman</name>
+      <uri>mailto:anthony.putman&amp;dyson.com</uri>
+      <updated>2023-04-26</updated>
+    </person>
+    <person id="Unchained_Infra_Ops">
+      <name>Infra Ops</name>
+      <uri>mailto:cbor&amp;unchained.com</uri>
+      <updated>2025-09-29</updated>
+    </person>
+    <person id="Volker_Mische">
+      <name>Volker Mische</name>
+      <uri>mailto:volker.mische&amp;gmail.com</uri>
+      <updated>2024-03-05</updated>
+    </person>
+    <person id="Wang_Tongzhou">
+      <name>Wang Tongzhou</name>
+      <uri>mailto:tongzhou.wang&amp;siemens.com</uri>
+      <updated>2022-10-20</updated>
+    </person>
+    <person id="Wesley_Smith">
+      <name>Wesley Smith</name>
+      <uri>mailto:wsmith&amp;digitalbazaar.com</uri>
+      <updated>2025-05-05</updated>
+    </person>
+    <person id="Wolf_McNally">
+      <name>Wolf McNally</name>
+      <uri>mailto:wolf&amp;wolfmcnally.com</uri>
+      <updated>2025-04-28</updated>
+    </person>
+  </people>
+  
+</registry>

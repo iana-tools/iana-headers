@@ -25,13 +25,18 @@ For practical usage in real projects, the code generator is smart enough to reco
 
 ### Intent
 
-When triggered the script performs the following actions:
+The registry data is mirrored into a small database, `db/*.rec` ([GNU recutils](https://www.gnu.org/software/recutils/) text format, one file per registry). The database is the source of truth: every IANA entry carries a `Words` field (e.g. `date time string`) from which its C identifier is derived, so a published name never changes unless someone edits it.
 
-- Download the latest registry data from IANA for the specified Internet protocol standard if it is outdated or missing in the cache.
-- Parse the downloaded data and generate C enumeration values.
-- Update or create the C header file with the generated enumeration values, preserving any existing values.
+```
+IANA registries --sync--> db/*.rec --name--> db/*.rec --check--> --generate--> c/src/*.h
+ (XML, CSV fallback)      (Words empty)      (Words filled)       (no network, deterministic)
+```
 
-Upon successful execution, the script will display a message indicating that the C header file has been generated or updated.
+1. **sync** fetches the registries (XML, falling back to CSV) and appends entries that are missing from `db/` with empty `Words`. It never rewrites an existing record; if IANA changed the text of one, it is only reported.
+2. **name** fills `Words` for new entries using per-registry rules. Anything ambiguous (two entries that would get the same name) is left empty for a human.
+3. **check** validates the database: no unnamed entries, no duplicate names, no HTML entities (issue #9), well-formed tags.
+4. **generate** turns the database into the C headers, preserving any values already defined in an existing header.
+5. **verify** generates, then compiles the headers.
 
 ---
 
@@ -66,14 +71,18 @@ This will install all the required packages specified in the `requirements.txt` 
 
 ## Usage
 
-Alternatively, you can use the provided Makefile to manage the project. Here are some useful Makefile targets:
+Use the provided Makefile (it creates the virtual environment on first use):
 
 - `install`: Create a virtual environment and install dependencies.
 - `update`: Update project dependencies.
-- `generate`: Generate headers.
+- `sync`: Fetch IANA registries and add new entries to `db/` (needs network).
+- `name`: Fill `Words` for new entries (`python3 c/name.py --llm` can ask a local Ollama model for CBOR tag names).
+- `check`: Validate `db/`.
+- `generate`: Generate headers from `db/` (runs `check` first, no network).
+- `verify`: Generate headers, then compile them.
 - `clean`: Clean generated files.
 
-To use the Makefile, simply run `make <target>` in your terminal.
+Updating after IANA publishes new entries: `make sync name`, resolve anything `name` could not decide (edit `db/*.rec`, set `Source: manual`), then `make generate` and commit `db/` together with the regenerated headers. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format.
 
 ---
 

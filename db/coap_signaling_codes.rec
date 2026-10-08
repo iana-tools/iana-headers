@@ -1,4 +1,33 @@
-%rec: CoapCode
+%rec: CoapSignalingCode
 %key: Tag
-%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml
+%doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-codes
 
+Tag: 7.01
+Words: signaling code csm
+Semantics: CSM
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.02
+Words: signaling code ping
+Semantics: Ping
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.03
+Words: signaling code pong
+Semantics: Pong
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.04
+Words: signaling code release
+Semantics: Release
+Reference: [RFC8323]
+Source: heuristic
+
+Tag: 7.05
+Words: signaling code abort
+Semantics: Abort
+Reference: [RFC8323]
+Source: heuristic

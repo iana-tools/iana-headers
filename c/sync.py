@@ -3,35 +3,32 @@
 sync.py — fetch IANA registries and append new entries to db/ with empty Words.
 
 Does NO name generation. Run `name.py` afterward to fill Words.
+Existing records are never rewritten: if IANA changes the Semantics of one, it is only reported.
 """
 
 import os
+import re
 import csv
 import sys
 import argparse
 import io
 import toml
-import xml.etree.ElementTree as ET
 
 import iana_header_utils as utils
 import recfile
+import registry
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_dir = os.path.dirname(script_dir)
 db_dir = os.path.join(repo_dir, 'db')
 
-def _load_sources():
-    try:
-        return toml.load(os.path.join(repo_dir, 'iana_sources.toml'))
-    except FileNotFoundError as e:
-        print(f"ERROR: {e}", file=sys.stderr)
-        sys.exit(1)
 
-sources = _load_sources()
+class SyncError(Exception):
+    """A registry produced nothing usable (network, schema change, ...). Never fail silently."""
 
 
 # ---------------------------------------------------------------------------
-# Fetch helpers
+# Fetching (XML first, CSV as fallback)
 # ---------------------------------------------------------------------------
 
 def _cache_path(subdir, filename):
@@ -39,310 +36,335 @@ def _cache_path(subdir, filename):
     os.makedirs(os.path.dirname(path), exist_ok=True)
     return path
 
-def fetch_xml(xml_url, cache_file, verbose=False):
-    if verbose:
-        print(f"  Fetching XML: {xml_url}")
-    return utils.read_or_download_xml(xml_url, cache_file)
 
-def fetch_csv(csv_url, cache_file, verbose=False):
-    if verbose:
-        print(f"  Fetching CSV: {csv_url}")
-    return utils.read_or_download_csv(csv_url, cache_file)
+def _xml_loader(url, subdir, filename, verbose):
+    def load():
+        if verbose:
+            print(f"  Fetching XML: {url}")
+        return utils.read_or_download_xml(url, _cache_path(subdir, filename))
+    return load
 
-def get_xml_or_csv(source_cfg, xml_url_key, csv_url_key, xml_registry_id_key,
-                   cache_subdir, cache_xml_name, cache_csv_name, verbose=False):
-    """Try XML first, fall back to CSV. Returns (records_list, used_xml: bool)."""
-    if xml_url_key in source_cfg:
+
+def _csv_loader(url, subdir, filename, verbose):
+    def load():
+        if verbose:
+            print(f"  Fetching CSV: {url}")
+        content = utils.read_or_download_csv(url, _cache_path(subdir, filename))
+        return list(csv.DictReader(io.StringIO(content)))
+    return load
+
+
+def _fetch_entries(label, xml_loader, xml_registry_id, csv_loader, parse_rows):
+    """Return parsed (tag, semantics, reference) entries.
+
+    XML is preferred, but is only accepted if it yields usable entries: an XML schema that
+    differs from what parse_rows expects must fall back to CSV, not silently produce nothing.
+    """
+    if xml_loader is not None:
         try:
-            xml_content = fetch_xml(
-                source_cfg[xml_url_key],
-                _cache_path(cache_subdir, cache_xml_name),
-                verbose=verbose,
-            )
-            registry_id = source_cfg.get(xml_registry_id_key, '')
-            records = utils.parse_iana_xml_registry(xml_content, registry_id)
+            xml_content = xml_loader()
+            records = utils.parse_iana_xml_registry(xml_content, xml_registry_id) if xml_content else []
+        except Exception as e:  # network, corrupt cache, malformed XML: all mean "use the CSV"
+            print(f"  WARNING: {label}: XML unavailable ({e}), falling back to CSV")
+            records = None
+        if records is not None:
+            entries = parse_rows(records, True) if records else []
+            if entries:
+                return entries
             if records:
-                return records, True
-            print(f"  WARNING: XML registry '{registry_id}' empty, falling back to CSV")
-        except Exception as e:
-            print(f"  WARNING: XML fetch failed ({e}), falling back to CSV")
-    csv_content = fetch_csv(
-        source_cfg[csv_url_key],
-        _cache_path(cache_subdir, cache_csv_name),
-        verbose=verbose,
-    )
-    return list(csv.DictReader(io.StringIO(csv_content))), False
+                print(f"  WARNING: {label}: XML registry '{xml_registry_id}' has {len(records)} records but none were "
+                      f"usable (element names: {sorted(records[0])}), falling back to CSV")
+            else:
+                print(f"  WARNING: {label}: XML registry '{xml_registry_id}' not found or empty, falling back to CSV")
+
+    entries = parse_rows(csv_loader(), False)
+    if not entries:
+        raise SyncError(f"{label}: no usable entries in the XML or the CSV (network blocked? IANA format changed?)")
+    return entries
 
 
 # ---------------------------------------------------------------------------
-# Per-registry sync functions
+# Row parsing: one function per registry. Each returns [(tag, semantics, reference), ...]
+# and applies the same exclusions the original csv generators did.
 # ---------------------------------------------------------------------------
+
+def _text(value):
+    """One line, single spaces: a multi-line cell must not be able to corrupt a .rec file."""
+    return ' '.join((value or '').split())
+
+
+def _col(row, used_xml, xml_keys, csv_key):
+    if used_xml:
+        for key in xml_keys:
+            value = _text(row.get(key))
+            if value:
+                return value
+        return ''
+    return _text(row.get(csv_key))
+
+
+def _parse_cbor_simple_values(rows, used_xml):
+    out = []
+    for row in rows:
+        tag = _col(row, used_xml, ('value',), 'Value')
+        sem = _col(row, used_xml, ('semantics', 'description', 'name'), 'Semantics')
+        ref = _col(row, used_xml, ('xref',), 'Reference')
+        if not tag or tag.lower() == 'value' or '-' in tag or not sem:
+            continue
+        if sem.lower() in ('unassigned', 'reserved'):
+            continue
+        out.append((tag, sem, ref))
+    return out
+
+
+def _parse_cbor_tags(rows, used_xml):
+    out = []
+    for row in rows:
+        tag = _col(row, used_xml, ('value',), 'Tag')
+        item = _col(row, used_xml, ('data_item',), 'Data Item')
+        sem = _col(row, used_xml, ('semantics', 'description'), 'Semantics')
+        ref = _col(row, used_xml, ('xref',), 'Reference')
+        if not tag or tag.lower() == 'tag' or '-' in tag or not sem:
+            continue
+        if 'unassigned' in item.lower() or sem.lower() == 'unassigned' or 'reserved' in sem.lower():
+            continue
+        if 'earmarked' in sem.lower():
+            # Reserved for a future registration by an organisation, e.g. "Earmarked for CoRIM,[draft-...]"
+            continue
+        out.append((tag, sem, ref))
+    return out
+
+
+def _parse_coap_codes(rows, used_xml):
+    out = []
+    for row in rows:
+        tag = _col(row, used_xml, ('value', 'code'), 'Code')
+        sem = _col(row, used_xml, ('name', 'description'), 'Name') or _col(row, used_xml, ('description',), 'Description')
+        ref = _col(row, used_xml, ('xref',), 'Reference')
+        if not tag or tag.lower() == 'code' or '-' in tag or not sem:
+            continue
+        if sem.lower() == 'unassigned':
+            continue
+        out.append((tag, sem, ref))
+    return out
+
+
+def _parse_coap_options(rows, used_xml):
+    out = []
+    for row in rows:
+        tag = _col(row, used_xml, ('value', 'number'), 'Number')
+        sem = _col(row, used_xml, ('name', 'description'), 'Name')
+        ref = _col(row, used_xml, ('xref',), 'Reference')
+        if not tag or tag.lower() == 'number' or '-' in tag or not sem:
+            continue
+        if sem.lower() in ('unassigned', 'reserved'):
+            continue
+        out.append((tag, sem, ref))
+    return out
+
+
+def _parse_coap_content_formats(rows, used_xml):
+    out = []
+    for row in rows:
+        tag = _col(row, used_xml, ('value', 'id'), 'ID')
+        content_type = _col(row, used_xml, ('content_type', 'name'), 'Content Type')
+        coding = _col(row, used_xml, ('content_coding',), 'Content Coding')
+        ref = _col(row, used_xml, ('xref',), 'Reference')
+        if not tag or tag.lower() == 'id' or '-' in tag or not content_type:
+            continue
+        if content_type.lower() == 'unassigned' or 'reserve' in content_type.lower():
+            continue
+        # Same shape as the published comment: "<media type>; <coding>"
+        out.append((tag, '; '.join(filter(None, [content_type, coding])), ref))
+    return out
+
+
+def _make_signaling_option_parser(signaling_codes):
+    """Rows apply to one or more signaling codes, or to all of them ("all" / "7.xx")."""
+    def parse(rows, used_xml):
+        out = []
+        for row in rows:
+            applies = _col(row, used_xml, ('applies_to',), 'Applies to')
+            number = _col(row, used_xml, ('value', 'number'), 'Number')
+            sem = _col(row, used_xml, ('name',), 'Name')
+            ref = _col(row, used_xml, ('xref',), 'Reference')
+            if not applies or not number or number.lower() == 'number' or '-' in number or not sem:
+                continue
+            if 'unassigned' in sem.lower() or 'reserve' in sem.lower():
+                continue
+            if 'all' in applies.lower() or '7.xx' in applies.lower():
+                codes = signaling_codes
+            else:
+                codes = [c for c in re.split(r'[,\s]+', applies) if c]
+            for code in codes:
+                out.append((f'{code}.{number}', sem, ref))
+        return out
+    return parse
+
+
+def _parse_http_status_codes(rows, used_xml):
+    out = []
+    for row in rows:
+        tag = _col(row, used_xml, ('value',), 'Value')
+        sem = _col(row, used_xml, ('description', 'name'), 'Description')
+        ref = _col(row, used_xml, ('xref',), 'Reference')
+        if not tag or tag.lower() == 'value' or '-' in tag or not sem:
+            continue
+        if sem.lower() in ('unassigned', 'reserved') or '(unused)' in sem.lower():
+            continue
+        out.append((tag, sem, ref))
+    return out
+
+
+def _parse_http_field_names(rows, used_xml):
+    out = []
+    for row in rows:
+        tag = _col(row, used_xml, ('value', 'name', 'field_name'), 'Field Name')
+        structured_type = _col(row, used_xml, ('structured_type', 'type'), 'Structured Type')
+        status = _col(row, used_xml, ('status',), 'Status')
+        ref = _col(row, used_xml, ('xref',), 'Reference')
+        if not tag:
+            continue
+        # Same order as the published comment: "<field>; <structured type>; <status>; Ref: ..."
+        out.append((tag, '; '.join(filter(None, [structured_type, status])), ref))
+    return out
+
+
+# ---------------------------------------------------------------------------
+# db update: append what is new, report what IANA changed
+# ---------------------------------------------------------------------------
+
+def _key(fname, tag):
+    try:
+        return registry.parse_tag(fname, tag)
+    except (ValueError, KeyError):
+        return tag.strip()
+
 
 def _load_existing(db_file):
-    """Return dict of Tag → {Semantics, Reference} from an existing rec file."""
-    existing = {}
-    for rec in recfile.read(db_file):
-        tag = rec.get('Tag', '')
-        if tag:
-            existing[tag] = {'Semantics': rec.get('Semantics', ''), 'Reference': rec.get('Reference', '')}
-    return existing
+    fname = os.path.basename(db_file)
+    return {_key(fname, rec['Tag']): rec.get('Semantics', '')
+            for rec in recfile.read(db_file) if rec.get('Tag', '').strip()}
 
-def _check_and_append(db_file, tag_str, semantics, reference, existing, dry_run, added, updated_warnings):
-    """Core logic: skip/warn/append for one entry."""
-    if tag_str in existing:
-        old = existing[tag_str]
-        if old['Semantics'] != semantics or old['Reference'] != reference:
-            updated_warnings.append(
-                f"  UPDATED Tag {tag_str}: semantics or reference changed in IANA\n"
-                f"    old semantics: {old['Semantics']!r}\n"
-                f"    new semantics: {semantics!r}\n"
-                f"    old ref: {old['Reference']!r}\n"
-                f"    new ref: {reference!r}"
-            )
-        return  # never rewrite existing records
+
+def _apply(db_file, rec_type, doc_url, entries, dry_run):
+    """Append entries missing from db_file. Returns (added tags, warnings)."""
+    fname = os.path.basename(db_file)
     if not dry_run:
-        recfile.append_record(db_file, {
-            'Tag': tag_str,
-            'Words': '',
-            'Semantics': semantics,
-            'Reference': reference,
-            'Source': 'new',
-        })
-    added.append(tag_str)
-
-
-def sync_cbor_tags(verbose=False, dry_run=False):
-    src = sources['iana_cbor_tag_source']
-    db_file = os.path.join(db_dir, 'cbor_tags.rec')
-    recfile.write_header(db_file, 'CborTag', 'Tag', src['source_url'])
+        recfile.write_header(db_file, rec_type, 'Tag', doc_url)
     existing = _load_existing(db_file)
     added, warnings = [], []
 
-    records, used_xml = get_xml_or_csv(
-        src, 'xml_url', 'csv_url', 'xml_registry_id',
-        'cbor', 'cbor-tags.xml', 'cbor-tags.csv', verbose=verbose,
-    )
-    for row in records:
-        if used_xml:
-            tag_str = row.get('value', '').strip()
-            semantics = row.get('description', '').strip()
-            reference = row.get('xref', '').strip()
-        else:
-            tag_str = row.get('Tag', '').strip()
-            semantics = row.get('Semantics', '').strip()
-            reference = row.get('Reference', '').strip()
-        if not tag_str or '-' in tag_str:
-            continue
-        if not semantics or 'unassigned' in semantics.lower() or 'reserved' in semantics.lower():
-            continue
-        if 'earmarked' in semantics.lower():
-            continue
-        _check_and_append(db_file, tag_str, semantics, reference, existing, dry_run, added, warnings)
-
-    return added, warnings
-
-
-def sync_cbor_simple_values(verbose=False, dry_run=False):
-    src = sources['iana_cbor_simple_value_source']
-    db_file = os.path.join(db_dir, 'cbor_simple_values.rec')
-    recfile.write_header(db_file, 'CborSimpleValue', 'Tag', src['source_url'])
-    existing = _load_existing(db_file)
-    added, warnings = [], []
-
-    records, used_xml = get_xml_or_csv(
-        src, 'xml_url', 'csv_url', 'xml_registry_id',
-        'cbor', 'cbor-simple-values.xml', 'cbor-simple-values.csv', verbose=verbose,
-    )
-    for row in records:
-        if used_xml:
-            tag_str = row.get('value', '').strip()
-            semantics = row.get('description', '').strip()
-            reference = row.get('xref', '').strip()
-        else:
-            tag_str = row.get('Value', '').strip()
-            semantics = row.get('Semantics', '').strip()
-            reference = row.get('Reference', '').strip()
-        if not tag_str or '-' in tag_str:
-            continue
-        if not semantics or 'unassigned' in semantics.lower() or 'reserved' in semantics.lower():
-            continue
-        _check_and_append(db_file, tag_str, semantics, reference, existing, dry_run, added, warnings)
-
-    return added, warnings
-
-
-def _sync_coap_registry(db_file, rec_type, doc_url, coap_xml_content, xml_registry_id,
-                         csv_url, cache_csv, tag_field, name_field,
-                         verbose=False, dry_run=False):
-    recfile.write_header(db_file, rec_type, 'Tag', doc_url)
-    existing = _load_existing(db_file)
-    added, warnings = [], []
-
-    records = None
-    if coap_xml_content:
-        records = utils.parse_iana_xml_registry(coap_xml_content, xml_registry_id)
-    if not records:
-        csv_content = fetch_csv(csv_url, cache_csv, verbose=verbose)
-        rows = list(csv.DictReader(io.StringIO(csv_content)))
-        records = [{tag_field: r.get(tag_field, ''), 'name': r.get(name_field, ''), 'xref': r.get('Reference', '')} for r in rows]
-        used_xml = False
-    else:
-        used_xml = True
-
-    for row in records:
-        if used_xml:
-            # IANA CoAP XML uses <code> for codes, <number> for options/content-formats
-            tag_str = (row.get('value') or row.get('code') or row.get('number') or '').strip()
-            semantics = row.get('name', row.get('description', '')).strip()
-            reference = row.get('xref', '').strip()
-        else:
-            tag_str = row.get(tag_field, '').strip()
-            semantics = row.get('name', row.get(name_field, '')).strip()
-            reference = row.get('xref', row.get('Reference', '')).strip()
-        if not tag_str or '-' in tag_str:
-            continue
-        if not semantics or 'unassigned' in semantics.lower():
-            continue
-        _check_and_append(db_file, tag_str, semantics, reference, existing, dry_run, added, warnings)
-
-    return added, warnings
-
-
-def sync_coap(verbose=False, dry_run=False):
-    coap_xml_src = sources.get('iana_coap_xml_source', {})
-    coap_xml_content = None
-    if 'xml_url' in coap_xml_src:
+    for tag, semantics, reference in entries:
         try:
-            coap_xml_content = fetch_xml(
-                coap_xml_src['xml_url'],
-                _cache_path('coap', 'core-parameters.xml'),
-                verbose=verbose,
-            )
+            key = registry.parse_tag(fname, tag)
+        except (ValueError, KeyError):
+            warnings.append(f"  SKIPPED {fname} Tag {tag!r}: not a valid Tag for this registry")
+            continue
+        if key in existing:
+            # Words are derived from Semantics, so that is what a human needs to re-review.
+            # (References are not compared: the XML and CSV renderings of them differ.)
+            if _text(existing[key]) != semantics:
+                warnings.append(
+                    f"  UPDATED {fname} Tag {tag}: Semantics changed in IANA\n"
+                    f"    db:   {_text(existing[key])!r}\n"
+                    f"    IANA: {semantics!r}"
+                )
+            continue  # never rewrite existing records
+        existing[key] = semantics
+        if not dry_run:
+            recfile.append_record(db_file, {
+                'Tag': tag,
+                'Words': '',
+                'Semantics': semantics,
+                'Reference': reference,
+                'Source': 'new',
+            })
+        added.append(tag)
+    return added, warnings
+
+
+def _sync_simple(sources, src_key, fname, rec_type, parse_rows, cache_subdir, cache_name, verbose, dry_run):
+    src = sources[src_key]
+    entries = _fetch_entries(
+        fname,
+        _xml_loader(src['xml_url'], cache_subdir, f'{cache_name}.xml', verbose) if 'xml_url' in src else None,
+        src.get('xml_registry_id', ''),
+        _csv_loader(src['csv_url'], cache_subdir, f'{cache_name}.csv', verbose),
+        parse_rows,
+    )
+    return _apply(os.path.join(db_dir, fname), rec_type, src['source_url'], entries, dry_run)
+
+
+def sync_cbor_tags(sources, verbose=False, dry_run=False):
+    return _sync_simple(sources, 'iana_cbor_tag_source', 'cbor_tags.rec', 'CborTag',
+                        _parse_cbor_tags, 'cbor', 'cbor-tags', verbose, dry_run)
+
+
+def sync_cbor_simple_values(sources, verbose=False, dry_run=False):
+    return _sync_simple(sources, 'iana_cbor_simple_value_source', 'cbor_simple_values.rec', 'CborSimpleValue',
+                        _parse_cbor_simple_values, 'cbor', 'cbor-simple-values', verbose, dry_run)
+
+
+def sync_http_status_codes(sources, verbose=False, dry_run=False):
+    return _sync_simple(sources, 'iana_http_status_code_source', 'http_status_codes.rec', 'HttpStatusCode',
+                        _parse_http_status_codes, 'http', 'http-status-codes', verbose, dry_run)
+
+
+def sync_http_field_names(sources, verbose=False, dry_run=False):
+    return _sync_simple(sources, 'iana_http_field_name_source', 'http_field_names.rec', 'HttpFieldName',
+                        _parse_http_field_names, 'http', 'http-field-names', verbose, dry_run)
+
+
+def sync_coap(sources, verbose=False, dry_run=False):
+    """All CoAP sub-registries live in one XML file, fetched once per run."""
+    xml_src = sources.get('iana_coap_xml_source', {})
+    coap_xml = None
+    if 'xml_url' in xml_src:
+        try:
+            coap_xml = _xml_loader(xml_src['xml_url'], 'coap', 'core-parameters.xml', verbose)()
         except Exception as e:
-            print(f"  WARNING: CoAP XML fetch failed ({e}), will use CSV per-registry")
+            print(f"  WARNING: CoAP XML unavailable ({e}), using CSV per registry")
 
-    src_rr = sources['iana_coap_request_response_source']
-    results = {}
-
-    for kind in ('request', 'response', 'signaling'):
-        db_file = os.path.join(db_dir, f'coap_{kind}_codes.rec')
-        results[kind] = _sync_coap_registry(
-            db_file,
-            rec_type=f'Coap{kind.capitalize()}Code',
-            doc_url=src_rr.get(f'{kind}_source', ''),
-            coap_xml_content=coap_xml_content,
-            xml_registry_id=src_rr.get(f'{kind}_xml_registry_id', ''),
-            csv_url=src_rr.get(f'{kind}_csv_url', ''),
-            cache_csv=_cache_path('coap', f'coap-{kind}-codes.csv'),
-            tag_field='Code',
-            name_field='Name',
-            verbose=verbose, dry_run=dry_run,
+    def registry_sync(fname, rec_type, doc_url, registry_id, csv_url, csv_name, parse_rows):
+        entries = _fetch_entries(
+            fname,
+            (lambda: coap_xml) if coap_xml else None,
+            registry_id,
+            _csv_loader(csv_url, 'coap', csv_name, verbose),
+            parse_rows,
         )
+        return _apply(os.path.join(db_dir, fname), rec_type, doc_url, entries, dry_run)
 
-    src_opt = sources['iana_coap_option_source']
-    results['option'] = _sync_coap_registry(
-        os.path.join(db_dir, 'coap_options.rec'),
-        rec_type='CoapOption',
-        doc_url=src_opt.get('source', ''),
-        coap_xml_content=coap_xml_content,
-        xml_registry_id=src_opt.get('xml_registry_id', ''),
-        csv_url=src_opt['csv_url'],
-        cache_csv=_cache_path('coap', 'coap-options.csv'),
-        tag_field='Number',
-        name_field='Name',
-        verbose=verbose, dry_run=dry_run,
-    )
+    results = {}
+    rr = sources['iana_coap_request_response_source']
+    for kind in ('request', 'response', 'signaling'):
+        results[kind] = registry_sync(
+            f'coap_{kind}_codes.rec', f'Coap{kind.capitalize()}Code', rr.get(f'{kind}_source', ''),
+            rr.get(f'{kind}_xml_registry_id', ''), rr[f'{kind}_csv_url'], f'coap-{kind}-codes.csv', _parse_coap_codes)
 
-    src_cf = sources['iana_coap_content_format_source']
-    results['content_format'] = _sync_coap_registry(
-        os.path.join(db_dir, 'coap_content_formats.rec'),
-        rec_type='CoapContentFormat',
-        doc_url=src_cf.get('source', ''),
-        coap_xml_content=coap_xml_content,
-        xml_registry_id=src_cf.get('xml_registry_id', ''),
-        csv_url=src_cf['csv_url'],
-        cache_csv=_cache_path('coap', 'coap-content-formats.csv'),
-        tag_field='ID',
-        name_field='Content Type',
-        verbose=verbose, dry_run=dry_run,
-    )
+    src = sources['iana_coap_option_source']
+    results['option'] = registry_sync(
+        'coap_options.rec', 'CoapOption', src.get('source', ''),
+        src.get('xml_registry_id', ''), src['csv_url'], 'coap-options.csv', _parse_coap_options)
 
-    src_sig = sources['iana_coap_signaling_option_numbers_source']
-    results['signaling_option'] = _sync_coap_registry(
-        os.path.join(db_dir, 'coap_signaling_option_numbers.rec'),
-        rec_type='CoapSignalingOption',
-        doc_url=src_sig.get('source', ''),
-        coap_xml_content=coap_xml_content,
-        xml_registry_id=src_sig.get('xml_registry_id', ''),
-        csv_url=src_sig['csv_url'],
-        cache_csv=_cache_path('coap', 'coap-signaling-options.csv'),
-        tag_field='Number',
-        name_field='Name',
-        verbose=verbose, dry_run=dry_run,
-    )
+    src = sources['iana_coap_content_format_source']
+    results['content_format'] = registry_sync(
+        'coap_content_formats.rec', 'CoapContentFormat', src.get('source', ''),
+        src.get('xml_registry_id', ''), src['csv_url'], 'coap-content-formats.csv', _parse_coap_content_formats)
+
+    # Signaling options apply per signaling code ("all" expands to every known signaling code)
+    signaling_codes = sorted(
+        {rec['Tag'].strip() for rec in recfile.read(os.path.join(db_dir, 'coap_signaling_codes.rec')) if rec.get('Tag')}
+        | set(results['signaling'][0]),
+        key=registry.coap_code_to_int)
+    src = sources['iana_coap_signaling_option_numbers_source']
+    results['signaling_option'] = registry_sync(
+        'coap_signaling_option_numbers.rec', 'CoapSignalingOption', src.get('source', ''),
+        src.get('xml_registry_id', ''), src['csv_url'], 'coap-signaling-options.csv',
+        _make_signaling_option_parser(signaling_codes))
 
     return results
-
-
-def sync_http_status_codes(verbose=False, dry_run=False):
-    src = sources['iana_http_status_code_source']
-    db_file = os.path.join(db_dir, 'http_status_codes.rec')
-    recfile.write_header(db_file, 'HttpStatusCode', 'Tag', src['source_url'])
-    existing = _load_existing(db_file)
-    added, warnings = [], []
-
-    records, used_xml = get_xml_or_csv(
-        src, 'xml_url', 'csv_url', 'xml_registry_id',
-        'http', 'http-status-codes.xml', 'http-status-codes.csv', verbose=verbose,
-    )
-    for row in records:
-        if used_xml:
-            tag_str = row.get('value', '').strip()
-            semantics = row.get('description', '').strip()
-            reference = row.get('xref', '').strip()
-        else:
-            tag_str = row.get('Value', '').strip()
-            semantics = row.get('Description', '').strip()
-            reference = row.get('Reference', '').strip()
-        if not tag_str or '-' in tag_str:
-            continue
-        if not semantics or semantics.lower() in ('unassigned', 'reserved') or '(unused)' in semantics.lower():
-            continue
-        _check_and_append(db_file, tag_str, semantics, reference, existing, dry_run, added, warnings)
-
-    return added, warnings
-
-
-def sync_http_field_names(verbose=False, dry_run=False):
-    src = sources['iana_http_field_name_source']
-    db_file = os.path.join(db_dir, 'http_field_names.rec')
-    recfile.write_header(db_file, 'HttpFieldName', 'Tag', src['source_url'])
-    existing = _load_existing(db_file)
-    added, warnings = [], []
-
-    records, used_xml = get_xml_or_csv(
-        src, 'xml_url', 'csv_url', 'xml_registry_id',
-        'http', 'http-field-names.xml', 'http-field-names.csv', verbose=verbose,
-    )
-    for row in records:
-        if used_xml:
-            # IANA http-fields XML uses <name> for the field name string
-            tag_str = (row.get('name') or row.get('value') or '').strip()
-            status = row.get('status', '').strip()
-            structured_type = row.get('type', '').strip()
-            reference = row.get('xref', '').strip()
-            semantics = '; '.join(filter(None, [status, structured_type]))
-        else:
-            tag_str = row.get('Field Name', '').strip()
-            status = row.get('Status', '').strip()
-            structured_type = row.get('Structured Type', '').strip()
-            reference = row.get('Reference', '').strip()
-            semantics = '; '.join(filter(None, [status, structured_type]))
-        if not tag_str:
-            continue
-        _check_and_append(db_file, tag_str, semantics, reference, existing, dry_run, added, warnings)
-
-    return added, warnings
 
 
 # ---------------------------------------------------------------------------
@@ -351,55 +373,66 @@ def sync_http_field_names(verbose=False, dry_run=False):
 
 def main():
     parser = argparse.ArgumentParser(description='Sync IANA registries → db/ (empty Words)')
+    parser.add_argument('--sources', default=os.path.join(repo_dir, 'iana_sources.toml'),
+                        help='Path to the IANA sources TOML file')
     parser.add_argument('--dry-run', action='store_true', help='Print what would be added without writing')
     parser.add_argument('--verbose', action='store_true', help='Print fetch URLs')
     args = parser.parse_args()
 
-    os.makedirs(db_dir, exist_ok=True)
+    try:
+        sources = toml.load(args.sources)
+    except (FileNotFoundError, toml.TomlDecodeError) as e:
+        print(f"ERROR: cannot load sources: {e}", file=sys.stderr)
+        sys.exit(1)
 
+    if not args.dry_run:
+        os.makedirs(db_dir, exist_ok=True)
+
+    suffix = " (dry-run)" if args.dry_run else ""
     total_added = 0
     all_warnings = []
 
-    print("=== CBOR Tags ===")
-    added, warns = sync_cbor_tags(verbose=args.verbose, dry_run=args.dry_run)
-    print(f"  {len(added)} new entries appended" + (" (dry-run)" if args.dry_run else ""))
-    total_added += len(added)
-    all_warnings.extend(warns)
-
-    print("=== CBOR Simple Values ===")
-    added, warns = sync_cbor_simple_values(verbose=args.verbose, dry_run=args.dry_run)
-    print(f"  {len(added)} new entries appended" + (" (dry-run)" if args.dry_run else ""))
-    total_added += len(added)
-    all_warnings.extend(warns)
-
-    print("=== CoAP ===")
-    coap_results = sync_coap(verbose=args.verbose, dry_run=args.dry_run)
-    for name, (added, warns) in coap_results.items():
-        print(f"  {name}: {len(added)} new entries" + (" (dry-run)" if args.dry_run else ""))
+    def report(name, result):
+        nonlocal total_added
+        added, warns = result
+        print(f"  {name}: {len(added)} new entries{suffix}")
+        if args.verbose:
+            for tag in added:
+                print(f"    + {tag}")
         total_added += len(added)
         all_warnings.extend(warns)
 
-    print("=== HTTP Status Codes ===")
-    added, warns = sync_http_status_codes(verbose=args.verbose, dry_run=args.dry_run)
-    print(f"  {len(added)} new entries appended" + (" (dry-run)" if args.dry_run else ""))
-    total_added += len(added)
-    all_warnings.extend(warns)
+    try:
+        for title, fn in (
+            ("CBOR Tags", sync_cbor_tags),
+            ("CBOR Simple Values", sync_cbor_simple_values),
+        ):
+            print(f"=== {title} ===")
+            report(title, fn(sources, verbose=args.verbose, dry_run=args.dry_run))
 
-    print("=== HTTP Field Names ===")
-    added, warns = sync_http_field_names(verbose=args.verbose, dry_run=args.dry_run)
-    print(f"  {len(added)} new entries appended" + (" (dry-run)" if args.dry_run else ""))
-    total_added += len(added)
-    all_warnings.extend(warns)
+        print("=== CoAP ===")
+        for name, result in sync_coap(sources, verbose=args.verbose, dry_run=args.dry_run).items():
+            report(name, result)
+
+        for title, fn in (
+            ("HTTP Status Codes", sync_http_status_codes),
+            ("HTTP Field Names", sync_http_field_names),
+        ):
+            print(f"=== {title} ===")
+            report(title, fn(sources, verbose=args.verbose, dry_run=args.dry_run))
+    except SyncError as e:
+        print(f"ERROR: {e}", file=sys.stderr)
+        sys.exit(1)
 
     print(f"\nTotal new entries: {total_added}")
 
     if all_warnings:
         print(f"\n{'='*60}")
-        print(f"IANA UPDATES DETECTED ({len(all_warnings)}) — review whether Words still match:")
+        print(f"REVIEW NEEDED ({len(all_warnings)}) — IANA differs from db/ (db is never rewritten automatically):")
         for w in all_warnings:
             print(w)
 
-    if total_added > 0:
+    if total_added > 0 and not args.dry_run:
         print("\nRun `make name` to fill Words for new entries.")
 
 

@@ -1,23 +1,29 @@
 #!/usr/bin/env python3
 """
-name.py — fill Words on Source:new entries via heuristic, TF-IDF, or LLM.
+name.py — fill Words on Source:new entries via per-registry rules (or LLM for CBOR tag text).
+
+EXPERIMENTAL (--tfidf): when the rules find nothing for a CBOR tag, rank the words of its
+Semantics by how rare they are across the Semantics already in db/ and keep the top few.
 
 Collision rule: if two or more new entries would produce the same candidate
 Words, ALL of them keep Words empty and are reported for manual resolution.
 
-Namer tiers (each falls through to the next on empty result):
-  heuristic  — regex/abbreviation rules (default)
-  tfidf      — db-driven term ranking, no dependencies (--tfidf)
-  llm        — local Ollama model (--llm)
+Each registry has its own namer because the published C identifiers were
+historically derived from different columns with different rules (e.g. CoAP
+codes are prefixed by their class, HTTP field names come from the Tag, CoAP
+content formats get their media type parameters folded into the name).
+Changing a rule here renames public identifiers for NEW entries only; existing
+db records keep their committed Words.
 """
 
 import os
 import re
 import sys
-import argparse
 import math
+import argparse
 
 import recfile
+import registry
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_dir = os.path.dirname(script_dir)
@@ -25,10 +31,58 @@ db_dir = os.path.join(repo_dir, 'db')
 
 
 # ---------------------------------------------------------------------------
-# Heuristic word-token generators
-# Output: lowercase space-separated tokens  e.g. "date time string"
-# Output: lowercase space-separated tokens  e.g. "date time string"
-# Style (SCREAMING_SNAKE, PascalCase …) is applied later by generate.py
+# Plain registries (CBOR simple values, CoAP options, HTTP status codes, ...)
+# Rule: drop a trailing " (comment)", every non [A-Za-z0-9] character separates words.
+# ---------------------------------------------------------------------------
+
+def _plain_tokens(text):
+    text = re.sub(r'\s+\(.*\)', '', text)
+    return [t.lower() for t in re.sub(r'[^a-zA-Z0-9_]', '_', text).split('_') if t]
+
+
+def plain_words(rec):
+    return ' '.join(_plain_tokens(rec.get('Semantics', '')))
+
+
+def http_field_words(rec):
+    tag = rec.get('Tag', '')
+    if '*' in tag:
+        return 'wildcard'
+    return ' '.join(_plain_tokens(tag))
+
+
+def coap_code_words(rec):
+    """'4.04' + 'Not Found' -> 'client error not found' (class label is part of the identifier)."""
+    try:
+        label = registry.coap_class_label(rec.get('Tag', ''))
+    except (ValueError, KeyError):
+        return ''
+    return ' '.join(label.lower().split() + _plain_tokens(rec.get('Semantics', '')))
+
+
+def signaling_option_words(rec):
+    """'+' reads as 'as' ('a+b' -> 'a as b'), same as content formats."""
+    text = re.sub(r'\s+\(.*\)', '', rec.get('Semantics', ''))
+    text = text.replace('+', '_AS_')
+    return ' '.join(t.lower() for t in re.sub(r'[^a-zA-Z0-9_]', '_', text).split('_') if t)
+
+
+def content_format_words(rec):
+    """Media type (plus optional '; coding') -> words; parameters are folded into the name."""
+    s = re.sub(r'\s+\(.*\)', '', rec.get('Semantics', ''))
+    # Specific handling of known extra parameters
+    s = re.sub(r'([a-zA-Z0-9\-]+)/([a-zA-Z0-9\-\+\.]+); cose-type="cose-([^"]+)"', r'\1_\2_\3', s)
+    # General handling of unknown parameters
+    s = re.sub(r'([a-zA-Z0-9\-]+)/([a-zA-Z0-9\-\+\.]+); *(?:[a-zA-Z0-9\-_]+)="([^"]+)"', r'\1_\2_\3', s)
+    s = re.sub(r'([a-zA-Z0-9\-]+)/([a-zA-Z0-9\-\+\.]+); *(?:[a-zA-Z0-9\-_]+)=([^"]+)', r'\1_\2_\3', s)
+    # '+' is a close semantic approximation of 'as' (image/svg+xml -> IMAGE_SVG_AS_XML)
+    s = s.replace('+', '_AS_')
+    return ' '.join(t.lower() for t in re.sub(r'[^a-zA-Z0-9_]', '_', s).split('_') if t)
+
+
+# ---------------------------------------------------------------------------
+# CBOR tag semantics: free text -> short words (heuristic)
+# Faithful port of the original c_header_cbor.py rules; the db freezes the result.
 # ---------------------------------------------------------------------------
 
 _VERY_COMMON_ABBREV = {
@@ -58,32 +112,42 @@ _LONG_ABBREV = {
     "security": "sec",
 }
 _STOPWORDS = {"algorithm", "and", "to", "a", "from", "the", "bare"}
+_CBOR_BOILERPLATE_PREFIXES = (
+    "A CBOR tag that contains a ",
+    "A CBOR tag that contains an ",
+    "A CBOR tag that contains either ",
+)
 
 
 def _clean(s):
     s = re.sub(r'[.,].* defined in .*', '', s)
-    s = re.sub(r'\(.*?\)', '', s)
-    s = re.sub(r'\[.*?\]', '', s)
-    s = re.sub(r'[()[\]]', ' ', s)
-    return s.strip()
+    return s
 
 
-def _tokenise(s):
-    """Return a list of lowercase word tokens from a semantics string."""
-    # Strip boilerplate CBOR prefix variants
-    for pfx in ("A CBOR tag that contains either ", "A CBOR tag that contains an ",
-                 "A CBOR tag that contains a ", "A CBOR tag that contains "):
+def _strip_brackets(original, s):
+    """A description that is entirely wrapped in [...] or (...) keeps its content."""
+    if original and ((original[0] == '[' and original[-1] == ']') or (original[0] == '(' and original[-1] == ')')):
+        return s[1:-1]
+    return s
+
+
+def cbor_text_words(semantics):
+    """Return lowercase space separated words for a CBOR tag semantics string ('' if none)."""
+    s = semantics
+    for pfx in _CBOR_BOILERPLATE_PREFIXES:
         if s.startswith(pfx):
             s = s[len(pfx):]
             break
 
+    original = s
     s = _clean(s)
+    s = _strip_brackets(original, s)
+    s = re.sub(r'\(.*?\)', '', s)
+    s = re.sub(r'\[.*?\]', '', s)
+    s = re.sub(r'[()\[\]]', ' ', s).strip()
 
-    # Strip URI patterns before splitting on ':' so "https://..." isn't truncated
-    s = re.sub(r'\w[\w+.-]*://\S*', '', s)
-
-    # Truncate at first ':', ';', or '. '
-    s = s.split(':', 1)[0].strip()
+    # Drop a description after ':' unless the colon is glued to a word ("ur:digest") or starts a URI ("https://")
+    s = re.split(r'\s*:(?!\w|//)\s*', s, maxsplit=1)[0].strip()
     s = s.split(';', 1)[0].strip()
     idx = s.find('. ')
     if idx != -1:
@@ -91,90 +155,82 @@ def _tokenise(s):
 
     s = re.sub(r'[_\-]', ' ', s)
 
-    words = []
-    for chunk in s.split():
-        chunk = re.sub(r'\W+', '', chunk)
-        if chunk:
-            words.append(chunk.lower())
-
-    if words and words[0] == 'a':
+    words = [w.replace('+', 'PLUS').strip('_') for w in s.split()]
+    if words and words[0] == 'A':
         words = words[1:]
+    words = [part for w in words for part in re.sub(r'\W+', ' ', w).split()]
 
-    words = [_VERY_COMMON_ABBREV.get(w, w) for w in words]
-
+    words = [_VERY_COMMON_ABBREV.get(w.lower(), w) for w in words]
     if sum(len(w) for w in words) >= 40:
-        words = [_LONG_ABBREV.get(w, w) for w in words]
-        words = [w for w in words if w not in _STOPWORDS]
+        words = [_LONG_ABBREV.get(w.lower(), w) for w in words]
+        words = [w for w in words if w.lower() not in _STOPWORDS]
 
-    return words
+    return ' '.join(w.lower() for w in words)
 
 
+def cbor_tag_words(rec):
+    return cbor_text_words(rec.get('Semantics', ''))
+
+
+# Kept for callers that only have the text
 def heuristic_words(semantics, tag_hint=''):
-    """Return lowercase token string from semantics, e.g. 'date time string'."""
-    tokens = _tokenise(semantics)
-    if not tokens:
-        return ''
-    return ' '.join(tokens)
+    return cbor_text_words(semantics)
+
+
+NAMERS = {
+    'cbor_tags.rec': cbor_tag_words,
+    'cbor_simple_values.rec': plain_words,
+    'coap_request_codes.rec': coap_code_words,
+    'coap_response_codes.rec': coap_code_words,
+    'coap_signaling_codes.rec': coap_code_words,
+    'coap_options.rec': plain_words,
+    'coap_content_formats.rec': content_format_words,
+    'coap_signaling_option_numbers.rec': signaling_option_words,
+    'http_status_codes.rec': plain_words,
+    'http_field_names.rec': http_field_words,
+}
 
 
 # ---------------------------------------------------------------------------
-# TF-IDF namer — db-driven, no external dependencies
+# TF-IDF namer (experimental, --tfidf). Db driven, standard library only.
 # ---------------------------------------------------------------------------
 
-def _raw_tokens(s):
-    """Tokenise without abbreviation or stopword rules — just clean words."""
-    s = re.sub(r'\w[\w+.-]*://\S*', '', s)   # strip URIs
-    s = re.sub(r'\(.*?\)|\[.*?\]', '', s)    # strip parentheticals
-    s = s.split(':', 1)[0].split(';', 1)[0]  # truncate at : or ;
-    s = re.sub(r'[_\-]', ' ', s)
-    return [re.sub(r'\W+', '', w).lower() for w in s.split() if re.sub(r'\W+', '', w)]
+def _raw_tokens(text):
+    """Words of a CBOR tag description: same cuts as cbor_text_words, but no abbreviations or stopwords."""
+    text = re.sub(r'\w[\w+.-]*://\S*', '', text)          # URIs
+    text = re.sub(r'\(.*?\)|\[.*?\]', '', text)         # parentheticals
+    text = re.split(r'\s*:(?!\w|//)\s*', text, maxsplit=1)[0].split(';', 1)[0]
+    return [w.lower() for w in re.sub(r'\W+', ' ', text.replace('_', ' ')).split()]
 
 
-def tfidf_words(semantics, corpus_semantics, max_tokens=5):
-    """
-    Score candidate tokens from `semantics` by TF-IDF against `corpus_semantics`
-    (a list of existing Semantics strings from the db).
+def tfidf_words(semantics, corpus_token_sets, max_tokens=5):
+    """Keep the `max_tokens` rarest words of `semantics` (in their original order).
 
-    Terms that appear in many db entries are downweighted; rare/technical terms
-    (e.g. 'base64url', 'corim') are upweighted. Returns a space-separated token
-    string, or '' if no useful tokens are found.
+    corpus_token_sets: one set of words per description already in the db. Words that appear in
+    many descriptions (the, of, type, value) score low; rare technical words (base64url, corim) high.
+    Returns '' if the text has no words.
     """
     tokens = _raw_tokens(semantics)
     if not tokens:
         return ''
-
-    N = len(corpus_semantics) + 1
-    idf = {}
-    for tok in set(tokens):
-        df = sum(1 for s in corpus_semantics if tok in _raw_tokens(s))
-        idf[tok] = math.log(N / (df + 1))
-
-    # Preserve source order (TF=1 for all since each appears in one doc),
-    # break ties by IDF descending so technical terms stay near the front.
-    seen = set()
-    ranked = []
-    for tok in tokens:
-        if tok not in seen:
-            seen.add(tok)
-            ranked.append((tok, idf.get(tok, 0)))
-
-    ranked.sort(key=lambda x: -x[1])
-    selected = [tok for tok, _ in ranked[:max_tokens]]
-
-    # Re-order to match original left-to-right order for readability
-    order = {tok: i for i, tok in enumerate(tokens)}
-    selected.sort(key=lambda t: order[t])
-
-    return ' '.join(selected)
+    n = len(corpus_token_sets) + 1
+    idf = {t: math.log(n / (sum(1 for doc in corpus_token_sets if t in doc) + 1)) for t in set(tokens)}
+    first_seen = {}
+    for i, t in enumerate(tokens):
+        first_seen.setdefault(t, i)
+    keep = sorted(first_seen, key=lambda t: (-idf[t], first_seen[t]))[:max_tokens]
+    return ' '.join(sorted(keep, key=first_seen.get))
 
 
 # ---------------------------------------------------------------------------
-# LLM namer (optional — falls back silently)
+# LLM namer (optional — falls back silently). Only used for free-text CBOR tag semantics.
 # ---------------------------------------------------------------------------
 
 def llm_words(semantics, existing_examples, fallback_fn):
+    import http.client
+    import json
+    import urllib.request
     try:
-        import urllib.request, json
         examples_text = '\n'.join(
             f'  Semantics: "{sem}" -> Words: "{words}"'
             for sem, words in existing_examples[:10]
@@ -202,7 +258,7 @@ def llm_words(semantics, existing_examples, fallback_fn):
             tokens = result.get('response', '').strip().lower()
             tokens = re.sub(r'[^a-z0-9 ]', ' ', tokens).split()
             return ' '.join(tokens) if tokens else fallback_fn(semantics)
-    except (OSError, ValueError):
+    except (OSError, ValueError, http.client.HTTPException):
         return fallback_fn(semantics)
 
 
@@ -217,39 +273,56 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False):
     if not new_entries:
         return []
 
-    named = [r for r in records if r.get('Source', '') != 'new' and r.get('Words', '').strip()]
-    existing_words = {r.get('Words', '').strip() for r in named}
+    fname = os.path.basename(db_file)
+    namer = NAMERS.get(fname, cbor_tag_words)
 
-    # Corpus of existing semantics strings for TF-IDF
-    corpus_semantics = [r.get('Semantics', '') for r in named if r.get('Semantics', '').strip()]
+    def scoped(rec, words):
+        # Words only need to be unique within one generated C enum
+        return (registry.words_scope(fname, rec.get('Tag', '')), words)
 
-    # Few-shot examples for LLM
-    examples = [(r['Semantics'], r['Words']) for r in named if r.get('Semantics', '').strip()]
+    existing_words = {scoped(r, r.get('Words', '').strip()) for r in records
+                      if r.get('Source', '') not in ('new', 'skip') and r.get('Words', '').strip()}
+
+    # Few-shot examples for LLM from existing named records
+    examples = [
+        (r['Semantics'], r['Words'])
+        for r in records
+        if r.get('Source', '') not in ('new', '') and r.get('Words', '').strip() and r.get('Semantics', '').strip()
+    ]
 
     # Generate candidates for all new entries
     candidates = {}
+    sources = {}
+    corpus = None  # built on first use by --tfidf
     for rec in new_entries:
         tag = rec['Tag']
-        sem = rec.get('Semantics', '')
-        candidate = heuristic_words(sem, tag_hint=tag)
-        if use_tfidf and not candidate:
-            candidate = tfidf_words(sem, corpus_semantics)
-        if use_llm and not candidate:
-            candidate = llm_words(sem, examples, heuristic_words)
-        candidates[tag] = candidate
+        if use_llm and namer is cbor_tag_words:
+            candidates[tag] = llm_words(rec.get('Semantics', ''), examples, cbor_text_words)
+            sources[tag] = 'llm'
+        else:
+            candidates[tag] = namer(rec)
+            sources[tag] = 'heuristic'
+        if use_tfidf and namer is cbor_tag_words and not candidates[tag]:
+            if corpus is None:
+                corpus = [set(_raw_tokens(r['Semantics'])) for r in records
+                          if r.get('Semantics') and r.get('Source', '') not in ('new', 'skip')]
+            candidates[tag] = tfidf_words(rec.get('Semantics', ''), corpus)
 
-    # Collision detection: count how many times each candidate appears
+    # Collision detection: count how many times each candidate appears (per enum scope)
     from collections import Counter
-    candidate_counts = Counter(c for c in candidates.values() if c)
+    rec_by_tag = {r['Tag']: r for r in new_entries}
+    key = {tag: scoped(rec_by_tag[tag], cand) for tag, cand in candidates.items()}
+    candidate_counts = Counter(key[tag] for tag, cand in candidates.items() if cand)
 
     # Also check against existing db Words
-    collision_with_existing = {tag for tag, cand in candidates.items() if cand and cand in existing_words}
+    collision_with_existing = {tag for tag, cand in candidates.items() if cand and key[tag] in existing_words}
 
     # Group new-vs-new collisions
     collision_groups = {}  # candidate -> [tags]
     for tag, cand in candidates.items():
-        if cand and candidate_counts[cand] > 1:
-            collision_groups.setdefault(cand, []).append(tag)
+        if cand and candidate_counts[key[tag]] > 1:
+            group = cand if not key[tag][0] else f'{cand} [{key[tag][0]}]'
+            collision_groups.setdefault(group, []).append(tag)
 
     # Determine which tags are valid vs need-manual
     colliding_tags = set()
@@ -257,54 +330,45 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False):
         colliding_tags.update(tags)
     colliding_tags.update(collision_with_existing)
 
-    # Build rewrite map: tag -> new Words (empty string = needs-manual)
+    # Build rewrite map: tag -> (new Words, Source). Empty Words means needs-manual.
     assignments = {}
     for tag, cand in candidates.items():
         if tag in colliding_tags or not cand:
-            assignments[tag] = ''
+            assignments[tag] = ('', 'needs-manual')
         else:
-            assignments[tag] = cand
+            assignments[tag] = (cand, sources[tag])
 
-    if dry_run:
-        return _report(new_entries, assignments, collision_groups, collision_with_existing, candidates, dry_run=True)
+    if not dry_run:
+        _apply_assignments(db_file, assignments)
 
-    _apply_assignments(db_file, assignments)
-
-    return _report(new_entries, assignments, collision_groups, collision_with_existing, candidates)
+    return _report(new_entries, collision_groups, collision_with_existing, candidates)
 
 
 def _apply_assignments(db_file, assignments):
-    """Rewrite db_file, updating Words/Source for entries in assignments."""
-    lines = []
+    """Rewrite db_file, updating Words/Source for the Source:new entries named in assignments."""
     with open(db_file, 'r', encoding='utf-8') as f:
         raw_lines = f.readlines()
 
-    # Parse line-by-line, tracking current record's Tag
+    lines = []
     current_tag = None
-    i = 0
-    while i < len(raw_lines):
-        line = raw_lines[i]
+    for line in raw_lines:
         stripped = line.rstrip('\n')
 
         if stripped.startswith('Tag: '):
             current_tag = stripped[5:].strip()
             lines.append(line)
         elif stripped.startswith('Words: ') and current_tag in assignments:
-            words = assignments[current_tag]
-            lines.append(f'Words: {words}\n')
-        elif stripped.startswith(('Source: new', 'Source: needs-manual')) and current_tag in assignments:
-            words = assignments.get(current_tag, '')
-            source = 'needs-manual' if not words else 'heuristic'
-            lines.append(f'Source: {source}\n')
+            lines.append(f'Words: {assignments[current_tag][0]}\n')
+        elif stripped == 'Source: new' and current_tag in assignments:
+            lines.append(f'Source: {assignments[current_tag][1]}\n')
         else:
             lines.append(line)
-        i += 1
 
     with open(db_file, 'w', encoding='utf-8') as f:
         f.writelines(lines)
 
 
-def _report(new_entries, assignments, collision_groups, collision_with_existing, candidates, dry_run=False):
+def _report(new_entries, collision_groups, collision_with_existing, candidates):
     issues = []
 
     # Report intra-run collisions
@@ -327,6 +391,11 @@ def _report(new_entries, assignments, collision_groups, collision_with_existing,
             f"    Semantics: {sem!r}"
         )
 
+    # Entries the namer could not name at all
+    for rec in new_entries:
+        if not candidates.get(rec['Tag']):
+            issues.append(f"  UNNAMEABLE Tag {rec['Tag']}: {rec.get('Semantics', '')!r} — no words produced")
+
     return issues
 
 
@@ -336,8 +405,8 @@ def _report(new_entries, assignments, collision_groups, collision_with_existing,
 
 def main():
     parser = argparse.ArgumentParser(description='Fill Words on Source:new db entries')
-    parser.add_argument('--tfidf', action='store_true', help='Use TF-IDF tier when heuristic returns empty')
-    parser.add_argument('--llm', action='store_true', help='Use local Ollama LLM as final fallback')
+    parser.add_argument('--tfidf', action='store_true', help='Experimental: for CBOR tags the rules cannot name, keep the rarest words of the description')
+    parser.add_argument('--llm', action='store_true', help='Use local Ollama LLM for CBOR tag text (falls back to the rules)')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be written without modifying files')
     args = parser.parse_args()
 
@@ -359,7 +428,7 @@ def main():
 
     if all_issues:
         print(f"\n{'='*60}")
-        print(f"{len(all_issues)} collision(s) require manual Words — edit db/*.rec then run `make check`.")
+        print(f"{len(all_issues)} entr(ies) need manual Words — edit db/*.rec (set Source: manual) then run `make check`.")
         if not args.dry_run:
             sys.exit(1)
     else:

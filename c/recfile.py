@@ -12,7 +12,7 @@ def read(filepath):
         return records
     with open(filepath, 'r', encoding='utf-8') as f:
         for raw in f:
-            line = raw.rstrip('\n')
+            line = raw.rstrip('\r\n')
             if line.startswith('%') or line.startswith('#'):
                 last_key = None
                 continue
@@ -37,11 +37,20 @@ def read(filepath):
 
 
 def append_record(filepath, record):
-    """Append a single record dict to a recfile (creates file with header if needed)."""
+    """Append a single record dict to a recfile, separated from the previous record by a blank line."""
+    separator = '\n'
+    if os.path.exists(filepath) and os.path.getsize(filepath) > 0:
+        with open(filepath, 'rb') as f:
+            f.seek(-1, os.SEEK_END)
+            if f.read(1) != b'\n':  # hand-edited file without a trailing newline
+                separator = '\n\n'
     with open(filepath, 'a', encoding='utf-8') as f:
-        f.write('\n')
+        f.write(separator)
         for key, value in record.items():
-            f.write(f'{key}: {value}\n')
+            first, *rest = str(value).split('\n')
+            f.write(f'{key}: {first}\n')
+            for line in rest:  # recfile continuation lines
+                f.write(f'+ {line}\n')
 
 
 def write_header(filepath, rec_type, key_field, doc_url):

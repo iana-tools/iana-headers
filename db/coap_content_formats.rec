@@ -3,13 +3,517 @@
 %doc: https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats
 
 Tag: 0
-Words: text plain
+Words: text plain utf 8
 Semantics: text/plain; charset=utf-8
 Reference: [RFC2046][RFC3676][RFC5147]
+Source: heuristic
+
+Tag: 16
+Words: application cose encrypt0
+Semantics: application/cose; cose-type="cose-encrypt0"
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 17
+Words: application cose mac0
+Semantics: application/cose; cose-type="cose-mac0"
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 18
+Words: application cose sign1
+Semantics: application/cose; cose-type="cose-sign1"
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 19
+Words: application ace as cbor
+Semantics: application/ace+cbor
+Reference: [RFC9200]
+Source: heuristic
+
+Tag: 21
+Words: image gif
+Semantics: image/gif
+Reference: [https://www.w3.org/Graphics/GIF/spec-gif89a.txt]
+Source: heuristic
+
+Tag: 22
+Words: image jpeg
+Semantics: image/jpeg
+Reference: [ISO/IEC 10918-5]
+Source: heuristic
+
+Tag: 23
+Words: image png
+Semantics: image/png
+Reference: [RFC2083]
+Source: heuristic
+
+Tag: 40
+Words: application link format
+Semantics: application/link-format
+Reference: [RFC6690]
+Source: heuristic
+
+Tag: 41
+Words: application xml
+Semantics: application/xml
+Reference: [RFC3023]
+Source: heuristic
+
+Tag: 42
+Words: application octet stream
+Semantics: application/octet-stream
+Reference: [RFC2045][RFC2046]
+Source: heuristic
+
+Tag: 47
+Words: application exi
+Semantics: application/exi
+Reference: ["Efficient XML Interchange (EXI) Format 1.0 (Second Edition)", February 2014]
+Source: heuristic
+
+Tag: 50
+Words: application json
+Semantics: application/json
+Reference: [RFC8259]
+Source: heuristic
+
+Tag: 51
+Words: application json patch as json
+Semantics: application/json-patch+json
+Reference: [RFC6902]
+Source: heuristic
+
+Tag: 52
+Words: application merge patch as json
+Semantics: application/merge-patch+json
+Reference: [RFC7396]
 Source: heuristic
 
 Tag: 60
 Words: application cbor
 Semantics: application/cbor
-Reference: [RFC7049]
+Reference: [RFC8949]
+Source: heuristic
+
+Tag: 61
+Words: application cwt
+Semantics: application/cwt
+Reference: [RFC8392]
+Source: heuristic
+
+Tag: 62
+Words: application multipart core
+Semantics: application/multipart-core
+Reference: [RFC8710]
+Source: heuristic
+
+Tag: 63
+Words: application cbor seq
+Semantics: application/cbor-seq
+Reference: [RFC8742]
+Source: heuristic
+
+Tag: 64
+Words: application edhoc as cbor seq
+Semantics: application/edhoc+cbor-seq
+Reference: [RFC9528]
+Source: heuristic
+
+Tag: 65
+Words: application cid edhoc as cbor seq
+Semantics: application/cid-edhoc+cbor-seq
+Reference: [RFC9528]
+Source: heuristic
+
+Tag: 96
+Words: application cose encrypt
+Semantics: application/cose; cose-type="cose-encrypt"
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 97
+Words: application cose mac
+Semantics: application/cose; cose-type="cose-mac"
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 98
+Words: application cose sign
+Semantics: application/cose; cose-type="cose-sign"
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 101
+Words: application cose key
+Semantics: application/cose-key
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 102
+Words: application cose key set
+Semantics: application/cose-key-set
+Reference: [RFC9052]
+Source: heuristic
+
+Tag: 110
+Words: application senml as json
+Semantics: application/senml+json
+Reference: [RFC8428]
+Source: heuristic
+
+Tag: 111
+Words: application sensml as json
+Semantics: application/sensml+json
+Reference: [RFC8428]
+Source: heuristic
+
+Tag: 112
+Words: application senml as cbor
+Semantics: application/senml+cbor
+Reference: [RFC8428]
+Source: heuristic
+
+Tag: 113
+Words: application sensml as cbor
+Semantics: application/sensml+cbor
+Reference: [RFC8428]
+Source: heuristic
+
+Tag: 114
+Words: application senml exi
+Semantics: application/senml-exi
+Reference: [RFC8428]
+Source: heuristic
+
+Tag: 115
+Words: application sensml exi
+Semantics: application/sensml-exi
+Reference: [RFC8428]
+Source: heuristic
+
+Tag: 140
+Words: application yang data as cbor sid
+Semantics: application/yang-data+cbor; id=sid
+Reference: [RFC9254]
+Source: heuristic
+
+Tag: 256
+Words: application coap group as json
+Semantics: application/coap-group+json
+Reference: [RFC7390]
+Source: heuristic
+
+Tag: 257
+Words: application concise problem details as cbor
+Semantics: application/concise-problem-details+cbor
+Reference: [RFC9290]
+Source: heuristic
+
+Tag: 258
+Words: application swid as cbor
+Semantics: application/swid+cbor
+Reference: [RFC9393]
+Source: heuristic
+
+Tag: 259
+Words: application pkixcmp
+Semantics: application/pkixcmp
+Reference: [RFC9482][RFC-ietf-lamps-rfc6712bis-10]
+Source: heuristic
+
+Tag: 260
+Words: application yang sid as json
+Semantics: application/yang-sid+json
+Reference: [RFC9595]
+Source: heuristic
+
+Tag: 261
+Words: application ace groupcomm as cbor
+Semantics: application/ace-groupcomm+cbor
+Reference: [RFC9594]
+Source: heuristic
+
+Tag: 262
+Words: application ace trl as cbor
+Semantics: application/ace-trl+cbor
+Reference: [RFC-ietf-ace-revoked-token-notification-09]
+Source: heuristic
+
+Tag: 263
+Words: application eat as cwt
+Semantics: application/eat+cwt
+Reference: [RFC-ietf-rats-eat-media-type-12]
+Source: heuristic
+
+Tag: 264
+Words: application eat as jwt
+Semantics: application/eat+jwt
+Reference: [RFC-ietf-rats-eat-media-type-12]
+Source: heuristic
+
+Tag: 265
+Words: application eat bun as cbor
+Semantics: application/eat-bun+cbor
+Reference: [RFC-ietf-rats-eat-media-type-12]
+Source: heuristic
+
+Tag: 266
+Words: application eat bun as json
+Semantics: application/eat-bun+json
+Reference: [RFC-ietf-rats-eat-media-type-12]
+Source: heuristic
+
+Tag: 267
+Words: application eat ucs as cbor
+Semantics: application/eat-ucs+cbor
+Reference: [RFC-ietf-rats-eat-media-type-12]
+Source: heuristic
+
+Tag: 268
+Words: application eat ucs as json
+Semantics: application/eat-ucs+json
+Reference: [RFC-ietf-rats-eat-media-type-12]
+Source: heuristic
+
+Tag: 269
+Words: application coap eap
+Semantics: application/coap-eap
+Reference: [RFC-ietf-ace-wg-coap-eap-14]
+Source: heuristic
+
+Tag: 271
+Words: application dots as cbor
+Semantics: application/dots+cbor
+Reference: [RFC9132]
+Source: heuristic
+
+Tag: 272
+Words: application missing blocks as cbor seq
+Semantics: application/missing-blocks+cbor-seq
+Reference: [RFC9177]
+Source: heuristic
+
+Tag: 280
+Words: application pkcs7 mime server generated key
+Semantics: application/pkcs7-mime; smime-type=server-generated-key
+Reference: [RFC7030][RFC8551][RFC9148]
+Source: heuristic
+
+Tag: 281
+Words: application pkcs7 mime certs only
+Semantics: application/pkcs7-mime; smime-type=certs-only
+Reference: [RFC8551][RFC9148]
+Source: heuristic
+
+Tag: 284
+Words: application pkcs8
+Semantics: application/pkcs8
+Reference: [RFC5958][RFC8551][RFC9148]
+Source: heuristic
+
+Tag: 285
+Words: application csrattrs
+Semantics: application/csrattrs
+Reference: [RFC7030][RFC9148]
+Source: heuristic
+
+Tag: 286
+Words: application pkcs10
+Semantics: application/pkcs10
+Reference: [RFC5967][RFC8551][RFC9148]
+Source: heuristic
+
+Tag: 287
+Words: application pkix cert
+Semantics: application/pkix-cert
+Reference: [RFC2585][RFC9148]
+Source: heuristic
+
+Tag: 290
+Words: application aif as cbor
+Semantics: application/aif+cbor
+Reference: [RFC9237]
+Source: heuristic
+
+Tag: 291
+Words: application aif as json
+Semantics: application/aif+json
+Reference: [RFC9237]
+Source: heuristic
+
+Tag: 310
+Words: application senml as xml
+Semantics: application/senml+xml
+Reference: [RFC8428]
+Source: heuristic
+
+Tag: 311
+Words: application sensml as xml
+Semantics: application/sensml+xml
+Reference: [RFC8428]
+Source: heuristic
+
+Tag: 320
+Words: application senml etch as json
+Semantics: application/senml-etch+json
+Reference: [RFC8790]
+Source: heuristic
+
+Tag: 322
+Words: application senml etch as cbor
+Semantics: application/senml-etch+cbor
+Reference: [RFC8790]
+Source: heuristic
+
+Tag: 340
+Words: application yang data as cbor
+Semantics: application/yang-data+cbor
+Reference: [RFC9254]
+Source: heuristic
+
+Tag: 341
+Words: application yang data as cbor name
+Semantics: application/yang-data+cbor; id=name
+Reference: [RFC9254]
+Source: heuristic
+
+Tag: 432
+Words: application td as json
+Semantics: application/td+json
+Reference: ["Web of Things (WoT) Thing Description 1.1", April 2022]
+Source: heuristic
+
+Tag: 433
+Words: application tm as json
+Semantics: application/tm+json
+Reference: ["Web of Things (WoT) Thing Description 1.1", April 2022]
+Source: heuristic
+
+Tag: 434
+Words: application sdf as json
+Semantics: application/sdf+json
+Reference: [RFC-ietf-asdf-sdf-23]
+Source: heuristic
+
+Tag: 601
+Words: application uccs as cbor
+Semantics: application/uccs+cbor
+Reference: [RFC-ietf-rats-uccs-12, Section 6.4]
+Source: heuristic
+
+Tag: 836
+Words: application voucher as cose
+Semantics: application/voucher+cose (TEMPORARY - registered 2022-04-12, extension registered 2025-03-07, expires 2026-04-12)
+Reference: [draft-ietf-anima-constrained-voucher-23]
+Source: heuristic
+
+Tag: 10000
+Words: application vnd ocf as cbor
+Semantics: application/vnd.ocf+cbor
+Reference: [Michael_Koster]
+Source: heuristic
+
+Tag: 10001
+Words: application oscore
+Semantics: application/oscore
+Reference: [RFC8613]
+Source: heuristic
+
+Tag: 10002
+Words: application javascript
+Semantics: application/javascript
+Reference: [RFC4329]
+Source: heuristic
+
+Tag: 10003
+Words: application eat as cwt tag psacertified org 2023 psa tfm
+Semantics: application/eat+cwt; eat_profile="tag:psacertified.org,2023:psa#tfm"
+Reference: [RFC-tschofenig-rats-psa-token-24]
+Source: heuristic
+
+Tag: 10004
+Words: application eat as cwt tag psacertified org 2019 psa legacy
+Semantics: application/eat+cwt; eat_profile="tag:psacertified.org,2019:psa#legacy"
+Reference: [RFC-tschofenig-rats-psa-token-24]
+Source: heuristic
+
+Tag: 10005
+Words: application eat as cwt 2 16 840 1 113741 1 16 1
+Semantics: application/eat+cwt; eat_profile=2.16.840.1.113741.1.16.1
+Reference: [RFC-ietf-rats-eat-media-type-12][draft-cds-rats-intel-corim-profile-02]
+Source: heuristic
+
+Tag: 10570
+Words: application toc as cbor
+Semantics: application/toc+cbor
+Reference: [CE-Binding, Section 6.3.1]
+Source: heuristic
+
+Tag: 10571
+Words: application ce as cbor
+Semantics: application/ce+cbor
+Reference: [CE-Binding, Section 6.3.2]
+Source: heuristic
+
+Tag: 11050
+Words: application json deflate
+Semantics: application/json; deflate
+Reference: [RFC8259][RFC9110, Section 8.4.1.2]
+Source: heuristic
+
+Tag: 11060
+Words: application cbor deflate
+Semantics: application/cbor; deflate
+Reference: [RFC8949][RFC9110, Section 8.4.1.2]
+Source: heuristic
+
+Tag: 11542
+Words: application vnd oma lwm2m as tlv
+Semantics: application/vnd.oma.lwm2m+tlv
+Reference: [OMA-TS-LightweightM2M-V1_0]
+Source: heuristic
+
+Tag: 11543
+Words: application vnd oma lwm2m as json
+Semantics: application/vnd.oma.lwm2m+json
+Reference: [OMA-TS-LightweightM2M-V1_0]
+Source: heuristic
+
+Tag: 11544
+Words: application vnd oma lwm2m as cbor
+Semantics: application/vnd.oma.lwm2m+cbor
+Reference: [OMA-TS-LightweightM2M-V1_2]
+Source: heuristic
+
+Tag: 12000
+Words: text plain utf 8 zstd
+Semantics: text/plain;charset=utf-8; zstd
+Reference: [Benjamin_Valentin]
+Source: heuristic
+
+Tag: 12041
+Words: application xml zstd
+Semantics: application/xml; zstd
+Reference: [Benjamin_Valentin]
+Source: heuristic
+
+Tag: 12050
+Words: application json zstd
+Semantics: application/json; zstd
+Reference: [Benjamin_Valentin]
+Source: heuristic
+
+Tag: 20000
+Words: text css
+Semantics: text/css
+Reference: [RFC2318]
+Source: heuristic
+
+Tag: 30000
+Words: image svg as xml
+Semantics: image/svg+xml
+Reference: [https://www.w3.org/TR/SVG/mimereg.html]
 Source: heuristic

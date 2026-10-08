@@ -1,5 +1,5 @@
 [iana_cbor_simple_value_source]
-title = "IANA CBOR Simple Values"
+title = "IANA CBOR Content-Formats"
 xml_url = "https://www.iana.org/assignments/cbor-simple-values/cbor-simple-values.xml"
 xml_registry_id = "simple"
 csv_url = "https://www.iana.org/assignments/cbor-simple-values/simple.csv"
@@ -41,7 +41,7 @@ csv_url = "https://www.iana.org/assignments/core-parameters/content-formats.csv"
 source = "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats"
 
 [iana_coap_signaling_option_numbers_source]
-title = "IANA CoAP Signaling Option Numbers"
+title = "IANA CoAP Option Numbers"
 xml_registry_id = "signaling-option-numbers"
 csv_url = "https://www.iana.org/assignments/core-parameters/signaling-option-numbers.csv"
 source = "https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#signaling-option-numbers"

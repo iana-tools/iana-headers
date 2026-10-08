@@ -1,7 +1,6 @@
 import os
 import re
-import time
-import email
+import email.utils
 import xml.etree.ElementTree as ET
 import requests
 
@@ -80,7 +79,8 @@ def read_or_download_csv(csv_url: str, cache_file: str) -> str:
 def _download_xml(xml_url: str, cache_file: str) -> str:
     response = requests.get(xml_url, headers={"Accept": "application/xml"})
     response.raise_for_status()
-    xml_content = response.text
+    # IANA serves XML without a charset, so do not let requests guess one
+    xml_content = response.content.decode("utf-8-sig")
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)
     with open(cache_file, "w", encoding="utf-8") as f:
         f.write(xml_content)
@@ -104,21 +104,25 @@ def read_or_download_xml(xml_url: str, cache_file: str) -> str:
         raise Exception("Error fetching XML and no cache available.") from err
 
 def format_xrefs(record_elem) -> str:
-    """Render all <xref> children of a record element into a single reference string."""
+    """Render all <xref> elements of a record into a single reference string, e.g. '[RFC9110, Section 15.2.1]'.
+
+    Matches the bracketed style of IANA's CSV exports, minus the CSV's trailing document titles.
+    """
     parts = []
-    for xref in record_elem.findall('{http://www.iana.org/assignments}xref'):
+    for xref in record_elem.iter('{http://www.iana.org/assignments}xref'):
         xtype = xref.get('type', '')
         data = xref.get('data', '')
         section = xref.get('section', '')
+        if not data:
+            continue
         if xtype == 'rfc':
-            ref = f'[{data.upper()}'
+            # 'rfc9110' -> 'RFC9110'; keep the case of anything after the prefix ('rfc-ietf-foo' -> 'RFC-ietf-foo')
+            ref = '[RFC' + data[3:] if data.lower().startswith('rfc') else f'[{data.upper()}'
             if section:
                 ref += f', Section {section}'
             ref += ']'
             parts.append(ref)
-        elif xtype == 'uri':
-            parts.append(data)
-        elif data:
+        else:
             parts.append(f'[{data}]')
     return ''.join(parts)
 

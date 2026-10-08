@@ -37,7 +37,9 @@ def _download_csv(csv_url: str, cache_file: str) -> str:
     response = requests.get(csv_url)
     response.raise_for_status()
 
-    csv_content = response.text
+    # IANA serves CSV without a charset (requests would guess Latin-1) and may prefix a BOM,
+    # which would otherwise end up inside the first column name
+    csv_content = response.content.decode("utf-8-sig")
     os.makedirs(os.path.dirname(cache_file), exist_ok=True)
     with open(cache_file, "w", encoding="utf-8") as file:
         file.write(csv_content)

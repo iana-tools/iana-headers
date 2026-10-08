@@ -332,9 +332,9 @@ def generate_http(header_content, settings, sources):
 
 
 GENERATORS = (
-    ('cbor', 'cbor_constants.h', generate_cbor),
-    ('coap', 'coap_constants.h', generate_coap),
-    ('http', 'http_constants.h', generate_http),
+    ('cbor', generate_cbor),
+    ('coap', generate_coap),
+    ('http', generate_http),
 )
 
 
@@ -364,7 +364,7 @@ def main():
     # Build every header in memory first so a failure leaves all outputs untouched
     outputs = []
     try:
-        for section, label, generate in GENERATORS:
+        for section, generate in GENERATORS:
             path = os.path.join(script_dir, settings[section]['generated_header_filepath'])
             if os.path.exists(path):
                 with open(path, 'r', encoding='utf-8') as f:

@@ -269,7 +269,9 @@ def llm_words(semantics, existing_examples, fallback_fn):
 def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False):
     records = recfile.read(db_file)
 
-    new_entries = [r for r in records if r.get('Source', '') == 'new']
+    for r in records:  # keys must match what _apply_assignments sees after stripping
+        r['Tag'] = r.get('Tag', '').strip()
+    new_entries = [r for r in records if r.get('Source', '').strip() == 'new']
     if not new_entries:
         return []
 
@@ -352,14 +354,15 @@ def _apply_assignments(db_file, assignments):
     lines = []
     current_tag = None
     for line in raw_lines:
-        stripped = line.rstrip('\n')
+        # Tolerate editors that strip trailing whitespace ("Words: " -> "Words:") or leave some
+        stripped = line.rstrip()
 
-        if stripped.startswith('Tag: '):
-            current_tag = stripped[5:].strip()
+        if stripped.startswith('Tag:'):
+            current_tag = stripped[4:].strip()
             lines.append(line)
-        elif stripped.startswith('Words: ') and current_tag in assignments:
+        elif stripped.startswith('Words:') and current_tag in assignments:
             lines.append(f'Words: {assignments[current_tag][0]}\n')
-        elif stripped == 'Source: new' and current_tag in assignments:
+        elif stripped.replace(' ', '') == 'Source:new' and current_tag in assignments:
             lines.append(f'Source: {assignments[current_tag][1]}\n')
         else:
             lines.append(line)

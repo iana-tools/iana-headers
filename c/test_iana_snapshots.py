@@ -121,6 +121,21 @@ class IanaSnapshotTests(unittest.TestCase):
         self.assertEqual(xml_entry, csv_entry)
         self.assertEqual(xml_entry[1], 'Item; provisional')
 
+    def test_cbor_xml_semantics_keep_inline_citations_like_csv(self):
+        # <semantics>... <xref/> sequence</semantics>: text after an inline xref must not be dropped,
+        # and the inline citation must not leak into the record's Reference.
+        xml_entries = {row[0]: row for row in sync._parse_cbor_tags(_read_xml('cbor/cbor-tags.xml', 'tags'), True)}
+        csv_entries = {row[0]: row for row in sync._parse_cbor_tags(_read_csv('cbor/tags.csv'), False)}
+
+        self.assertEqual(xml_entries.keys(), csv_entries.keys())
+        for tag, entry in xml_entries.items():
+            with self.subTest(tag=tag):
+                self.assertEqual(entry[1], csv_entries[tag][1])
+        self.assertEqual(xml_entries['110'][1], 'relative object identifier (BER encoding); SDNV [RFC6256] sequence')
+        self.assertEqual(xml_entries['1004'][1], '[RFC3339] full-date string')
+        self.assertEqual(xml_entries['37'][1], 'Binary UUID ([RFC9562, Section 4])')
+        self.assertNotIn('RFC9562', xml_entries['37'][2])
+
     def test_csv_fallback_snapshots_produce_usable_registry_entries(self):
         cases = [
             ('cbor/simple.csv', sync._parse_cbor_simple_values),

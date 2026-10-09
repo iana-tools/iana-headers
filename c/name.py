@@ -22,6 +22,8 @@ import sys
 import math
 import argparse
 
+import toml
+
 import recfile
 import registry
 
@@ -128,7 +130,10 @@ def _clean(s):
     s = re.sub(r'\bBoth NaNs signal\b', 'Both NaN signals', s, flags=re.IGNORECASE)
     s = re.sub(r'(?i)(Logical operator:\s*NONE)\s*/\s*(NOT)', r'\1 or \2', s)
     s = re.sub(r'(?i)\b(Logical operator):\s*', r'\1 ', s)
-    s = re.sub(r'^A CBOR tag that contains(?: either| a| an)?\s*:?\s*', '', s, flags=re.IGNORECASE)
+    s = re.sub(r'^A CBOR tag that contains(?: either| an| a)?\b\s*:?\s*', '', s, flags=re.IGNORECASE)
+    s = re.sub(r'^(?:The\s+)?tagged CBOR (?:array|map|item) (?:containing|that contains)(?: an?\b)?\s*', '',
+               s, flags=re.IGNORECASE)
+    s = re.sub(r'^.*?\bindicates that the payload is(?: an?\b)?\s*', '', s, flags=re.IGNORECASE)
     return s
 
 
@@ -152,7 +157,7 @@ def cbor_text_words(semantics):
     s = re.sub(r'[_\-]', ' ', s)
 
     words = [w.replace('+', 'PLUS').strip('_') for w in s.split()]
-    if words and words[0] == 'A':
+    if words and words[0].lower() in ('a', 'an', 'the'):
         words = words[1:]
     words = [part for w in words for part in re.sub(r'\W+', ' ', w).split()]
 
@@ -164,13 +169,40 @@ def cbor_text_words(semantics):
     return ' '.join(w.lower() for w in words)
 
 
+# A suggestion longer than this is a sentence, not a name: a human should pick the name.
+CBOR_TAG_MAX_WORDS = 10
+# Words that describe a CBOR data item's type; a Data Item made only of other words is a name.
+_CBOR_TYPE_WORDS = {
+    'any', 'array', 'arrays', 'bigint', 'bool', 'boolean', 'byte', 'bytes', 'bstr', 'cbor', 'data', 'exactly',
+    'float', 'int', 'integer', 'item', 'items', 'map', 'multiple', 'negative', 'null', 'number', 'or',
+    'sequence', 'simple', 'string', 'strings', 'tag', 'tagged', 'text', 'tstr', 'uint', 'undefined',
+    'unsigned', 'value',
+}
+
+
+def data_item_name(data_item):
+    """'Proof of Process Packet (PPPP)' -> 'Proof of Process Packet'; '' for a type such as 'byte string'."""
+    text = re.sub(r'\s*\([A-Z0-9]+\)\s*$', '', ' '.join(data_item.split()))
+    tokens = re.findall(r'[A-Za-z0-9]+', text)
+    if len(tokens) < 2 or sum(t[0].isupper() for t in tokens) < 2:
+        return ''
+    if any(t.lower() in _CBOR_TYPE_WORDS or t.isdigit() for t in tokens):
+        return ''
+    return text
+
+
 def cbor_tag_words(rec):
     tag = rec.get('Tag', '').strip()
     if tag in _CBOR_TAG_WORD_SKIPS:
         return ''
     if tag in _CBOR_TAG_WORD_OVERRIDES:
         return _CBOR_TAG_WORD_OVERRIDES[tag]
-    return cbor_text_words(rec.get('Semantics', ''))
+    words = cbor_text_words(rec.get('Semantics', ''))
+    if len(words.split()) <= CBOR_TAG_MAX_WORDS:
+        return words
+    # Some registrants put the item's name in the Data Item column and a paragraph in Semantics
+    item_words = cbor_text_words(data_item_name(rec.get('Data Item', '')))
+    return item_words if 0 < len(item_words.split()) <= CBOR_TAG_MAX_WORDS else ''
 
 
 # Kept for callers that only have the text
@@ -335,7 +367,7 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False, 
     colliding_tags.update(collision_with_existing)
 
     if interactive:
-        return _review_candidates(db_file, new_entries, candidates, scoped, existing_words, dry_run)
+        return _review_candidates(db_file, new_entries, candidates, scoped, existing_words, dry_run, records)
 
     # Build rewrite map: tag -> (new Words, Source). Empty Words means needs-manual.
     assignments = {}
@@ -351,27 +383,120 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False, 
     return _report(new_entries, collision_groups, collision_with_existing, candidates)
 
 
-def _review_candidates(db_file, entries, candidates, scoped, existing_words, dry_run):
+# Enumerator prefix per db file in the default (non tiny_cbor) style, as configured in iana_settings.toml.
+_ENUM_PREFIX_SETTINGS = {
+    'cbor_tags.rec': ('cbor', 'tag_source'),
+    'cbor_simple_values.rec': ('cbor', 'simple_value'),
+    'coap_request_codes.rec': ('coap', 'request_response'),
+    'coap_response_codes.rec': ('coap', 'request_response'),
+    'coap_signaling_codes.rec': ('coap', 'request_response'),
+    'coap_options.rec': ('coap', 'option'),
+    'coap_content_formats.rec': ('coap', 'content_format'),
+    'http_status_codes.rec': ('http', 'http_status_code'),
+    'http_field_names.rec': ('http', 'http_field_name'),
+}
+
+
+def _enum_prefix(fname):
+    """'cbor_tags.rec' -> 'CBOR_TAG_'; '…_' where the prefix depends on more than the file."""
+    section = _ENUM_PREFIX_SETTINGS.get(fname)
+    if section is None:  # signaling options get one enum per CoAP code
+        return '…_'
+    try:
+        settings = toml.load(os.path.join(script_dir, 'iana_settings.toml'))
+        return settings[section[0]][section[1]]['name'].upper() + '_'
+    except (OSError, KeyError, toml.TomlDecodeError):
+        return '…_'
+
+
+def normalize_words(text):
+    """'SUIT Report-Protected' -> 'suit report protected' (the form Words are stored in)."""
+    return ' '.join(re.sub(r'[^a-z0-9]+', ' ', text.lower()).split())
+
+
+def _review_suggestions(fname, record, candidate):
+    """Distinct (words, origin) choices for one record, best first."""
+    options = [(candidate, 'suggested')]
+    if fname == 'cbor_tags.rec':
+        options.append((cbor_text_words(data_item_name(record.get('Data Item', ''))), 'from Data Item'))
+        options.append((cbor_text_words(record.get('Semantics', '')), 'from Semantics, unshortened'))
+    seen, out = set(), []
+    for words, origin in options:
+        if words and words not in seen:
+            seen.add(words)
+            out.append((words, origin))
+    return out
+
+
+# Function words and generic CBOR vocabulary carry no signal about which naming family a record belongs to
+_SIMILARITY_IGNORED = _STOPWORDS | _CBOR_TYPE_WORDS | {
+    'an', 'are', 'as', 'be', 'by', 'contains', 'for', 'in', 'into', 'is', 'it', 'its', 'of', 'on', 'that',
+    'this', 'used', 'when', 'where', 'which', 'whose', 'with',
+}
+
+
+def _similar_names(record, named_records, limit=3):
+    """Committed names whose Semantics share the most words with this record, to keep naming families consistent."""
+    tokens = set(_raw_tokens(record.get('Semantics', ''))) - _SIMILARITY_IGNORED
+    if not tokens:
+        return []
+    scored = []
+    for other in named_records:
+        other_tokens = set(_raw_tokens(other.get('Semantics', ''))) - _SIMILARITY_IGNORED
+        shared = len(tokens & other_tokens)
+        if shared:
+            scored.append((shared / len(tokens | other_tokens), other['Tag'], other['Words'].strip()))
+    scored.sort(key=lambda item: -item[0])
+    return [(tag, words) for score, tag, words in scored[:limit] if score >= 0.2]
+
+
+def _review_candidates(db_file, entries, candidates, scoped, existing_words, dry_run, records=()):
     global _review_quit_requested
+    fname = os.path.basename(db_file)
+    prefix = _enum_prefix(fname)
+    named_records = [r for r in records
+                     if r.get('Words', '').strip() and r.get('Source', '').strip() not in ('new', 'needs-manual', 'skip')]
     assignments = {}
     occupied_words = set(existing_words)
     pending = []
+    tally = {'accepted': 0, 'edited': 0, 'skipped': 0}
 
+    print(f"\n=== {fname}: {len(entries)} record(s) to review ===")
     for index, record in enumerate(entries):
         tag = record['Tag']
-        candidate = candidates.get(tag, '')
-        collision = bool(candidate and scoped(record, candidate) in occupied_words)
-        print(f"[{index + 1}/{len(entries)}] Tag {tag}")
+        print(f"\n[{index + 1}/{len(entries)}] {fname} Tag {tag}")
         if record.get('Data Item', '').strip():
             print(f"  IANA Data Item: {record['Data Item'].strip()}")
         print(f"  IANA Semantics: {record.get('Semantics', '')}")
         if record.get('Reference', '').strip():
             print(f"  Reference: {record['Reference'].strip()}")
-        print(f"  Suggested Words: {candidate or '(no suggestion)'}")
-        if collision:
-            print('  This suggestion collides with an existing or already accepted name.')
+        if record.get('Lifecycle', '').strip():
+            print(f"  Lifecycle: {record['Lifecycle'].strip()} (name stays reviewable while IANA marks it so)")
+        if record.get('Note', '').strip():
+            print(f"  Note: {record['Note'].strip()}")
 
-        decision = _prompt_name_decision(record, candidate, collision, occupied_words, scoped)
+        options = []
+        for words, origin in _review_suggestions(fname, record, candidates.get(tag, '')):
+            flags = []
+            if scoped(record, words) in occupied_words:
+                flags.append('collides with an existing or already accepted name')
+            if len(words.split()) > CBOR_TAG_MAX_WORDS:
+                flags.append(f'{len(words.split())} words, consider shortening')
+            options.append((words, origin, flags))
+        if options:
+            print('  Suggestions:')
+            for number, (words, origin, flags) in enumerate(options, 1):
+                marker = f'{number})' if 'collides' not in ' '.join(flags) else ' -'
+                note = f"  !! {'; '.join(flags)}" if flags else ''
+                print(f"    {marker} {words}  ->  {prefix}{'_'.join(words.split()).upper()}  ({origin}){note}")
+        else:
+            print('  Suggestions: (none: the description is too long or unclear to shorten automatically)')
+        similar = _similar_names(record, named_records)
+        if similar:
+            print('  Similar existing names: ' + '; '.join(f'{words} (Tag {t})' for t, words in similar))
+
+        selectable = [words for words, origin, flags in options if not any('collides' in f for f in flags)]
+        decision = _prompt_name_decision(record, selectable, occupied_words, scoped, prefix)
         if decision is None:
             _review_quit_requested = True
             pending = entries[index:]
@@ -379,43 +504,63 @@ def _review_candidates(db_file, entries, candidates, scoped, existing_words, dry
 
         words, source, note = decision
         assignments[tag] = (words, source, note)
-        if source != 'skip' and words:
+        if source == 'skip':
+            tally['skipped'] += 1
+        else:
+            tally['accepted' if words in selectable else 'edited'] += 1
             occupied_words.add(scoped(record, words))
 
     if assignments and not dry_run:
         _apply_assignments(db_file, assignments)
 
+    print(f"\n{fname}: {tally['accepted']} accepted, {tally['edited']} edited, {tally['skipped']} skipped"
+          + (f", {len(pending)} left for later" if pending else ''))
     if pending:
-        print(f"\nReview paused; {len(pending)} record(s) remain unchanged.")
+        print(f"Review paused; {len(pending)} record(s) remain unchanged. Rerun `make review` to continue.")
         return [f"  REVIEW PENDING Tag {record['Tag']}" for record in pending]
     if dry_run and assignments:
-        print('\nDry run: review choices were not saved.')
+        print('Dry run: review choices were not saved.')
     return []
 
 
-def _prompt_name_decision(record, candidate, candidate_collides, occupied_words, scoped):
+def _prompt_name_decision(record, selectable, occupied_words, scoped, prefix=''):
+    """Ask until the reviewer accepts a suggestion, enters a name, skips, or quits (None)."""
     while True:
-        can_accept = bool(candidate and not candidate_collides)
-        choices = '[a]ccept, [e]dit, [s]kip, [q]uit' if can_accept else '[e]dit, [s]kip, [q]uit'
+        if len(selectable) > 1:
+            accept = f'[a]ccept 1, [1-{len(selectable)}] pick, '
+        elif selectable:
+            accept = '[a]ccept, '
+        else:
+            accept = ''
         try:
-            choice = input(f"  Choice ({choices}): ").strip().lower()
+            choice = input(f"  Choice ({accept}[e]dit, [s]kip, [q]uit): ").strip().lower()
         except EOFError:
             return None
 
-        if choice in ('a', 'accept') and can_accept:
-            return candidate, 'manual', ''
+        if choice in ('a', 'accept') and selectable:
+            return selectable[0], 'manual', ''
+        if choice.isdigit() and 1 <= int(choice) <= len(selectable):
+            return selectable[int(choice) - 1], 'manual', ''
         if choice in ('e', 'edit'):
-            words = input('  Words (lowercase tokens): ').strip()
-            tokens = words.split()
-            if not tokens or any(not re.fullmatch(r'[a-z0-9_]+', token) for token in tokens):
-                print('  Use one or more lowercase [a-z0-9_] tokens.')
+            try:
+                typed = input('  Name (any case/punctuation; stored as lowercase words): ')
+            except EOFError:
+                return None
+            words = normalize_words(typed)
+            if not words:
+                print('  Enter at least one letter or digit.')
                 continue
             if scoped(record, words) in occupied_words:
                 print('  That name is already used in this enum; choose a distinct name.')
                 continue
+            if words != typed.strip():
+                print(f"  Saved as: {words}  ->  {prefix}{'_'.join(words.split()).upper()}")
             return words, 'manual', ''
         if choice in ('s', 'skip'):
-            note = input('  Reason to skip this registration: ').strip()
+            try:
+                note = input('  Reason to skip this registration: ').strip()
+            except EOFError:
+                return None
             if not note:
                 print('  Please enter a short reason so the exclusion is documented.')
                 continue
@@ -503,7 +648,8 @@ def _report(new_entries, collision_groups, collision_with_existing, candidates):
     # Entries the namer could not name at all
     for rec in new_entries:
         if not candidates.get(rec['Tag']):
-            issues.append(f"  UNNAMEABLE Tag {rec['Tag']}: {rec.get('Semantics', '')!r} — no words produced")
+            issues.append(f"  NEEDS A NAME Tag {rec['Tag']}: {rec.get('Semantics', '')!r} — "
+                          f"too long or unclear to shorten automatically")
 
     return issues
 
@@ -548,7 +694,8 @@ def main():
         if args.interactive:
             print(f"{len(all_issues)} entr(ies) remain for review — rerun `make review` or edit db/*.rec, then run `make check`.")
         else:
-            print(f"{len(all_issues)} entr(ies) need manual Words — edit db/*.rec (set Source: manual) then run `make check`.")
+            print(f"{len(all_issues)} entr(ies) need manual Words — run `make review` "
+                  f"(or edit db/*.rec and set Source: manual), then run `make check`.")
         if not args.dry_run and not (args.interactive and _review_quit_requested):
             sys.exit(1)
     elif args.interactive:

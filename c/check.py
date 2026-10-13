@@ -28,6 +28,9 @@ def check_file(db_file):
     fname = os.path.basename(db_file)
     records = recfile.read(db_file)
 
+    for tag, field in recfile.duplicate_fields(db_file):
+        errors.append(f"{fname} Tag={tag!r}: field '{field}' appears more than once")
+
     seen_tags = {}    # parsed tag key -> first record index
     seen_words = {}   # (enum scope, words) -> first tag
 
@@ -70,7 +73,9 @@ def check_file(db_file):
         if review_state and review_state not in lifecycle.REVIEW_VALUES:
             errors.append(f"{loc}: invalid Review={review_state!r}")
         if review_state == 'pending':
-            errors.append(f"{loc}: Review=pending — update Semantics/Words and resolve Lifecycle before generate")
+            errors.append(f"{loc}: Review=pending — run `make review` (IANA changed this registration) before generate")
+        elif rec.get('IANA Semantics', '').strip():
+            errors.append(f"{loc}: IANA Semantics is only kept while Review=pending; remove it")
         elif detected_lifecycle:
             if lifecycle_state != detected_lifecycle:
                 errors.append(

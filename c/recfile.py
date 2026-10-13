@@ -36,6 +36,27 @@ def read(filepath):
     return records
 
 
+def duplicate_fields(filepath):
+    """[(Tag, field)] for every field that appears more than once in one record (read() keeps only the last)."""
+    duplicates = []
+    if not os.path.exists(filepath):
+        return duplicates
+    with open(filepath, 'r', encoding='utf-8') as f:
+        blocks = f.read().split('\n\n')
+    for block in blocks:
+        seen, tag = set(), ''
+        for line in block.splitlines():
+            if line.startswith(('%', '#', '+ ')) or ':' not in line:
+                continue
+            field, _, value = line.partition(':')
+            if field == 'Tag':
+                tag = value.strip()
+            if field in seen:
+                duplicates.append((tag, field))
+            seen.add(field)
+    return duplicates
+
+
 def append_record(filepath, record):
     """Append a single record dict to a recfile, separated from the previous record by a blank line."""
     separator = '\n'

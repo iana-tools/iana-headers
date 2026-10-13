@@ -24,6 +24,7 @@ import argparse
 
 import toml
 
+import lifecycle
 import recfile
 import registry
 
@@ -307,7 +308,7 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False, 
     pending_sources = ('new', 'needs-manual') if interactive else ('new',)
     new_entries = [r for r in records if r.get('Source', '').strip() in pending_sources]
     if not new_entries:
-        return []
+        return _review_lifecycle_changes(db_file, records, dry_run) if interactive else []
 
     fname = os.path.basename(db_file)
     namer = NAMERS.get(fname, cbor_tag_words)
@@ -367,7 +368,10 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False, 
     colliding_tags.update(collision_with_existing)
 
     if interactive:
-        return _review_candidates(db_file, new_entries, candidates, scoped, existing_words, dry_run, records)
+        issues = _review_candidates(db_file, new_entries, candidates, scoped, existing_words, dry_run, records, sources)
+        if _review_quit_requested:
+            return issues
+        return issues + _review_lifecycle_changes(db_file, recfile.read(db_file) if not dry_run else records, dry_run)
 
     # Build rewrite map: tag -> (new Words, Source). Empty Words means needs-manual.
     assignments = {}
@@ -450,7 +454,37 @@ def _similar_names(record, named_records, limit=3):
     return [(tag, words) for score, tag, words in scored[:limit] if score >= 0.2]
 
 
-def _review_candidates(db_file, entries, candidates, scoped, existing_words, dry_run, records=()):
+NO_SUGGESTION = '(none)'
+
+
+def review_stats(db_files):
+    """Per db file: how many reviewed names took the namer's suggestion unchanged, and the overrides."""
+    lines = []
+    for db_file in db_files:
+        reviewed = [r for r in recfile.read(db_file) if r.get('Suggested Words', '').strip()]
+        if not reviewed:
+            continue
+        by_namer = {}
+        overrides = []
+        for r in reviewed:
+            suggested, words = r['Suggested Words'].strip(), r.get('Words', '').strip()
+            namer = r.get('Suggested By', '').strip() or 'heuristic'
+            counts = by_namer.setdefault(namer, [0, 0])
+            counts[1] += 1
+            if suggested == words:
+                counts[0] += 1
+            else:
+                overrides.append(f"    Tag {r['Tag'].strip()}: {suggested} -> {words}")
+        lines.append(f"{os.path.basename(db_file)}:")
+        for namer, (accepted, total) in sorted(by_namer.items()):
+            lines.append(f"  {namer}: {accepted}/{total} accepted unchanged ({100 * accepted / total:.0f}%)")
+        if overrides:
+            lines.append('  overridden (suggested -> chosen):')
+            lines.extend(overrides)
+    return lines or ['No reviewed names yet: `make review` records Suggested Words on each name it saves.']
+
+
+def _review_candidates(db_file, entries, candidates, scoped, existing_words, dry_run, records=(), sources=None):
     global _review_quit_requested
     fname = os.path.basename(db_file)
     prefix = _enum_prefix(fname)
@@ -503,7 +537,13 @@ def _review_candidates(db_file, entries, candidates, scoped, existing_words, dry
             break
 
         words, source, note = decision
-        assignments[tag] = (words, source, note)
+        if source == 'skip':
+            assignments[tag] = (words, source, note)
+        else:
+            # Keep what the namer proposed, so accepted vs overridden names can be measured (--review-stats)
+            assignments[tag] = {'Words': words, 'Source': source,
+                                'Suggested Words': candidates.get(tag, '') or NO_SUGGESTION,
+                                'Suggested By': (sources or {}).get(tag, 'heuristic')}
         if source == 'skip':
             tally['skipped'] += 1
         else:
@@ -570,13 +610,123 @@ def _prompt_name_decision(record, selectable, occupied_words, scoped, prefix='')
         print('  Choose one of the listed actions.')
 
 
+def _review_lifecycle_changes(db_file, records, dry_run):
+    """Walk records that sync marked Review: pending because IANA changed a provisional/temporary registration."""
+    global _review_quit_requested
+    fname = os.path.basename(db_file)
+    namer = NAMERS.get(fname, cbor_tag_words)
+    prefix = _enum_prefix(fname)
+    pending = [r for r in records if r.get('Review', '').strip() == 'pending']
+    if not pending:
+        return []
+
+    def scoped(rec, words):
+        return (registry.words_scope(fname, rec.get('Tag', '').strip()), words)
+
+    assignments = {}
+    renamed_to = set()  # names taken earlier in this review
+    left = []
+    tally = {'kept': 0, 'renamed': 0}
+    print(f"\n=== {fname}: {len(pending)} lifecycle change(s) to review ===")
+    for index, record in enumerate(pending):
+        tag = record['Tag'].strip()
+        words = record.get('Words', '').strip()
+        old_semantics = record.get('Semantics', '').strip()
+        iana_semantics = ' '.join(record.get('IANA Semantics', '').split()) or old_semantics
+        old_state = record.get('Lifecycle', '').strip() or lifecycle.from_semantics(old_semantics) or 'unmarked'
+        new_state = lifecycle.from_semantics(iana_semantics)
+        occupied = {scoped(r, r.get('Words', '').strip()) for r in records
+                    if r is not record and r.get('Words', '').strip() and r.get('Source', '').strip() != 'skip'}
+        occupied |= renamed_to
+
+        print(f"\n[{index + 1}/{len(pending)}] {fname} Tag {tag}: IANA changed this {old_state} registration")
+        print(f"  Current name:   {words or '(none)'}  ->  {prefix}{'_'.join(words.split()).upper()}")
+        print(f"  db Semantics:   {old_semantics}")
+        if record.get('IANA Semantics', '').strip():
+            print(f"  IANA Semantics: {iana_semantics}")
+        else:
+            print('  IANA Semantics: (not recorded; rerun `make sync` to capture the new text)')
+        print(f"  Lifecycle:      {old_state} -> {new_state or 'stable'}")
+        suggestion = namer({**record, 'Semantics': iana_semantics})
+        selectable = []
+        if suggestion and suggestion != words:
+            if scoped(record, suggestion) in occupied:
+                print(f"  Name from the new text: {suggestion}  (collides with an existing name)")
+            else:
+                selectable.append(suggestion)
+                print(f"  1) {suggestion}  ->  {prefix}{'_'.join(suggestion.split()).upper()}  (from the new text)")
+
+        rename = '[1] rename, ' if selectable else ''
+        while True:
+            try:
+                choice = input(f"  Choice ([k]eep name, {rename}[e]dit, [l]ater, [q]uit): ").strip().lower()
+            except EOFError:
+                choice = 'q'
+            new_words = None
+            if choice in ('k', 'keep') and words:
+                new_words = words
+            elif choice == '1' and selectable:
+                new_words = selectable[0]
+            elif choice in ('e', 'edit'):
+                try:
+                    new_words = normalize_words(input('  Name (any case/punctuation; stored as lowercase words): '))
+                except EOFError:
+                    new_words = None
+                if not new_words:
+                    print('  Enter at least one letter or digit.')
+                    continue
+                if scoped(record, new_words) in occupied:
+                    print('  That name is already used in this enum; choose a distinct name.')
+                    continue
+            elif choice in ('l', 'later'):
+                break
+            elif choice in ('q', 'quit'):
+                _review_quit_requested = True
+                break
+            else:
+                print('  Choose one of the listed actions.')
+                continue
+
+            fields = {'Semantics': iana_semantics, 'IANA Semantics': None,
+                      'Lifecycle': new_state or 'stable', 'Review': 'monitor' if new_state else 'resolved'}
+            if new_words != words:
+                fields.update({'Words': new_words, 'Source': 'manual',
+                               'Suggested Words': selectable[0] if selectable else NO_SUGGESTION,
+                               'Suggested By': 'heuristic'})
+                renamed_to.add(scoped(record, new_words))
+                tally['renamed'] += 1
+            else:
+                tally['kept'] += 1
+            assignments[tag] = fields
+            break
+
+        if _review_quit_requested:
+            left.extend(pending[index:])
+            break
+        if tag not in assignments:
+            left.append(record)
+
+    if assignments and not dry_run:
+        _apply_assignments(db_file, assignments)
+    print(f"\n{fname}: {tally['kept']} kept, {tally['renamed']} renamed, {len(left)} still pending")
+    if dry_run and assignments:
+        print('Dry run: review choices were not saved.')
+    return [f"  LIFECYCLE REVIEW PENDING Tag {r['Tag'].strip()}" for r in left]
+
+
 def _apply_assignments(db_file, assignments):
-    """Update Words/Source and optional Note fields without rewriting other record data."""
+    """Update fields without rewriting other record data.
+
+    A value is either (Words, Source[, Note]) or a {field: value} dict, where None removes the field.
+    """
     with open(db_file, 'r', encoding='utf-8') as f:
         raw_lines = f.readlines()
 
     fields_by_tag = {}
     for tag, values in assignments.items():
+        if isinstance(values, dict):
+            fields_by_tag[tag] = dict(values)
+            continue
         fields = {'Words': values[0], 'Source': values[1]}
         if len(values) > 2 and values[2]:
             fields['Note'] = values[2]
@@ -590,7 +740,7 @@ def _apply_assignments(db_file, assignments):
         if current_tag not in fields_by_tag:
             return
         for field, value in fields_by_tag[current_tag].items():
-            if field not in written_fields:
+            if field not in written_fields and value is not None:
                 lines.append(f'{field}: {value}\n')
                 written_fields.add(field)
 
@@ -611,8 +761,10 @@ def _apply_assignments(db_file, assignments):
 
         if current_tag in fields_by_tag:
             field = stripped.partition(':')[0]
-            if field in fields_by_tag and (stripped.endswith(':') or ': ' in stripped):
-                lines.append(f'{field}: {fields_by_tag[current_tag][field]}\n')
+            if field in fields_by_tag[current_tag] and (stripped.endswith(':') or ': ' in stripped):
+                value = fields_by_tag[current_tag][field]
+                if value is not None:
+                    lines.append(f'{field}: {value}\n')
                 written_fields.add(field)
                 continue
         lines.append(line)
@@ -664,11 +816,17 @@ def main():
     parser.add_argument('--llm', action='store_true', help='Use local Ollama LLM for CBOR tag text (falls back to the rules)')
     parser.add_argument('--interactive', action='store_true', help='Review each new or needs-manual record; accept, edit, skip, or quit')
     parser.add_argument('--dry-run', action='store_true', help='Show what would be written without modifying files')
+    parser.add_argument('--review-stats', action='store_true', help='Report how often reviewers accepted the suggested names')
     args = parser.parse_args()
 
     if not os.path.isdir(db_dir):
         print(f"ERROR: db/ directory not found at {db_dir}. Run sync.py first.", file=sys.stderr)
         sys.exit(1)
+
+    if args.review_stats:
+        db_files = [os.path.join(db_dir, f) for f in sorted(os.listdir(db_dir)) if f.endswith('.rec')]
+        print('\n'.join(review_stats(db_files)))
+        return
 
     global _review_quit_requested
     _review_quit_requested = False

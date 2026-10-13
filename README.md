@@ -32,7 +32,7 @@ IANA registries --sync--> db/*.rec --name--> db/*.rec --check--> --generate--> c
  (XML, CSV fallback)      (Words empty)      (Words filled)       (no network, deterministic)
 ```
 
-1. **sync** fetches the registries (XML, falling back to CSV) and appends entries that are missing from `db/` with empty `Words`. It never rewrites existing `Semantics` or `Words`; if IANA changes a lifecycle-tracked entry, it sets `Review: pending` so `check` blocks generation until it is reviewed.
+1. **sync** fetches the registries (XML, falling back to CSV) and appends entries that are missing from `db/` with empty `Words`. It never rewrites existing `Semantics` or `Words`; if IANA changes a lifecycle-tracked entry, it sets `Review: pending` and saves the new text as `IANA Semantics`, so `check` blocks generation until `make review` reconciles it.
 2. **name** fills `Words` for new entries using per-registry rules. Anything ambiguous (two entries that would get the same name) is left empty for a human.
 3. **check** validates the database: no unnamed entries, no duplicate names, no HTML entities (issue #9), well-formed tags.
 4. **generate** turns the database into the C headers, preserving any values already defined in an existing header.
@@ -77,7 +77,7 @@ Use the provided Makefile (it creates the virtual environment on first use):
 - `update`: Update project dependencies.
 - `sync`: Fetch IANA registries, add new entries to `db/`, and save the exact source inputs used in a dated `iana/snapshots/YYYY-MM-DD/` directory (needs network).
 - `name`: Fill `Words` for new entries automatically (`python3 c/name.py --llm` can ask a local Ollama model for CBOR tag names).
-- `review`: Interactively review new or unresolved names; accept a suggestion, enter a name, skip with a reason, or quit and resume later.
+- `review`: Interactively review new or unresolved names and IANA lifecycle changes; accept a suggestion, enter a name, skip with a reason, or quit and resume later. The namer's suggestion is kept beside each saved name (`python3 c/name.py --review-stats`).
 - `check`: Validate `db/`.
 - `generate`: Generate headers from `db/` (runs `check` first, no network).
 - `verify`: Generate headers, then compile them.

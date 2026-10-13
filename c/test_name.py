@@ -160,6 +160,13 @@ class CborNameTests(unittest.TestCase):
             self.assertEqual(records[1]['Source'], 'manual')
             self.assertEqual(records[1]['Words'], 'alternate integer')
             self.assertIn('IANA Data Item: unsigned integer', output.getvalue())
+            self.assertEqual(recfile.duplicate_fields(db_file), [])
+            # The suggestion is kept next to the chosen name: Tag 1 accepted it, Tag 2 overrode it
+            self.assertEqual([r['Suggested Words'] for r in records], ['compact unsigned integer representation'] * 2)
+            self.assertEqual({r['Suggested By'] for r in records}, {'heuristic'})
+            stats = '\n'.join(name.review_stats([db_file]))
+            self.assertIn('heuristic: 1/2 accepted unchanged (50%)', stats)
+            self.assertIn('Tag 2: compact unsigned integer representation -> alternate integer', stats)
 
     def test_interactive_review_offers_numbered_alternatives_and_normalizes_edits(self):
         with tempfile.TemporaryDirectory() as tmpdir:

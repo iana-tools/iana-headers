@@ -330,10 +330,17 @@ def _set_record_field(db_file, tag, field, value):
     raise SyncError(f"cannot mark {db_file} Tag={tag!r}: record not found")
 
 
-def _mark_review_pending(db_file, record, dry_run):
-    if not dry_run and record.get('Review', '').strip() != 'pending':
-        _set_record_field(db_file, record['Tag'].strip(), 'Review', 'pending')
+def _mark_review_pending(db_file, record, iana_semantics, dry_run):
+    """Set Review: pending and keep IANA's new text beside the committed Semantics for `make review`."""
+    if dry_run:
+        return
+    tag = record['Tag'].strip()
+    if record.get('Review', '').strip() != 'pending':
+        _set_record_field(db_file, tag, 'Review', 'pending')
         record['Review'] = 'pending'
+    if _text(record.get('IANA Semantics', '')) != iana_semantics:
+        _set_record_field(db_file, tag, 'IANA Semantics', iana_semantics)
+        record['IANA Semantics'] = iana_semantics
 
 
 def _apply(db_file, rec_type, doc_url, entries, dry_run):
@@ -373,9 +380,9 @@ def _apply(db_file, rec_type, doc_url, entries, dry_run):
                 warnings.append(
                     f"  LIFECYCLE REVIEW {fname} Tag {tag}: "
                     f"{old_lifecycle or 'unmarked'} -> {new_lifecycle or 'stable/unspecified'}; "
-                    f"{action} Review: pending"
+                    f"{action} Review: pending (run `make review`)"
                 )
-                _mark_review_pending(db_file, record, dry_run)
+                _mark_review_pending(db_file, record, semantics, dry_run)
             continue  # never rewrite existing Semantics, Words, or References
 
         record = {

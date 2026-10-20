@@ -476,15 +476,19 @@ def review_stats(db_files):
         for r in reviewed:
             suggested, words = r['Suggested Words'].strip(), r.get('Words', '').strip()
             namer = r.get('Suggested By', '').strip() or 'heuristic'
-            counts = by_namer.setdefault(namer, [0, 0])
-            counts[1] += 1
+            counts = by_namer.setdefault(namer, {'total': 0, 'unchanged': 0, 'confirmed': 0})
+            counts['total'] += 1
             if suggested == words:
-                counts[0] += 1
+                counts['unchanged'] += 1
+                # Source: manual = a reviewer chose it in `make review`; heuristic/llm = merged as generated
+                counts['confirmed'] += r.get('Source', '').strip() == 'manual'
             else:
                 overrides.append(f"    Tag {r['Tag'].strip()}: {suggested} -> {words}")
         lines.append(f"{os.path.basename(db_file)}:")
-        for namer, (accepted, total) in sorted(by_namer.items()):
-            lines.append(f"  {namer}: {accepted}/{total} accepted unchanged ({100 * accepted / total:.0f}%)")
+        for namer, counts in sorted(by_namer.items()):
+            lines.append(f"  {namer}: {counts['unchanged']}/{counts['total']} kept unchanged "
+                         f"({100 * counts['unchanged'] / counts['total']:.0f}%; "
+                         f"{counts['confirmed']} picked explicitly in `make review`)")
         if overrides:
             lines.append('  overridden (suggested -> chosen):')
             lines.extend(overrides)

@@ -23,6 +23,7 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # The same targets as `make ci` (which other CI systems or a maintainer can run instead)
       - name: Unit tests
         run: make test
 
@@ -37,10 +38,8 @@ jobs:
           BASE_REF: ${{ github.base_ref }}
         run: |
           git fetch --no-tags --depth=1 origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
-          make venv
-          . venv/bin/activate
           status=0
-          (cd c && python3 report.py --base "origin/$BASE_REF" --strict --output "$RUNNER_TEMP/report.md") || status=$?
+          make report BASE="origin/$BASE_REF" STRICT=1 REPORT="$RUNNER_TEMP/report.md" || status=$?
           if [ -f "$RUNNER_TEMP/report.md" ]; then cat "$RUNNER_TEMP/report.md" >> "$GITHUB_STEP_SUMMARY"; fi
           exit $status
 

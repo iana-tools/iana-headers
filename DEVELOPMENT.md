@@ -60,21 +60,39 @@ The leave-one-out evaluation excludes each target record from its own training s
 
 Lifecycle-aware sync preserves existing `Semantics` and `Words`. If IANA changes the description of a record with a `Lifecycle` marker, sync sets `Review: pending` and saves the new text as `IANA Semantics`; `make check` then blocks generation until the record is reconciled. `make review` shows the committed and the new IANA text, the lifecycle transition (e.g. `temporary -> stable`) and, when the new text names the entry differently, a rename suggestion. Keeping or renaming copies the new text into `Semantics`, removes `IANA Semantics`, and sets `Lifecycle`/`Review` to `<state>`/`monitor` while IANA still marks the entry, or `stable`/`resolved` once it does not. `[l]ater` leaves the record pending. Renaming a published identifier is a breaking change for users of the header; it is offered here because provisional and temporary registrations are expected to change.
 
-## IANA sync pull requests
+## IANA updates
 
-`.github/workflows/iana-sync.yml` runs every Monday and on demand (Actions → IANA Sync → Run workflow). It runs `make sync` (with a dated snapshot) and `make name`, and if `db/` changed it opens a pull request from the `iana-sync` branch whose description is the `c/report.py` summary. If nothing changed, the snapshot is discarded and no pull request is opened. While a sync pull request is open, later runs do nothing, so they never overwrite a reviewer's edits on that branch.
+Everything runs from the Makefile; GitHub is optional. `make refresh` is one complete update: it keeps a copy of `db/`, runs `sync` into a new `iana/snapshots/<date>/` directory and `name`, and then either discards the snapshot (IANA brought nothing new) or prints a Markdown review summary compared against the saved copy (`SUMMARY=<file>` writes it to a file instead; the file is removed when nothing changed). Git is not needed for this.
 
-To finish a sync pull request:
+To finish an update, wherever it came from:
 
-1. Resolve **Needs a decision**: names that could not be generated and IANA lifecycle changes. Check out the `iana-sync` branch and run `make review`, or edit `db/*.rec` in the pull request.
+1. Resolve **Needs a decision**: names that could not be generated and IANA lifecycle changes, with `make review` or by editing `db/*.rec`.
 2. Read **New names**. To change one, edit its `Words` and set `Source: manual`. `make check` rejects a `heuristic`/`llm` record whose `Words` no longer match `Suggested Words`, so a hand edit is always recorded as a human decision.
-3. Merge when CI passes. Each reviewer change becomes data for `make review-stats`.
+3. Run `make ci BASE=<branch it goes into>` (tests, `check`, the published-name guard below, `verify`), then commit `db/` and the snapshot together. Each reviewer change becomes data for `make review-stats`.
+
+### With GitHub
+
+`.github/workflows/iana-sync.yml` runs `make refresh` every Monday and on demand (Actions → IANA Sync → Run workflow) and opens a pull request from the `iana-sync` branch with the summary as its description. While that pull request is open, later runs do nothing, so they never overwrite a reviewer's edits on the branch. `.github/workflows/python-test.yml` runs the same targets as `make ci` on every pull request and puts the report on the run's summary page.
 
 Repository setup: enable *Settings → Actions → General → Allow GitHub Actions to create and approve pull requests*. With the default `GITHUB_TOKEN`, GitHub does not run CI on pull requests created by a workflow; add a fine-grained token with contents and pull-request write access as the `IANA_SYNC_TOKEN` secret to get CI on sync pull requests (or close and reopen the pull request to trigger it).
 
+### Without GitHub
+
+Run `make refresh` by hand, from cron, or from another CI system, and review the result however the project reviews changes (a branch, a merge request, a patch by email). For example, a weekly cron job that leaves a branch for a maintainer:
+
+```sh
+cd /path/to/iana-headers && git switch -c iana-sync-$(date -u +%F) &&
+make refresh SUMMARY=/tmp/iana-update.md && test -f /tmp/iana-update.md &&
+git add db iana/snapshots && git commit -m "IANA sync $(date -u +%F)" -m "$(cat /tmp/iana-update.md)"
+```
+
+GitLab CI or similar can do the same with its own merge-request step: call `make refresh` on a schedule, and `make ci BASE=origin/main` on merge requests. Without git, keep a copy of the published `db/` and compare against it: `make report BASE_DIR=../db-published` and `make ci BASE_DIR=../db-published`.
+
+Only two things refer to GitHub: the `c/src` submodule URL (`git@github.com:iana-tools/iana-headers-c.git`, which needs a GitHub SSH key to clone; generation does not need the submodule, it creates the headers if they are missing) and the source link written into a new header's preamble.
+
 ## Published names
 
-The headers published from `db/` (the `c/src` submodule, `iana-tools/iana-headers-c`) are used by other projects, so an identifier must not silently change. On every pull request, CI runs `c/report.py --strict` against the base branch and fails if a published name of a stable entry is renamed, set to `skip`, or deleted. Renames of provisional/temporary registrations are listed but allowed. For an intended rename, add `Previous Words: <old words>` to the record (or a `Note` for a removal); the run's summary page shows the full report.
+The headers published from `db/` (the `c/src` submodule, `iana-tools/iana-headers-c`) are used by other projects, so an identifier must not silently change. `make ci` (and CI on every pull request) runs `c/report.py --strict` against the target branch and fails if a published name of a stable entry is renamed, set to `skip`, or deleted. Renames of provisional/temporary registrations are listed but allowed. For an intended rename, add `Previous Words: <old words>` to the record (or a `Note` for a removal); the run's summary page shows the full report.
 
 ## IANA source snapshots
 

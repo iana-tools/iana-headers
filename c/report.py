@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-report.py — Markdown summary of what changed in db/ since a git ref, for review in a pull request.
+report.py — Markdown summary of what changed in db/ since a git ref (or a copy of db/), for review.
 
 Lists what still needs a decision, new names with the C identifier each produces, lifecycle
 changes, skips, and renames or removals of names that were already published. With --strict
@@ -91,6 +91,11 @@ def git_base_reader(ref):
     return lambda fname: _base_records(ref, fname)
 
 
+def dir_base_reader(directory):
+    """Compare against a plain directory of .rec files (no git needed), e.g. an unpacked release."""
+    return lambda fname: recfile.read(os.path.join(directory, fname))
+
+
 def compare(read_base, db_files):
     """Return (sections, breaking): Markdown table rows per section, and the unexplained breaking changes.
 
@@ -165,9 +170,10 @@ def compare(read_base, db_files):
     return sections, breaking
 
 
-def render(base_ref, sections, breaking):
+def render(base_label, sections, breaking):
+    """base_label is Markdown naming what was compared against, e.g. '`origin/main`'."""
     counts = {key: len(lines) for key, lines in sections.items()}
-    out = [f'## IANA db changes since `{base_ref}`', '']
+    out = [f'## IANA db changes since {base_label}', '']
     if not any(counts.values()):
         return '\n'.join(out + ['No changes to names, lifecycle states or skips.', ''])
 
@@ -215,8 +221,10 @@ def render(base_ref, sections, breaking):
 
 
 def main():
-    parser = argparse.ArgumentParser(description='Summarise db/ changes since a git ref as Markdown')
-    parser.add_argument('--base', default='HEAD', help='git ref to compare against (default: HEAD)')
+    parser = argparse.ArgumentParser(description='Summarise db/ changes since a git ref (or a db/ copy) as Markdown')
+    base = parser.add_mutually_exclusive_group()
+    base.add_argument('--base', default='HEAD', help='git ref to compare against (default: HEAD)')
+    base.add_argument('--base-dir', help='directory of .rec files to compare against instead of a git ref')
     parser.add_argument('--strict', action='store_true',
                         help='exit 1 if a published stable name is renamed or removed without documentation')
     parser.add_argument('--output', help='write the Markdown here instead of stdout')
@@ -224,11 +232,12 @@ def main():
 
     db_files = [os.path.join(db_dir, f) for f in sorted(os.listdir(db_dir)) if f.endswith('.rec')]
     try:
-        sections, breaking = compare(git_base_reader(args.base), db_files)
+        read_base = dir_base_reader(args.base_dir) if args.base_dir else git_base_reader(args.base)
+        sections, breaking = compare(read_base, db_files)
     except RuntimeError as e:
         print(f'ERROR: {e}', file=sys.stderr)
         sys.exit(2)
-    markdown = render(args.base, sections, breaking)
+    markdown = render(f'`{args.base_dir or args.base}`', sections, breaking)
     if args.output:
         with open(args.output, 'w', encoding='utf-8') as f:
             f.write(markdown + '\n')

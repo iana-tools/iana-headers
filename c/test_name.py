@@ -165,7 +165,7 @@ class CborNameTests(unittest.TestCase):
             self.assertEqual([r['Suggested Words'] for r in records], ['compact unsigned integer representation'] * 2)
             self.assertEqual({r['Suggested By'] for r in records}, {'heuristic'})
             stats = '\n'.join(name.review_stats([db_file]))
-            self.assertIn('heuristic: 1/2 accepted unchanged (50%)', stats)
+            self.assertIn('heuristic: 1/2 kept unchanged (50%; 1 picked explicitly in `make review`)', stats)
             self.assertIn('Tag 2: compact unsigned integer representation -> alternate integer', stats)
 
     def test_interactive_review_offers_numbered_alternatives_and_normalizes_edits(self):

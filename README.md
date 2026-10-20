@@ -75,18 +75,20 @@ Use the provided Makefile (it creates the virtual environment on first use):
 
 - `install`: Create a virtual environment and install dependencies.
 - `update`: Update project dependencies.
+- `refresh`: One full IANA update: `sync` + `name`, and a review summary of what changed; the snapshot is discarded when IANA brought nothing new (needs network, not git or GitHub).
 - `sync`: Fetch IANA registries, add new entries to `db/`, and save the exact source inputs used in a dated `iana/snapshots/YYYY-MM-DD/` directory (needs network).
 - `name`: Fill `Words` for new entries automatically (`python3 c/name.py --llm` can ask a local Ollama model for CBOR tag names).
 - `review`: Interactively review new or unresolved names and IANA lifecycle changes; accept a suggestion, enter a name, skip with a reason, or quit and resume later. The namer's suggestion is kept beside each saved name (`python3 c/name.py --review-stats`).
 - `check`: Validate `db/`.
 - `test`: Run the unit tests (offline, against the checked-in IANA snapshot).
 - `report`: Markdown summary of `db/` changes since `BASE=<git ref>` (default `HEAD`): new names with their C identifiers, open decisions, and renames of published names.
-- `review-stats`: How often suggested names were accepted, and the overrides.
+- `review-stats`: How often suggested names were kept, and the overrides.
+- `ci`: Everything a change must pass before merging: `test`, `check`, the published-name guard against `BASE=<target branch>`, and `verify`. GitHub CI runs the same targets.
 - `generate`: Generate headers from `db/` (runs `check` first, no network).
 - `verify`: Generate headers, then compile them.
 - `clean`: Clean generated files.
 
-Updating after IANA publishes new entries: the **IANA Sync** GitHub workflow runs weekly (or on demand) and opens a pull request with the new entries, their suggested names and a review summary; fix any names in the pull request and merge when CI passes. To do the same by hand, run `make sync review`, then `make generate`. Review choices are saved in `db/*.rec`; the dated IANA source snapshot in `iana/snapshots/`, database changes, and regenerated headers can be reviewed and committed together. `make sync` never stages or commits files automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format and snapshot details.
+Updating after IANA publishes new entries: run `make refresh`, then `make review` for anything it lists under *Needs a decision*, then `make ci BASE=main` and commit. GitHub is optional: the **IANA Sync** workflow runs the same `make refresh` weekly and opens a pull request with the summary, and any other scheduler or CI system can call the same targets (see DEVELOPMENT.md, "IANA updates"). Review choices are saved in `db/*.rec`; the dated IANA source snapshot in `iana/snapshots/`, database changes, and regenerated headers can be reviewed and committed together. `make sync` never stages or commits files automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format and snapshot details.
 
 ---
 

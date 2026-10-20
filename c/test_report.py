@@ -46,7 +46,7 @@ class ReportTests(unittest.TestCase):
             with open(db_file, 'w', encoding='utf-8') as db:
                 db.write(head_text)
             sections, breaking = report.compare(lambda fname: recfile.parse(base_text), [db_file])
-        return sections, breaking, report.render('main', sections, breaking)
+        return sections, breaking, report.render('`main`', sections, breaking)
 
     def test_unchanged_db_reports_nothing(self):
         sections, breaking, markdown = self._compare(BASE)

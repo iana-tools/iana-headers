@@ -49,11 +49,30 @@ test: venv
 	@echo "Running unit tests"
 	. venv/bin/activate && cd c && python3 -m unittest discover -p 'test_*.py'
 
-# Markdown summary of db/ changes since BASE (default HEAD): new names, decisions left, breaking renames
+# One IANA update anywhere (cron, any CI, by hand): sync + name, discard the snapshot if nothing changed,
+# and print a review summary (or write it to SUMMARY=<file>). The GitHub sync workflow wraps this.
+.PHONY: refresh
+refresh: venv
+	. venv/bin/activate && cd c && python3 refresh.py $(if $(SUMMARY),--summary "$(abspath $(SUMMARY))") \
+		$(if $(INTRO),--intro "$(INTRO)")
+
+# Markdown summary of db/ changes since BASE (a git ref, default HEAD) or BASE_DIR (a copy of db/, no git
+# needed): new names, decisions left, breaking renames. STRICT=1 fails on an undocumented rename/removal of a
+# published name; REPORT=<file> writes the Markdown there.
 BASE ?= HEAD
 .PHONY: report
 report: venv
-	. venv/bin/activate && cd c && python3 report.py --base $(BASE)
+	. venv/bin/activate && cd c && python3 report.py \
+		$(if $(BASE_DIR),--base-dir "$(abspath $(BASE_DIR))",--base $(BASE)) $(if $(STRICT),--strict) \
+		$(if $(REPORT),--output "$(abspath $(REPORT))")
+
+# Everything a change must pass before it is merged; GitHub CI runs the same targets.
+# Pass the branch it will be merged into (make ci BASE=main), or without git a copy of the published
+# db/ (make ci BASE_DIR=../db-published)
+.PHONY: ci
+ci: test check
+	$(MAKE) report STRICT=1 REPORT=$(or $(REPORT),/dev/null)
+	$(MAKE) verify
 
 # How often reviewers accepted the suggested names, and what they changed
 .PHONY: review-stats
@@ -88,6 +107,7 @@ help:
 	@echo "Targets:"
 	@echo "  install     : Create virtual environment and install dependencies"
 	@echo "  update      : Update project dependencies"
+	@echo "  refresh     : sync + name + review summary; no snapshot kept if IANA brought nothing new (needs network)"
 	@echo "  sync        : Fetch IANA registries → db/ and save a dated snapshot under iana/ (needs network)"
 	@echo "  name        : Fill Words on new db entries automatically (heuristic/LLM)"
 	@echo "  review      : Interactively accept, edit, or skip new/unresolved names"
@@ -95,6 +115,7 @@ help:
 	@echo "  test        : Run the unit tests (offline)"
 	@echo "  report      : Summarise db/ changes since BASE=<git ref> (default HEAD) as Markdown"
 	@echo "  review-stats: How often suggested names were accepted"
+	@echo "  ci          : test + check + published-name guard + verify; run before merging (BASE=<target branch>)"
 	@echo "  generate    : db/ → c/src/*.h (no network; runs check first)"
 	@echo "  verify      : generate, then compile the headers"
 	@echo "  clean       : Clean generated files"

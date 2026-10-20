@@ -71,7 +71,7 @@ This will install all the required packages specified in the `requirements.txt` 
 
 ## Usage
 
-Use the provided Makefile (it creates the virtual environment on first use):
+Use the provided Makefile (it creates the virtual environment on first use). `make help` lists every target with its options:
 
 - `install`: Create a virtual environment and install dependencies.
 - `update`: Update project dependencies.
@@ -87,6 +87,8 @@ Use the provided Makefile (it creates the virtual environment on first use):
 - `generate`: Generate headers from `db/` (runs `check` first, no network).
 - `verify`: Generate headers, then compile them.
 - `clean`: Clean generated files.
+
+The make variables (`BASE=`, `STRICT=1`, `SUMMARY=`, ...) cover the common cases. The scripts behind the targets take more options; run them directly from `c/` with `--help`, e.g. `python3 report.py --help`, `python3 name.py --help` (`--llm`, `--dry-run`), `python3 sync.py --help` (`--dry-run`, `--verbose`).
 
 Updating after IANA publishes new entries: run `make refresh`, then `make review` for anything it lists under *Needs a decision*, then `make ci BASE=main` and commit. GitHub is optional: the **IANA Sync** workflow runs the same `make refresh` weekly and opens a pull request with the summary, and any other scheduler or CI system can call the same targets (see DEVELOPMENT.md, "IANA updates"). Review choices are saved in `db/*.rec`; the dated IANA source snapshot in `iana/snapshots/`, database changes, and regenerated headers can be reviewed and committed together. `make sync` never stages or commits files automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format and snapshot details.
 

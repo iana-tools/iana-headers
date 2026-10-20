@@ -43,6 +43,23 @@ check: venv
 	@echo "Checking db/ integrity"
 	. venv/bin/activate && cd c && python3 check.py
 
+# Unit tests for the parsers, namer, review and report (offline, uses the checked-in IANA snapshot)
+.PHONY: test
+test: venv
+	@echo "Running unit tests"
+	. venv/bin/activate && cd c && python3 -m unittest discover -p 'test_*.py'
+
+# Markdown summary of db/ changes since BASE (default HEAD): new names, decisions left, breaking renames
+BASE ?= HEAD
+.PHONY: report
+report: venv
+	. venv/bin/activate && cd c && python3 report.py --base $(BASE)
+
+# How often reviewers accepted the suggested names, and what they changed
+.PHONY: review-stats
+review-stats: venv
+	. venv/bin/activate && cd c && python3 name.py --review-stats
+
 # Generate headers from db/ (deterministic, no network). Refuses to run on a db that fails `check`.
 .PHONY: generate
 generate: check
@@ -75,6 +92,9 @@ help:
 	@echo "  name        : Fill Words on new db entries automatically (heuristic/LLM)"
 	@echo "  review      : Interactively accept, edit, or skip new/unresolved names"
 	@echo "  check       : Validate db/ integrity"
+	@echo "  test        : Run the unit tests (offline)"
+	@echo "  report      : Summarise db/ changes since BASE=<git ref> (default HEAD) as Markdown"
+	@echo "  review-stats: How often suggested names were accepted"
 	@echo "  generate    : db/ → c/src/*.h (no network; runs check first)"
 	@echo "  verify      : generate, then compile the headers"
 	@echo "  clean       : Clean generated files"

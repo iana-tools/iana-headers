@@ -193,6 +193,39 @@ class CborNameTests(unittest.TestCase):
             self.assertIn('2) proof of process packet', output.getvalue())
             self.assertIn('1 accepted, 1 edited, 0 skipped', output.getvalue())
 
+    def test_make_name_records_suggestions_and_check_catches_hand_edits(self):
+        import check
+        with tempfile.TemporaryDirectory() as tmpdir:
+            db_file = os.path.join(tmpdir, 'cbor_simple_values.rec')
+            with open(db_file, 'w', encoding='utf-8') as db:
+                db.write(
+                    '%rec: CborSimpleValue\n%key: Tag\n\n'
+                    'Tag: 20\nWords:\nSemantics: false\nReference: [RFC8949]\nSource: new\n\n'
+                    'Tag: 59\nWords:\nSemantics: This value as a map key indicates that the Claim Value is an array '
+                    'of redacted Claim Keys at the same level as the map key.\nReference: [draft]\nSource: new\n'
+                )
+            with redirect_stdout(StringIO()):
+                issues = name.fill_words_for_file(db_file)
+
+            short, long_ = recfile.read(db_file)
+            self.assertEqual((short['Words'], short['Source'], short['Suggested Words']), ('false', 'heuristic', 'false'))
+            # Too long to be a name in any registry: left for a human, but the suggestion is kept
+            self.assertEqual((long_['Words'], long_['Source']), ('', 'needs-manual'))
+            self.assertTrue(long_['Suggested Words'].startswith('this value as a map key'))
+            self.assertTrue(any('NEEDS A NAME Tag 59' in issue for issue in issues))
+            self.assertEqual(recfile.duplicate_fields(db_file), [])
+
+            with open(db_file, encoding='utf-8') as db:
+                text = db.read().replace('\nWords: false\n', '\nWords: false value\n')
+            with open(db_file, 'w', encoding='utf-8') as db:
+                db.write(text)
+            self.assertTrue(any('a hand-edited name must have Source: manual' in error
+                                for error in check.check_file(db_file)))
+
+    def test_too_long_ignores_numeric_tokens(self):
+        self.assertFalse(name.too_long('application eat as cwt 2 16 840 1 113741 1 16 1'))
+        self.assertTrue(name.too_long(' '.join(['word'] * (name.MAX_NAME_WORDS + 1))))
+
     def test_normalize_words(self):
         self.assertEqual(name.normalize_words(' SUIT Report-Protected '), 'suit report protected')
         self.assertEqual(name.normalize_words('X.509 PEM chain'), 'x 509 pem chain')

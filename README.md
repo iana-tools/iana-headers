@@ -32,8 +32,8 @@ IANA registries --sync--> db/*.rec --name--> db/*.rec --check--> --generate--> c
  (XML, CSV fallback)      (Words empty)      (Words filled)       (no network, deterministic)
 ```
 
-1. **sync** fetches the registries (XML, falling back to CSV) and appends entries that are missing from `db/` with empty `Words`. It never rewrites existing `Semantics` or `Words`; if IANA changes a lifecycle-tracked entry, it sets `Review: pending` and saves the new text as `IANA Semantics`, so `check` blocks generation until `make review` reconciles it.
-2. **name** fills `Words` for new entries using per-registry rules. Anything ambiguous (two entries that would get the same name) is left empty for a human.
+1. **sync** fetches the registries (XML, falling back to CSV) and appends entries that are missing from `db/` with empty `Words`. It never rewrites existing `Semantics` or `Words`: when IANA's wording changes it is saved as `IANA Semantics`, and if the entry is lifecycle-tracked (provisional/temporary) it also sets `Review: pending`, so `check` blocks generation until `make review` reconciles it.
+2. **name** fills `Words` for new entries using per-registry rules and records the suggestion in `Suggested Words`. Anything ambiguous (a collision, or a description too long to be a name) is left empty for a human; **review** (`make review`) walks through those interactively.
 3. **check** validates the database: no unnamed entries, no duplicate names, no HTML entities (issue #9), well-formed tags.
 4. **generate** turns the database into the C headers, preserving any values already defined in an existing header.
 5. **verify** generates, then compiles the headers.
@@ -79,11 +79,14 @@ Use the provided Makefile (it creates the virtual environment on first use):
 - `name`: Fill `Words` for new entries automatically (`python3 c/name.py --llm` can ask a local Ollama model for CBOR tag names).
 - `review`: Interactively review new or unresolved names and IANA lifecycle changes; accept a suggestion, enter a name, skip with a reason, or quit and resume later. The namer's suggestion is kept beside each saved name (`python3 c/name.py --review-stats`).
 - `check`: Validate `db/`.
+- `test`: Run the unit tests (offline, against the checked-in IANA snapshot).
+- `report`: Markdown summary of `db/` changes since `BASE=<git ref>` (default `HEAD`): new names with their C identifiers, open decisions, and renames of published names.
+- `review-stats`: How often suggested names were accepted, and the overrides.
 - `generate`: Generate headers from `db/` (runs `check` first, no network).
 - `verify`: Generate headers, then compile them.
 - `clean`: Clean generated files.
 
-Updating after IANA publishes new entries: run `make sync review`, then `make generate`. Review choices are saved in `db/*.rec`; the dated IANA source snapshot in `iana/snapshots/`, database changes, and regenerated headers can be reviewed and committed together. `make sync` never stages or commits files automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format and snapshot details.
+Updating after IANA publishes new entries: the **IANA Sync** GitHub workflow runs weekly (or on demand) and opens a pull request with the new entries, their suggested names and a review summary; fix any names in the pull request and merge when CI passes. To do the same by hand, run `make sync review`, then `make generate`. Review choices are saved in `db/*.rec`; the dated IANA source snapshot in `iana/snapshots/`, database changes, and regenerated headers can be reviewed and committed together. `make sync` never stages or commits files automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format and snapshot details.
 
 ---
 

@@ -1,0 +1,126 @@
+name: IANA Sync
+
+# Weekly: fetch the IANA registries, name new entries, and open a pull request with the db/ changes,
+# the dated source snapshot, and a review summary. Nothing is merged automatically: the pull request
+# is where a human reviews the names (see DEVELOPMENT.md, "Reviewing an IANA sync pull request").
+on:
+  schedule:
+    - cron: '23 4 * * 1'  # Mondays 04:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: iana-sync
+  cancel-in-progress: false
+
+env:
+  SYNC_BRANCH: iana-sync
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # One sync pull request at a time: a new run must not overwrite names a reviewer edited on the branch
+      - name: Skip while a sync pull request is open
+        id: open_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          open=$(gh pr list --head "$SYNC_BRANCH" --state open --json url --jq '.[0].url')
+          if [ -n "$open" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "A sync pull request is still open: $open — merge or close it first." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Sync IANA registries
+        if: steps.open_pr.outputs.skip != 'true'
+        id: sync
+        run: |
+          make venv
+          . venv/bin/activate
+          date=$(date -u +%F)
+          snapshot="iana/snapshots/$date"
+          if [ -e "$snapshot" ]; then snapshot="$snapshot-run$GITHUB_RUN_NUMBER"; fi
+          (cd c && python3 sync.py --snapshot-dir "../$snapshot") | tee "$RUNNER_TEMP/sync.log"
+          echo "date=$date" >> "$GITHUB_OUTPUT"
+          echo "snapshot=$snapshot" >> "$GITHUB_OUTPUT"
+
+      - name: Name new entries
+        if: steps.open_pr.outputs.skip != 'true'
+        run: |
+          # Exits non-zero when some entries need a human; the pull request lists them
+          make name | tee "$RUNNER_TEMP/name.log" || true
+
+      - name: Check for db/ changes
+        if: steps.open_pr.outputs.skip != 'true'
+        id: changes
+        run: |
+          if git diff --quiet -- db; then
+            # Nothing new: the snapshot alone is not worth a pull request
+            rm -rf "${{ steps.sync.outputs.snapshot }}"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "IANA registries match db/; no pull request needed." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Write pull request description
+        if: steps.changes.outputs.changed == 'true'
+        run: |
+          . venv/bin/activate
+          body="$RUNNER_TEMP/body.md"
+          if (cd c && python3 check.py > "$RUNNER_TEMP/check.log"); then
+            check_status="passes"
+          else
+            check_status="fails until the decisions below are made"
+          fi
+          {
+            echo "Automated IANA sync from [run $GITHUB_RUN_NUMBER]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID). IANA source snapshot: \`${{ steps.sync.outputs.snapshot }}/\`. \`make check\` $check_status."
+            echo
+            echo "**To finish:** read the names below (they cannot change once published). Fix a name by editing its \`Words\` and setting \`Source: manual\` in this pull request, or check out \`$SYNC_BRANCH\` and run \`make review\`. Merge once CI passes."
+            echo
+            (cd c && python3 report.py --base HEAD)
+            if grep -q 'REVIEW NEEDED' "$RUNNER_TEMP/sync.log"; then
+              echo
+              echo "<details><summary>Sync warnings</summary>"
+              echo
+              echo '```'
+              sed -n '/REVIEW NEEDED/,$p' "$RUNNER_TEMP/sync.log"
+              echo '```'
+              echo "</details>"
+            fi
+          } > "$RUNNER_TEMP/full.md"
+          cat "$RUNNER_TEMP/full.md" >> "$GITHUB_STEP_SUMMARY"
+          # GitHub rejects pull request descriptions over 65536 characters; the run summary keeps the full text
+          if [ "$(wc -c < "$RUNNER_TEMP/full.md")" -gt 60000 ]; then
+            { head -c 60000 "$RUNNER_TEMP/full.md"; echo; echo; echo "_Truncated: the full summary is on the workflow run page, or run \`make report BASE=main\` on this branch._"; } > "$body"
+          else
+            cp "$RUNNER_TEMP/full.md" "$body"
+          fi
+
+      # With the default GITHUB_TOKEN, GitHub does not start CI on the pull request this creates.
+      # Set an IANA_SYNC_TOKEN secret (fine-grained token: contents + pull requests write) to get CI runs.
+      - name: Open pull request
+        if: steps.changes.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.IANA_SYNC_TOKEN || github.token }}
+          branch: ${{ env.SYNC_BRANCH }}
+          delete-branch: true
+          add-paths: |
+            db/
+            iana/snapshots/
+          commit-message: "IANA sync ${{ steps.sync.outputs.date }}"
+          title: "IANA sync ${{ steps.sync.outputs.date }}"
+          body-path: ${{ runner.temp }}/body.md
+          labels: iana-sync

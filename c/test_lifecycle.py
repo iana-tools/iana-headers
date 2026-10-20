@@ -117,7 +117,35 @@ class LifecycleDetectionTests(unittest.TestCase):
             self.assertEqual(record['Review'], 'pending')
             self.assertEqual(record['IANA Semantics'], 'application/voucher+cose')
 
-    def test_check_rejects_leftover_iana_semantics_and_duplicate_fields(self):
+    def test_stable_wording_drift_is_recorded_once(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = os.path.join(temp_dir, 'cbor_tags.rec')
+            recfile.write_header(path, 'CborTag', 'Tag', 'test')
+            recfile.append_record(path, {'Tag': '601', 'Words': 'unprotected cwt claims set',
+                                         'Semantics': 'Unprotected CWT Claims Set [RFC-ietf-rats-uccs-12]',
+                                         'Reference': '[RFC9781]', 'Source': 'heuristic'})
+            entries = [('601', 'Unprotected CWT Claims Set [RFC9781]', '[RFC9781]', 'map')]
+
+            _, first = sync._apply(path, 'CborTag', 'test', entries, dry_run=False)
+            _, second = sync._apply(path, 'CborTag', 'test', entries, dry_run=False)
+
+            record = recfile.read(path)[0]
+            self.assertEqual(record['Semantics'], 'Unprotected CWT Claims Set [RFC-ietf-rats-uccs-12]')
+            self.assertEqual(record['IANA Semantics'], 'Unprotected CWT Claims Set [RFC9781]')
+            self.assertNotIn('Review', record)
+            self.assertEqual(len(first), 1)
+            self.assertEqual(second, [])
+            self.assertEqual(check.check_file(path), [])
+
+    def test_pending_lifecycle_change_is_reported_once(self):
+        with tempfile.TemporaryDirectory() as temp_dir:
+            path = self._pending_record_file(temp_dir)
+            _, again = sync._apply(path, 'CoapContentFormat', 'test',
+                                   [('836', 'application/voucher+cose', 'draft-test')], False)
+            self.assertEqual(again, [])
+            self.assertEqual(recfile.duplicate_fields(path), [])
+
+    def test_check_rejects_duplicate_fields(self):
         with tempfile.TemporaryDirectory() as temp_dir:
             path = os.path.join(temp_dir, 'cbor_tags.rec')
             with open(path, 'w', encoding='utf-8') as db:
@@ -126,7 +154,7 @@ class LifecycleDetectionTests(unittest.TestCase):
                          'IANA Semantics: One changed\nWords: uno\n')
             errors = check.check_file(path)
             self.assertTrue(any("field 'Words' appears more than once" in error for error in errors))
-            self.assertTrue(any('IANA Semantics is only kept while Review=pending' in error for error in errors))
+            self.assertFalse(any('IANA Semantics' in error for error in errors))
 
 
 if __name__ == '__main__':

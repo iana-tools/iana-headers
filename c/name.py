@@ -32,6 +32,8 @@ script_dir = os.path.dirname(os.path.abspath(__file__))
 repo_dir = os.path.dirname(script_dir)
 db_dir = os.path.join(repo_dir, 'db')
 _review_quit_requested = False
+# Suggested Words value when the namer had nothing to propose
+NO_SUGGESTION = '(none)'
 
 
 # ---------------------------------------------------------------------------
@@ -170,8 +172,15 @@ def cbor_text_words(semantics):
     return ' '.join(w.lower() for w in words)
 
 
-# A suggestion longer than this is a sentence, not a name: a human should pick the name.
-CBOR_TAG_MAX_WORDS = 10
+# A suggestion with more words than this (digits aside: OIDs and versions are fine) is a sentence,
+# not a name: a human should pick the name.
+MAX_NAME_WORDS = 10
+
+
+def too_long(words):
+    return sum(not token.isdigit() for token in words.split()) > MAX_NAME_WORDS
+
+
 # Words that describe a CBOR data item's type; a Data Item made only of other words is a name.
 _CBOR_TYPE_WORDS = {
     'any', 'array', 'arrays', 'bigint', 'bool', 'boolean', 'byte', 'bytes', 'bstr', 'cbor', 'data', 'exactly',
@@ -199,11 +208,11 @@ def cbor_tag_words(rec):
     if tag in _CBOR_TAG_WORD_OVERRIDES:
         return _CBOR_TAG_WORD_OVERRIDES[tag]
     words = cbor_text_words(rec.get('Semantics', ''))
-    if len(words.split()) <= CBOR_TAG_MAX_WORDS:
+    if not too_long(words):
         return words
     # Some registrants put the item's name in the Data Item column and a paragraph in Semantics
     item_words = cbor_text_words(data_item_name(rec.get('Data Item', '')))
-    return item_words if 0 < len(item_words.split()) <= CBOR_TAG_MAX_WORDS else ''
+    return item_words if item_words and not too_long(item_words) else ''
 
 
 # Kept for callers that only have the text
@@ -374,12 +383,13 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False, 
         return issues + _review_lifecycle_changes(db_file, recfile.read(db_file) if not dry_run else records, dry_run)
 
     # Build rewrite map: tag -> (new Words, Source). Empty Words means needs-manual.
+    # Suggested Words keeps what the namer proposed, so a later hand edit (e.g. in a pull request) is visible
     assignments = {}
     for tag, cand in candidates.items():
-        if tag in colliding_tags or not cand:
-            assignments[tag] = ('', 'needs-manual')
-        else:
-            assignments[tag] = (cand, sources[tag])
+        unusable = tag in colliding_tags or not cand or too_long(cand)
+        source = 'needs-manual' if unusable else sources[tag]
+        assignments[tag] = {'Words': cand if source != 'needs-manual' else '', 'Source': source,
+                            'Suggested Words': cand or NO_SUGGESTION, 'Suggested By': sources[tag]}
 
     if not dry_run:
         _apply_assignments(db_file, assignments)
@@ -454,9 +464,6 @@ def _similar_names(record, named_records, limit=3):
     return [(tag, words) for score, tag, words in scored[:limit] if score >= 0.2]
 
 
-NO_SUGGESTION = '(none)'
-
-
 def review_stats(db_files):
     """Per db file: how many reviewed names took the namer's suggestion unchanged, and the overrides."""
     lines = []
@@ -514,7 +521,7 @@ def _review_candidates(db_file, entries, candidates, scoped, existing_words, dry
             flags = []
             if scoped(record, words) in occupied_words:
                 flags.append('collides with an existing or already accepted name')
-            if len(words.split()) > CBOR_TAG_MAX_WORDS:
+            if too_long(words):
                 flags.append(f'{len(words.split())} words, consider shortening')
             options.append((words, origin, flags))
         if options:
@@ -799,7 +806,7 @@ def _report(new_entries, collision_groups, collision_with_existing, candidates):
 
     # Entries the namer could not name at all
     for rec in new_entries:
-        if not candidates.get(rec['Tag']):
+        if not candidates.get(rec['Tag']) or too_long(candidates[rec['Tag']]):
             issues.append(f"  NEEDS A NAME Tag {rec['Tag']}: {rec.get('Semantics', '')!r} — "
                           f"too long or unclear to shorten automatically")
 

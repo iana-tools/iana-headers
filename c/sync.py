@@ -3,7 +3,9 @@
 sync.py — fetch IANA registries and append new entries to db/ with empty Words.
 
 Does NO name generation. Run `name.py` afterward to fill Words.
-Existing Semantics and Words are never rewritten. Changes to lifecycle-tracked records set Review: pending so `check` blocks generation until they are reviewed.
+Existing Semantics and Words are never rewritten: when IANA's wording differs, it is stored as
+`IANA Semantics` and reported once. Changes to lifecycle-tracked records also set Review: pending so
+`check` blocks generation until `make review` reconciles them.
 """
 
 import argparse
@@ -369,20 +371,27 @@ def _apply(db_file, rec_type, doc_url, entries, dry_run):
 
             # References are not compared: XML and CSV renderings differ. A lifecycle entry's
             # semantics/name must be reviewed whenever IANA changes its description or status.
-            if semantics_changed:
+            # IANA's wording is kept in 'IANA Semantics', so a difference is reported once, not on every sync.
+            already_recorded = _text(record.get('IANA Semantics', '')) == semantics
+            if semantics_changed and not already_recorded:
                 warnings.append(
-                    f"  UPDATED {fname} Tag {tag}: Semantics changed in IANA\n"
+                    f"  UPDATED {fname} Tag {tag}: Semantics changed in IANA (kept as IANA Semantics)\n"
                     f"    db:   {_text(old_semantics)!r}\n"
                     f"    IANA: {semantics!r}"
                 )
             if lifecycle_changed or (semantics_changed and (old_lifecycle or new_lifecycle)):
-                action = 'would mark' if dry_run else 'marked'
-                warnings.append(
-                    f"  LIFECYCLE REVIEW {fname} Tag {tag}: "
-                    f"{old_lifecycle or 'unmarked'} -> {new_lifecycle or 'stable/unspecified'}; "
-                    f"{action} Review: pending (run `make review`)"
-                )
+                if not (already_recorded and record.get('Review', '').strip() == 'pending'):
+                    action = 'would mark' if dry_run else 'marked'
+                    warnings.append(
+                        f"  LIFECYCLE REVIEW {fname} Tag {tag}: "
+                        f"{old_lifecycle or 'unmarked'} -> {new_lifecycle or 'stable/unspecified'}; "
+                        f"{action} Review: pending (run `make review`)"
+                    )
                 _mark_review_pending(db_file, record, semantics, dry_run)
+            elif semantics_changed and not already_recorded and not dry_run:
+                # A stable entry: its name is published and stays; only the header comment could follow IANA
+                _set_record_field(db_file, record['Tag'].strip(), 'IANA Semantics', semantics)
+                record['IANA Semantics'] = semantics
             continue  # never rewrite existing Semantics, Words, or References
 
         record = {
@@ -564,7 +573,7 @@ def main():
 
     if all_warnings:
         print(f"\n{'='*60}")
-        print(f"REVIEW NEEDED ({len(all_warnings)}) — IANA differs from db/ (db is never rewritten automatically):")
+        print(f"REVIEW NEEDED ({len(all_warnings)}) — IANA differs from db/ (Semantics and Words are never rewritten; IANA's text is kept as IANA Semantics):")
         for w in all_warnings:
             print(w)
 

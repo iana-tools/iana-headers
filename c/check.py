@@ -72,10 +72,10 @@ def check_file(db_file):
             errors.append(f"{loc}: invalid Lifecycle={lifecycle_state!r}")
         if review_state and review_state not in lifecycle.REVIEW_VALUES:
             errors.append(f"{loc}: invalid Review={review_state!r}")
+        if rec.get('IANA Semantics', '').strip() and ' '.join(rec['IANA Semantics'].split()) == ' '.join(semantics.split()):
+            errors.append(f"{loc}: IANA Semantics repeats Semantics; delete it")
         if review_state == 'pending':
             errors.append(f"{loc}: Review=pending — run `make review` (IANA changed this registration) before generate")
-        elif rec.get('IANA Semantics', '').strip():
-            errors.append(f"{loc}: IANA Semantics is only kept while Review=pending; remove it")
         elif detected_lifecycle:
             if lifecycle_state != detected_lifecycle:
                 errors.append(
@@ -98,19 +98,28 @@ def check_file(db_file):
         if source == 'skip':
             continue
 
-        # 5. Blocks on needs-manual / new / empty Words
+        # 5. A name edited by hand (e.g. in a pull request) is a human decision
+        suggested = rec.get('Suggested Words', '').strip()
+        if source in ('heuristic', 'llm') and suggested and words != suggested:
+            errors.append(f"{loc}: Words differ from Suggested Words ({suggested!r}); "
+                          f"a hand-edited name must have Source: manual")
+        previous = rec.get('Previous Words', '').strip()
+        if previous and not all(TOKEN_RE.match(token) for token in previous.split()):
+            errors.append(f"{loc}: Previous Words={previous!r} must be lowercase [a-z0-9_] tokens")
+
+        # 6. Blocks on needs-manual / new / empty Words
         if source in ('needs-manual', 'new'):
             errors.append(f"{loc}: Source={source!r} — manual Words required before generate")
         elif not words:
             errors.append(f"{loc}: empty Words field")
 
         if words:
-            # 6. Valid C identifier tokens
+            # 7. Valid C identifier tokens
             for token in words.split():
                 if not TOKEN_RE.match(token):
                     errors.append(f"{loc}: token {token!r} in Words is not a valid identifier token ([a-z0-9_])")
 
-            # 7. Duplicate Words inside one generated enum
+            # 8. Duplicate Words inside one generated enum
             scoped = (registry.words_scope(fname, tag), words)
             if scoped in seen_words:
                 errors.append(

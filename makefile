@@ -45,6 +45,10 @@ review: venv ## Interactively decide new/unnamed entries and IANA lifecycle chan
 	@echo "Reviewing new IANA names"
 	. venv/bin/activate && cd c && python3 name.py --interactive
 
+.PHONY: names-v2
+names-v2: venv ## Preview proposed v2 CBOR tag names from the IANA fields; changes nothing [OUTPUT=<file>]
+	. venv/bin/activate && cd c && python3 cbor_names_v2.py $(if $(OUTPUT),--output "$(abspath $(OUTPUT))")
+
 .PHONY: review-stats
 review-stats: venv ## How often suggested names were kept, and every override
 	. venv/bin/activate && cd c && python3 name.py --review-stats
@@ -103,7 +107,7 @@ help: ## Show this list
 	@echo "Usage: make [target] [VAR=value ...]"
 	@awk 'BEGIN { FS = ":.*## " } \
 		/^##@/ { printf "\n%s\n", substr($$0, 5) } \
-		/^[a-zA-Z_-]+:.*## / { printf "  %-13s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
+		/^[a-zA-Z0-9_-]+:.*## / { printf "  %-13s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
 	@echo "The tools take more options than these variables expose: python3 c/<tool>.py --help"
 	@echo "(sync, name, refresh, report, generate)."

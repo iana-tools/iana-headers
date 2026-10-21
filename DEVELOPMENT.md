@@ -60,6 +60,14 @@ The leave-one-out evaluation excludes each target record from its own training s
 
 Lifecycle-aware sync preserves existing `Semantics` and `Words`. If IANA changes the description of a record with a `Lifecycle` marker, sync sets `Review: pending` and saves the new text as `IANA Semantics`; `make check` then blocks generation until the record is reconciled. `make review` shows the committed and the new IANA text, the lifecycle transition (e.g. `temporary -> stable`) and, when the new text names the entry differently, a rename suggestion. Keeping or renaming copies the new text into `Semantics`, removes `IANA Semantics`, and sets `Lifecycle`/`Review` to `<state>`/`monitor` while IANA still marks the entry, or `stable`/`resolved` once it does not. `[l]ater` leaves the record pending. Renaming a published identifier is a breaking change for users of the header; it is offered here because provisional and temporary registrations are expected to change.
 
+## CBOR tag names v2 (proposal)
+
+Many v1 CBOR tag names read like sentences (`HINT_THAT_INDICATES_AN_ADD_LVL_OF_INDIRECTION`), repeat themselves (`UR_SEED_CRYPTOGRAPHIC_SEED`) or abbreviate inconsistently, because the registry has no name column and the v1 heuristic paraphrases the description. The plan is a v2 name for every tag, with the v1 names that change kept as deprecated duplicates until v3.
+
+Step 1 (`c/cbor_names_v2.py`, preview with `make names-v2`) derives names from the IANA fields only: the `ur:` type; an acronym that IANA gives in parentheses (`CBOR Web Token (CWT)` → `CWT`); otherwise a short noun phrase from Semantics without citations, sentence frames ("A CBOR tag that contains", "indicates that") and trailing clauses; for text that is still a sentence, a unique reference URL name (`…/quoted` → `QUOTED`) or a name-like Data Item. Full words except `id`, `ref`, `config`, `info`. Dropped detail is put back only where two names would collide (`EXPECTED_BASE16` vs `EXPECTED_BASE16_LOWERCASE`); spec pointers ("see Section …") never are. A human (`Source: manual`) name stands where the rules collide. Nothing in `db/` or the headers changes yet.
+
+Step 2 (planned) takes spec names that IANA does not state, such as `COSE_SIGN1` for tag 18, from the referenced RFCs' CDDL (`COSE_Sign1_Tagged = #6.18(...)`).
+
 ## IANA updates
 
 Everything runs from the Makefile; GitHub is optional. `make refresh` is one complete update: it keeps a copy of `db/`, runs `sync` into a new `iana/snapshots/<date>/` directory and `name`, and then either discards the snapshot (IANA brought nothing new) or prints a Markdown review summary compared against the saved copy (`SUMMARY=<file>` writes it to a file instead; the file is removed when nothing changed). Git is not needed for this.

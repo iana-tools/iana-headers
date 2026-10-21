@@ -13,7 +13,7 @@ class MakefileHelpTests(unittest.TestCase):
             text = f.read()
         phony = set(re.findall(r'^\.PHONY:\s*(.+)$', text, re.MULTILINE))
         phony = {name for line in phony for name in line.split()}
-        described = set(re.findall(r'^([a-zA-Z_-]+):.*## \S', text, re.MULTILINE))
+        described = set(re.findall(r'^([a-zA-Z0-9_-]+):.*## \S', text, re.MULTILINE))
 
         self.assertTrue(phony)
         self.assertEqual(sorted(phony - described), [], 'add a `## description` to these targets')

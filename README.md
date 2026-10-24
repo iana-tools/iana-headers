@@ -71,26 +71,63 @@ This will install all the required packages specified in the `requirements.txt` 
 
 ## Usage
 
-Use the provided Makefile (it creates the virtual environment on first use). `make help` lists every target with its options:
+Everything runs through the Makefile, which creates the virtual environment on first use. `make help` lists every target with its options.
 
-- `install`: Create a virtual environment and install dependencies.
-- `update`: Update project dependencies.
-- `refresh`: One full IANA update: `sync` + `name`, and a review summary of what changed; the snapshot is discarded when IANA brought nothing new (needs network, not git or GitHub).
-- `sync`: Fetch IANA registries, add new entries to `db/`, and save the exact source inputs used in a dated `iana/snapshots/YYYY-MM-DD/` directory (needs network).
-- `name`: Fill `Words` for new entries automatically (`python3 c/name.py --llm` can ask a local Ollama model for CBOR tag names).
-- `review`: Interactively review new or unresolved names and IANA lifecycle changes; accept a suggestion, enter a name, skip with a reason, or quit and resume later. The namer's suggestion is kept beside each saved name (`python3 c/name.py --review-stats`).
-- `check`: Validate `db/`.
-- `test`: Run the unit tests (offline, against the checked-in IANA snapshot).
-- `report`: Markdown summary of `db/` changes since `BASE=<git ref>` (default `HEAD`): new names with their C identifiers, open decisions, and renames of published names.
-- `review-stats`: How often suggested names were kept, and the overrides.
-- `ci`: Everything a change must pass before merging: `test`, `check`, the published-name guard against `BASE=<target branch>`, and `verify`. GitHub CI runs the same targets.
-- `generate`: Generate headers from `db/` (runs `check` first, no network).
-- `verify`: Generate headers, then compile them.
-- `clean`: Clean generated files.
+### Try it out (offline, changes nothing)
 
-The make variables (`BASE=`, `STRICT=1`, `SUMMARY=`, ...) cover the common cases. The scripts behind the targets take more options; run them directly from `c/` with `--help`, e.g. `python3 report.py --help`, `python3 name.py --help` (`--llm`, `--dry-run`), `python3 sync.py --help` (`--dry-run`, `--verbose`).
+```sh
+git clone https://github.com/iana-tools/iana-headers && cd iana-headers   # the c/src headers submodule is not needed
+make help        # targets, grouped, with their options
+make test        # unit tests against the checked-in IANA snapshot
+make verify      # check db/, generate c/src/*.h, compile them
+```
 
-Updating after IANA publishes new entries: run `make refresh`, then `make review` for anything it lists under *Needs a decision*, then `make ci BASE=main` and commit. GitHub is optional: the **IANA Sync** workflow runs the same `make refresh` weekly and opens a pull request with the summary, and any other scheduler or CI system can call the same targets (see DEVELOPMENT.md, "IANA updates"). Review choices are saved in `db/*.rec`; the dated IANA source snapshot in `iana/snapshots/`, database changes, and regenerated headers can be reviewed and committed together. `make sync` never stages or commits files automatically. See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format and snapshot details.
+Open `c/src/cbor_constants.h`: the CBOR tag enum starts with a comment explaining every abbreviation used in the names (`UR`, `COSE`, `STRCT`, ...), then one identifier per tag with its IANA description.
+
+```sh
+make names-v2 OUTPUT=/tmp/names-v2.md   # proposed v2 CBOR tag names (UR_SEED, CWT, ...) beside the v1 names
+make namespaces DRY_RUN=1          # the tag families in db/namespaces/cbor_tags.rec and what they match
+make review-stats                  # how often suggested names were kept (empty until names are reviewed)
+```
+
+### Update from IANA (needs network; do it on a branch)
+
+```sh
+git switch -c iana-update
+make refresh       # sync + name; prints a summary: what needs a decision, new names, IANA wording changes
+make review        # decide what the summary lists under "Needs a decision"
+make ci            # tests, check, published-name guard, compile; compares with your last commit
+git add db iana/snapshots && git commit -m "IANA sync"
+```
+
+- `make refresh` saves the IANA files it used in `iana/snapshots/<date>/`, and discards them again if IANA brought nothing new. `SUMMARY=<file>` writes the summary to a file instead of the terminal.
+- `make review` goes through each open entry. Pick a suggested name by number (`a` takes the first), `e` to type your own (any case or punctuation), `s` to skip it with a reason, `q` to stop; rerun to continue where you left off. Entries whose provisional/temporary IANA registration changed show the old and new IANA text: `k` keeps the name, `l` leaves it for later.
+- To fix a generated name without the review, edit its `Words` in `db/*.rec` and set `Source: manual`; `make check` insists on it.
+- `make report` prints the same kind of summary for your uncommitted changes, or for a whole branch with `BASE=origin/main`: new names with their C identifiers, open decisions, and any rename of an already-published name (which `make ci` rejects unless the record has `Previous Words: <old words>`).
+- `make ci` is what must pass before merging: tests, `check`, that published-name guard, and compiling the headers. It compares with your last commit; for a branch with several commits use `BASE=origin/main`, and without git `BASE_DIR=<copy of the published db/>`.
+
+GitHub is optional: the **IANA Sync** workflow runs the same `make refresh` weekly and opens a pull request with the summary, and CI runs `make ci`'s steps on every pull request. Any other scheduler or CI system can call the same targets (see [DEVELOPMENT.md](DEVELOPMENT.md), "IANA updates").
+
+### Targets
+
+| Target | What it does |
+| --- | --- |
+| `install`, `update` | Create the virtual environment / upgrade its dependencies |
+| `refresh` | One full IANA update: `sync` + `name` + review summary (`SUMMARY=<file>`) |
+| `sync` | Fetch the IANA registries, append new entries to `db/` with empty names, save a dated snapshot |
+| `name` | Name new entries with the per-registry rules (`python3 c/name.py --llm` asks a local Ollama model for CBOR tag names) |
+| `review` | Interactively decide unnamed entries and IANA lifecycle changes |
+| `review-stats` | How often suggested names were kept, and every override |
+| `namespaces` | Assign tag families from `db/namespaces/` to records after editing a table (`DRY_RUN=1`) |
+| `names-v2` | Preview the proposed v2 CBOR tag names (`OUTPUT=<file>`); changes nothing |
+| `check` | Validate `db/` |
+| `test` | Unit tests (offline) |
+| `report` | Markdown summary of `db/` changes since `BASE=<git ref>` or `BASE_DIR=<dir>` (`STRICT=1`, `REPORT=<file>`) |
+| `ci` | Everything to pass before merging (`BASE=<target branch>` or `BASE_DIR=<dir>`) |
+| `generate`, `verify` | Generate `c/src/*.h` from `db/`; `verify` also compiles them |
+| `clean` | Remove the download cache and generated headers |
+
+The scripts behind the targets take more options; run them from `c/` with `--help` (e.g. `python3 sync.py --help` for `--dry-run`, `--verbose`). See [DEVELOPMENT.md](DEVELOPMENT.md) for the database format, namespaces, the v2 naming proposal, and snapshots.
 
 ---
 

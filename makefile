@@ -1,7 +1,10 @@
+# `make help` lists the targets below from their `## description` comments and the `##@ Section` lines,
+# so a new target only needs a `##` comment to be documented.
+
 # Default target
 all: generate
 
-# Create a virtual environment
+# Create a virtual environment; rebuilt only when requirements.txt changes
 venv: venv/touchfile
 venv/touchfile: ./requirements.txt
 	@echo "Installing dependencies"
@@ -9,73 +12,106 @@ venv/touchfile: ./requirements.txt
 	. venv/bin/activate; venv/bin/pip install -r ./requirements.txt
 	touch venv/touchfile
 
-# Create the virtual environment and install dependencies
-.PHONY: install
-install: venv
+##@ Setup
 
-# Update dependencies
+.PHONY: install
+install: venv ## Create the virtual environment and install dependencies
+
 .PHONY: update
-update: venv
+update: venv ## Upgrade the dependencies in the virtual environment
 	@echo "Updating dependencies"
 	. venv/bin/activate && venv/bin/pip install --upgrade -r requirements.txt
 
-# Fetch IANA registries → append empty-Words entries to db/ and save used source files near db/ (needs network)
+##@ IANA updates (sync needs network)
+
+# The GitHub sync workflow wraps `refresh`; cron or another CI system can call it the same way.
+.PHONY: refresh
+refresh: venv ## sync + name + review summary; drops the snapshot if nothing changed [SUMMARY=<file>] [INTRO=<text>]
+	. venv/bin/activate && cd c && python3 refresh.py $(if $(SUMMARY),--summary "$(abspath $(SUMMARY))") \
+		$(if $(INTRO),--intro "$(INTRO)")
+
 .PHONY: sync
-sync: venv
+sync: venv ## Fetch IANA registries into db/ (new entries get empty Words) and save a dated snapshot
 	@echo "Syncing IANA registries and saving a dated source snapshot"
 	. venv/bin/activate && cd c && python3 sync.py --snapshot
 
-# Fill Words on new db entries via heuristic (or --llm for Ollama)
 .PHONY: name
-name: venv
+name: venv ## Fill Words for new entries with the per-registry heuristics
 	@echo "Naming new entries"
 	. venv/bin/activate && cd c && python3 name.py
 
-# Review new or unresolved names interactively; choices are written to db/
 .PHONY: review
-review: venv
+review: venv ## Interactively decide new/unnamed entries and IANA lifecycle changes; resumable
 	@echo "Reviewing new IANA names"
 	. venv/bin/activate && cd c && python3 name.py --interactive
 
-# Validate db/ integrity — blocks generate on errors
+.PHONY: namespaces
+namespaces: venv ## Add Namespace to records that db/namespaces/ rules match (after editing a table) [DRY_RUN=1]
+	. venv/bin/activate && cd c && python3 namespaces.py --assign $(if $(DRY_RUN),--dry-run)
+
+.PHONY: names-v2
+names-v2: venv ## Preview proposed v2 CBOR tag names from the IANA fields; changes nothing [OUTPUT=<file>]
+	. venv/bin/activate && cd c && python3 cbor_names_v2.py $(if $(OUTPUT),--output "$(abspath $(OUTPUT))")
+
+.PHONY: review-stats
+review-stats: venv ## How often suggested names were kept, and every override
+	. venv/bin/activate && cd c && python3 name.py --review-stats
+
+##@ Checks (offline)
+
 .PHONY: check
-check: venv
+check: venv ## Validate db/ (blocks generate on errors)
 	@echo "Checking db/ integrity"
 	. venv/bin/activate && cd c && python3 check.py
 
-# Generate headers from db/ (deterministic, no network). Refuses to run on a db that fails `check`.
+.PHONY: test
+test: venv ## Run the unit tests (uses the checked-in IANA snapshot)
+	@echo "Running unit tests"
+	. venv/bin/activate && cd c && python3 -m unittest discover -p 'test_*.py'
+
+# BASE is a git ref; BASE_DIR a copy of db/ (no git needed). STRICT=1 fails on an undocumented
+# rename/removal of a published name.
+BASE ?= HEAD
+.PHONY: report
+report: venv ## Markdown summary of db/ changes [BASE=<git ref>|BASE_DIR=<dir>] [STRICT=1] [REPORT=<file>]
+	. venv/bin/activate && cd c && python3 report.py \
+		$(if $(BASE_DIR),--base-dir "$(abspath $(BASE_DIR))",--base $(BASE)) $(if $(STRICT),--strict) \
+		$(if $(REPORT),--output "$(abspath $(REPORT))")
+
+# GitHub CI runs the same targets.
+.PHONY: ci
+ci: test check ## Everything to pass before merging: test, check, name guard, verify [BASE=<target branch>|BASE_DIR=<dir>]
+	$(MAKE) report STRICT=1 REPORT=$(or $(REPORT),/dev/null)
+	$(MAKE) verify
+
+##@ Headers
+
 .PHONY: generate
-generate: check
+generate: check ## Generate c/src/*.h from db/ (default target; deterministic, no network)
 	@echo "Generating Headers"
 	. venv/bin/activate && cd c && python3 generate.py
 
-# Compile the generated headers together (catches empty enums, duplicate enumerators, ...)
+# Catches empty enums, duplicate enumerators, ...
 .PHONY: verify
-verify: generate
+verify: generate ## Generate, then compile the headers together
 	@echo "Compiling generated headers"
 	printf '#include <stdint.h>\n#include "cbor_constants.h"\n#include "coap_constants.h"\n#include "http_constants.h"\nint main(void) { return 0; }\n' \
 		| $(CC) -std=gnu11 -Wall -Wextra -fsyntax-only -I c/src -x c -
 
-# Clean
 .PHONY: clean
-clean:
+clean: ## Remove the download cache and generated headers
 	@echo "Cleaning generated files"
 	rm -rf ./c/cache/*
 	rm -rf ./c/src/*
 
-# Help target
+##@ Help
+
 .PHONY: help
-help:
-	@echo "Usage: make [target]"
+help: ## Show this list
+	@echo "Usage: make [target] [VAR=value ...]"
+	@awk 'BEGIN { FS = ":.*## " } \
+		/^##@/ { printf "\n%s\n", substr($$0, 5) } \
+		/^[a-zA-Z0-9_-]+:.*## / { printf "  %-13s %s\n", $$1, $$2 }' $(MAKEFILE_LIST)
 	@echo ""
-	@echo "Targets:"
-	@echo "  install     : Create virtual environment and install dependencies"
-	@echo "  update      : Update project dependencies"
-	@echo "  sync        : Fetch IANA registries → db/ and save a dated snapshot under iana/ (needs network)"
-	@echo "  name        : Fill Words on new db entries automatically (heuristic/LLM)"
-	@echo "  review      : Interactively accept, edit, or skip new/unresolved names"
-	@echo "  check       : Validate db/ integrity"
-	@echo "  generate    : db/ → c/src/*.h (no network; runs check first)"
-	@echo "  verify      : generate, then compile the headers"
-	@echo "  clean       : Clean generated files"
-	@echo "  help        : Display this help message"
+	@echo "The tools take more options than these variables expose: python3 c/<tool>.py --help"
+	@echo "(sync, name, refresh, report, generate)."

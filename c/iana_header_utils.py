@@ -105,28 +105,49 @@ def read_or_download_xml(xml_url: str, cache_file: str) -> str:
                 return f.read()
         raise Exception("Error fetching XML and no cache available.") from err
 
+def format_xref(xref) -> str:
+    """Render one <xref> element in the bracketed style of IANA's CSV exports, e.g. '[RFC9110, Section 15.2.1]'.
+
+    An xref with its own text (e.g. <xref data="rfc9562">RFC9562, Section 4</xref>) is rendered from that text.
+    """
+    xtype = xref.get('type', '')
+    data = xref.get('data', '')
+    section = xref.get('section', '')
+    label = ' '.join((xref.text or '').split())
+    if label:
+        return f'[{label}]'
+    if not data:
+        return ''
+    if xtype == 'rfc':
+        # 'rfc9110' -> 'RFC9110'; keep the case of anything after the prefix ('rfc-ietf-foo' -> 'RFC-ietf-foo')
+        ref = '[RFC' + data[3:] if data.lower().startswith('rfc') else f'[{data.upper()}'
+        if section:
+            ref += f', Section {section}'
+        return ref + ']'
+    return f'[{data}]'
+
 def format_xrefs(record_elem) -> str:
-    """Render all <xref> elements of a record into a single reference string, e.g. '[RFC9110, Section 15.2.1]'.
+    """Render the record-level <xref> elements into a single reference string, e.g. '[RFC9110, Section 15.2.1]'.
 
     Matches the bracketed style of IANA's CSV exports, minus the CSV's trailing document titles.
+    Citations inside a field such as <semantics> belong to that field's text, not to the record's Reference.
     """
-    parts = []
-    for xref in record_elem.iter('{http://www.iana.org/assignments}xref'):
-        xtype = xref.get('type', '')
-        data = xref.get('data', '')
-        section = xref.get('section', '')
-        if not data:
-            continue
-        if xtype == 'rfc':
-            # 'rfc9110' -> 'RFC9110'; keep the case of anything after the prefix ('rfc-ietf-foo' -> 'RFC-ietf-foo')
-            ref = '[RFC' + data[3:] if data.lower().startswith('rfc') else f'[{data.upper()}'
-            if section:
-                ref += f', Section {section}'
-            ref += ']'
-            parts.append(ref)
+    return ''.join(format_xref(xref) for xref in record_elem.findall('{http://www.iana.org/assignments}xref'))
+
+def xml_field_text(elem) -> str:
+    """Text of a record field, keeping inline <xref> citations as '[...]' like the CSV export does.
+
+    ElementTree's elem.text stops at the first child element, which would cut
+    'SDNV <xref data="rfc6256"/> sequence' down to 'SDNV'.
+    """
+    parts = [elem.text or '']
+    for child in elem:
+        if child.tag.split('}', 1)[-1] == 'xref':
+            parts.append(format_xref(child))
         else:
-            parts.append(f'[{data}]')
-    return ''.join(parts)
+            parts.append(xml_field_text(child))
+        parts.append(child.tail or '')
+    return ''.join(parts).strip()
 
 def parse_iana_xml_registry(xml_content: str, registry_id: str) -> list:
     """Return a list of dicts for every <record> under <registry id=registry_id>.
@@ -152,7 +173,7 @@ def parse_iana_xml_registry(xml_content: str, registry_id: str) -> list:
             local = child.tag.split('}', 1)[-1]
             if local == 'xref':
                 continue
-            row[local] = (child.text or '').strip()
+            row[local] = xml_field_text(child)
         row['xref'] = format_xrefs(record)
         records.append(row)
     return records

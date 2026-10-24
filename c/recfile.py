@@ -5,35 +5,63 @@ import os
 
 def read(filepath):
     """Parse a recfile and return a list of record dicts, skipping directives and comments."""
+    if not os.path.exists(filepath):
+        return []
+    with open(filepath, 'r', encoding='utf-8') as f:
+        return parse(f)
+
+
+def parse(lines):
+    """Parse recfile text (an iterable of lines, or one string) into a list of record dicts."""
+    if isinstance(lines, str):
+        lines = lines.splitlines()
     records = []
     current = {}
     last_key = None
-    if not os.path.exists(filepath):
-        return records
-    with open(filepath, 'r', encoding='utf-8') as f:
-        for raw in f:
-            line = raw.rstrip('\r\n')
-            if line.startswith('%') or line.startswith('#'):
-                last_key = None
-                continue
-            if line == '':
-                if current:
-                    records.append(current)
-                    current = {}
-                last_key = None
-            elif line.startswith('+ ') and last_key:
-                current[last_key] = current[last_key] + '\n' + line[2:]
-            elif ': ' in line:
-                key, _, value = line.partition(': ')
-                current[key.strip()] = value
-                last_key = key.strip()
-            elif line.endswith(':'):
-                key = line[:-1].strip()
-                current[key] = ''
-                last_key = key
+    for raw in lines:
+        line = raw.rstrip('\r\n')
+        if line.startswith('%') or line.startswith('#'):
+            last_key = None
+            continue
+        if line == '':
+            if current:
+                records.append(current)
+                current = {}
+            last_key = None
+        elif line.startswith('+ ') and last_key:
+            current[last_key] = current[last_key] + '\n' + line[2:]
+        elif ': ' in line:
+            key, _, value = line.partition(': ')
+            current[key.strip()] = value
+            last_key = key.strip()
+        elif line.endswith(':'):
+            key = line[:-1].strip()
+            current[key] = ''
+            last_key = key
     if current:
         records.append(current)
     return records
+
+
+def duplicate_fields(filepath):
+    """[(Tag, field)] for every field that appears more than once in one record (read() keeps only the last)."""
+    duplicates = []
+    if not os.path.exists(filepath):
+        return duplicates
+    with open(filepath, 'r', encoding='utf-8') as f:
+        blocks = f.read().split('\n\n')
+    for block in blocks:
+        seen, tag = set(), ''
+        for line in block.splitlines():
+            if line.startswith(('%', '#', '+ ')) or ':' not in line:
+                continue
+            field, _, value = line.partition(':')
+            if field == 'Tag':
+                tag = value.strip()
+            if field in seen:
+                duplicates.append((tag, field))
+            seen.add(field)
+    return duplicates
 
 
 def append_record(filepath, record):

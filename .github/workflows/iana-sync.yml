@@ -1,0 +1,84 @@
+name: IANA Sync
+
+# Weekly: run `make refresh` (sync + name + review summary) and open a pull request with the db/ changes,
+# the dated source snapshot, and the summary. Nothing is merged automatically: the pull request is where
+# a human reviews the names (see DEVELOPMENT.md, "IANA updates"). Without GitHub, schedule `make refresh`.
+on:
+  schedule:
+    - cron: '23 4 * * 1'  # Mondays 04:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: iana-sync
+  cancel-in-progress: false
+
+env:
+  SYNC_BRANCH: iana-sync
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      # One sync pull request at a time: a new run must not overwrite names a reviewer edited on the branch
+      - name: Skip while a sync pull request is open
+        id: open_pr
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          open=$(gh pr list --head "$SYNC_BRANCH" --state open --json url --jq '.[0].url')
+          if [ -n "$open" ]; then
+            echo "skip=true" >> "$GITHUB_OUTPUT"
+            echo "A sync pull request is still open: $open — merge or close it first." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # All of the work is `make refresh` (see DEVELOPMENT.md); this workflow only schedules it and opens the PR
+      - name: Sync IANA, name new entries, write the review summary
+        if: steps.open_pr.outputs.skip != 'true'
+        id: refresh
+        run: |
+          make refresh SUMMARY="$RUNNER_TEMP/full.md" \
+            INTRO="Opened by [IANA Sync run $GITHUB_RUN_NUMBER]($GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID)."
+          echo "date=$(date -u +%F)" >> "$GITHUB_OUTPUT"
+          if [ -f "$RUNNER_TEMP/full.md" ]; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            cat "$RUNNER_TEMP/full.md" >> "$GITHUB_STEP_SUMMARY"
+            # GitHub rejects pull request descriptions over 65536 characters; the run summary keeps the full text
+            if [ "$(wc -c < "$RUNNER_TEMP/full.md")" -gt 60000 ]; then
+              { head -c 60000 "$RUNNER_TEMP/full.md"; echo; echo
+                echo "_Truncated: the full summary is on the workflow run page, or run \`make report BASE=main\` on this branch._"
+              } > "$RUNNER_TEMP/body.md"
+            else
+              cp "$RUNNER_TEMP/full.md" "$RUNNER_TEMP/body.md"
+            fi
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "IANA registries match db/; no pull request needed." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+      # With the default GITHUB_TOKEN, GitHub does not start CI on the pull request this creates.
+      # Set an IANA_SYNC_TOKEN secret (fine-grained token: contents + pull requests write) to get CI runs.
+      - name: Open pull request
+        if: steps.refresh.outputs.changed == 'true'
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ secrets.IANA_SYNC_TOKEN || github.token }}
+          branch: ${{ env.SYNC_BRANCH }}
+          delete-branch: true
+          add-paths: |
+            db/
+            iana/snapshots/
+          commit-message: "IANA sync ${{ steps.refresh.outputs.date }}"
+          title: "IANA sync ${{ steps.refresh.outputs.date }}"
+          body-path: ${{ runner.temp }}/body.md
+          labels: iana-sync

@@ -5,6 +5,7 @@ on:
     branches: [ main, master, develop ]
   pull_request:
     branches: [ main, master, develop, release-* ]
+  workflow_dispatch:
 
 jobs:
   iana-test-build:
@@ -22,8 +23,25 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
+      # The same targets as `make ci` (which other CI systems or a maintainer can run instead)
+      - name: Unit tests
+        run: make test
+
       - name: Validate db/ integrity
         run: make check
+
+      # Shown on the run's summary page: new names with their C identifiers, open decisions, and
+      # renames of already-published names (which fail the job unless the record has Previous Words).
+      - name: Summarise db/ changes
+        if: always() && github.event_name == 'pull_request'
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          git fetch --no-tags --depth=1 origin "$BASE_REF:refs/remotes/origin/$BASE_REF"
+          status=0
+          make report BASE="origin/$BASE_REF" STRICT=1 REPORT="$RUNNER_TEMP/report.md" || status=$?
+          if [ -f "$RUNNER_TEMP/report.md" ]; then cat "$RUNNER_TEMP/report.md" >> "$GITHUB_STEP_SUMMARY"; fi
+          exit $status
 
       - name: Generate headers and compile them
         run: make verify

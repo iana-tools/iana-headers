@@ -7,7 +7,7 @@
 Namespace: ur
 Prefix: ur
 Organization: Blockchain Commons
-Description: Uniform Resources (ur:<type>): CBOR data as text for QR codes and wallets
+Description: Uniform Resources (ur:<type>): CBOR data as text, for QR codes and wallets
 Spec: https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md
 Semantics Match: ^ur:(?P<label>[a-z0-9-]+)
 
@@ -21,14 +21,14 @@ Semantics Match: ^\[?COSE\s
 Namespace: suit
 Prefix: suit
 Organization: IETF SUIT working group
-Description: Software Updates for Internet of Things manifests and reports
+Description: Software Updates for Internet of Things: firmware manifests and reports
 Spec: https://datatracker.ietf.org/doc/draft-ietf-suit-manifest/
 Semantics Match: ^SUIT_(?P<label>[A-Za-z0-9_]+)
 
 Namespace: yang
 Prefix: yang
 Organization: IETF CORE working group
-Description: YANG data encoded in CBOR (RFC 9254)
+Description: YANG data modeling language: YANG data encoded in CBOR
 Spec: https://www.rfc-editor.org/rfc/rfc9254
 Semantics Match: ^YANG\s
 

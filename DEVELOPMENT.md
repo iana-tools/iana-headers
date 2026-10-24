@@ -79,6 +79,10 @@ Lifecycle-aware sync preserves existing `Semantics` and `Words`. If IANA changes
 - `make check` fails if a matching record lacks `Namespace`, names an unknown one, matches two, or has `Words` without the prefix.
 - After adding or changing a namespace, run `make namespaces` (`DRY_RUN=1` to preview) to assign existing records, then review the result like any other db change.
 
+The generated CBOR tag enum starts with a comment that explains every abbreviation its names use (`c/glossary.py`): each namespace prefix with its description, organisation and spec link (`UR  Uniform Resources … (Blockchain Commons)`), acronyms whose expansion IANA gives (`CWT  CBOR Web Token`), and word shortenings from the naming rules (`STRCT  structure`). A shortening is listed only where the entry's own IANA text contains the full word, and only abbreviations that occur in the names are listed.
+
+Naming rule: spell words out, except a scheme's own name or an acronym that IANA or the spec uses (UR, COSE, CWT, SUIT, IRI). Those are names, not abbreviations: `UNIFORM_RESOURCE_SEED` would hide the term people see in the data (`ur:seed/…`). The glossary explains them instead.
+
 Families without a recognised name scheme (one author's assorted tags, or self-describing names such as the RFC 8746 typed arrays) deliberately have no namespace. `c/experiments/cbor_tag_name_parts.rec` predates this table; only `c/experimental_namer.py` still reads it.
 
 ## CBOR tag names v2 (proposal)

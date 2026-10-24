@@ -22,7 +22,7 @@ class CborNamesV2Tests(unittest.TestCase):
         return self.proposals[tag][0]
 
     def test_ur_registrations_are_named_by_their_type(self):
-        self.assertEqual(_propose('ur:seed, Cryptographic seed'), ('ur seed', 'ur type'))
+        self.assertEqual(self.proposals['40300'], ('ur seed', 'ur namespace'))
         self.assertEqual(self.name('40105'), 'ur mldsa signature')
         self.assertEqual(self.name('40803'), 'ur ssh certificate')
 

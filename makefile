@@ -45,6 +45,10 @@ review: venv ## Interactively decide new/unnamed entries and IANA lifecycle chan
 	@echo "Reviewing new IANA names"
 	. venv/bin/activate && cd c && python3 name.py --interactive
 
+.PHONY: namespaces
+namespaces: venv ## Add Namespace to records that db/namespaces/ rules match (after editing a table) [DRY_RUN=1]
+	. venv/bin/activate && cd c && python3 namespaces.py --assign $(if $(DRY_RUN),--dry-run)
+
 .PHONY: names-v2
 names-v2: venv ## Preview proposed v2 CBOR tag names from the IANA fields; changes nothing [OUTPUT=<file>]
 	. venv/bin/activate && cd c && python3 cbor_names_v2.py $(if $(OUTPUT),--output "$(abspath $(OUTPUT))")

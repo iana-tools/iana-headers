@@ -10,6 +10,7 @@ import re
 import sys
 
 import lifecycle
+import namespaces
 import recfile
 import registry
 
@@ -27,6 +28,8 @@ def check_file(db_file):
     errors = []
     fname = os.path.basename(db_file)
     records = recfile.read(db_file)
+    errors.extend(namespaces.validate(db_file))
+    table = namespaces.load(db_file) if not errors else {}
 
     for tag, field in recfile.duplicate_fields(db_file):
         errors.append(f"{fname} Tag={tag!r}: field '{field}' appears more than once")
@@ -98,7 +101,24 @@ def check_file(db_file):
         if source == 'skip':
             continue
 
-        # 5. A name edited by hand (e.g. in a pull request) is a human decision
+        # 5. Namespaces: an entry a rule recognises carries the namespace, and its name starts with the prefix
+        namespace = rec.get('Namespace', '').strip()
+        if table:
+            detected = namespaces.detect(rec, table)
+            if namespace and namespace not in table:
+                errors.append(f"{loc}: unknown Namespace={namespace!r} (not in {os.path.relpath(namespaces.table_path(db_file), os.path.dirname(db_dir))})")
+            elif not namespace and len(detected) == 1:
+                errors.append(f"{loc}: matches namespace {detected[0]!r}; add `Namespace: {detected[0]}` "
+                              f"(python3 c/namespaces.py --assign)")
+            elif len(detected) > 1:
+                errors.append(f"{loc}: matches several namespaces {detected}; make the rules exclusive")
+            if namespace in table and words and source != 'skip' and not table[namespace].has_prefix(words):
+                errors.append(f"{loc}: Words={words!r} must start with the {namespace!r} prefix "
+                              f"{' '.join(table[namespace].prefix)!r}")
+        elif namespace:
+            errors.append(f"{loc}: Namespace={namespace!r} but {fname} has no namespace table")
+
+        # 6. A name edited by hand (e.g. in a pull request) is a human decision
         suggested = rec.get('Suggested Words', '').strip()
         if source in ('heuristic', 'llm') and suggested and words != suggested:
             errors.append(f"{loc}: Words differ from Suggested Words ({suggested!r}); "
@@ -107,19 +127,19 @@ def check_file(db_file):
         if previous and not all(TOKEN_RE.match(token) for token in previous.split()):
             errors.append(f"{loc}: Previous Words={previous!r} must be lowercase [a-z0-9_] tokens")
 
-        # 6. Blocks on needs-manual / new / empty Words
+        # 7. Blocks on needs-manual / new / empty Words
         if source in ('needs-manual', 'new'):
             errors.append(f"{loc}: Source={source!r} — manual Words required before generate")
         elif not words:
             errors.append(f"{loc}: empty Words field")
 
         if words:
-            # 7. Valid C identifier tokens
+            # 8. Valid C identifier tokens
             for token in words.split():
                 if not TOKEN_RE.match(token):
                     errors.append(f"{loc}: token {token!r} in Words is not a valid identifier token ([a-z0-9_])")
 
-            # 8. Duplicate Words inside one generated enum
+            # 9. Duplicate Words inside one generated enum
             scoped = (registry.words_scope(fname, tag), words)
             if scoped in seen_words:
                 errors.append(

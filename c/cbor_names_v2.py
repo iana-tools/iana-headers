@@ -3,7 +3,9 @@
 cbor_names_v2.py — proposed v2 CBOR tag names, derived only from the IANA registry fields.
 
 Rules (see DEVELOPMENT.md, "CBOR tag names v2"):
-1. A `ur:<type>` registration is named by its UR type.
+1. A tag in a namespace (db/namespaces/cbor_tags.rec: ur, cose, suit, ...) starts with the namespace prefix,
+   which never repeats in the rest of the name; where the namespace rule captures the item's own name from
+   the IANA text ('ur:seed', 'SUIT_Envelope'), that is the rest of the name.
 2. A spelled-out phrase followed by its acronym in parentheses becomes the acronym
    ("CBOR Web Token (CWT)" -> "cwt").
 3. Otherwise a short noun phrase from Semantics: citations, parentheticals, sentence frames
@@ -26,6 +28,7 @@ import re
 import sys
 
 import name
+import namespaces
 import recfile
 
 script_dir = os.path.dirname(os.path.abspath(__file__))
@@ -144,15 +147,9 @@ def _sentence_like(words):
     return len(words) > PREFERRED_WORDS or bool(SENTENCE_WORDS & set(words))
 
 
-def propose(rec, slug_counts):
-    """Return (words, source, list of word lists that can be appended to resolve a collision)."""
-    semantics = rec.get('Semantics', '')
-    ur = re.match(r'\s*ur:([a-z0-9-]+),?\s*(.*)$', semantics)
-    if ur:
-        description, _ = _cut_clause(re.sub(r'\s*\([^()]*\)|\[[^\]]*\]', '', ur.group(2)), keep_commas=False)
-        return _finish(['ur'] + _words(ur.group(1))), 'ur type', [_words(description)]
-
-    text, reserve, used_acronym = _clean_semantics(semantics)
+def _text_name(rec, slug_counts):
+    """(words, source, reserve) from the IANA text alone, ignoring namespaces."""
+    text, reserve, used_acronym = _clean_semantics(rec.get('Semantics', ''))
     words = _finish(_words(text)).split()
     source = 'IANA acronym' if used_acronym else 'IANA text'
     if not words or _sentence_like(words):
@@ -165,11 +162,34 @@ def propose(rec, slug_counts):
     return ' '.join(words), source, reserve
 
 
+def propose(rec, slug_counts, namespace=None):
+    """Return (words, source, list of word lists that can be appended to resolve a collision)."""
+    if namespace is None:
+        return _text_name(rec, slug_counts)
+    label = namespace.label(rec)
+    if label:  # 'ur:seed, Cryptographic seed' -> 'ur seed'; the description is kept for collisions only
+        rest = namespace.semantics_rule.sub('', ' '.join(rec.get('Semantics', '').split()), count=1).lstrip(' ,;:')
+        description, _ = _cut_clause(re.sub(r'\s*\([^()]*\)|\[[^\]]*\]', '', rest), keep_commas=False)
+        return namespace.apply(_finish(_words(label))), f'{namespace.name} namespace', [_words(description)]
+    words, source, reserve = _text_name(rec, slug_counts)
+    return namespace.apply(words), f'{source} ({namespace.name} namespace)', reserve
+
+
+def namespace_of(rec, table):
+    """The record's Namespace, or for a record not yet synced with one, the namespace its IANA text matches."""
+    assigned = rec.get('Namespace', '').strip()
+    if assigned in table:
+        return table[assigned]
+    found = namespaces.detect(rec, table)
+    return table[found[0]] if len(found) == 1 else None
+
+
 def propose_all(records):
     """{tag: (v2 words, source)} for every named CBOR tag record, and the collisions that remain."""
     named = [r for r in records if r.get('Tag', '').strip() and r.get('Source', '').strip() != 'skip']
     slug_counts = collections.Counter(s for r in named for s in set(_reference_slugs(r.get('Reference', ''))))
-    proposals = {r['Tag'].strip(): list(propose(r, slug_counts)) for r in named}
+    table = namespaces.load(CBOR_TAGS)
+    proposals = {r['Tag'].strip(): list(propose(r, slug_counts, namespace_of(r, table))) for r in named}
 
     def collisions():
         seen = collections.defaultdict(list)

@@ -25,6 +25,7 @@ import argparse
 import toml
 
 import lifecycle
+import namespaces
 import recfile
 import registry
 
@@ -353,6 +354,20 @@ def fill_words_for_file(db_file, use_llm=False, use_tfidf=False, dry_run=False, 
                 corpus = [set(_raw_tokens(r['Semantics'])) for r in records
                           if r.get('Semantics') and r.get('Source', '') not in ('new', 'skip')]
             candidates[tag] = tfidf_words(rec.get('Semantics', ''), corpus)
+
+    # Namespaces (db/namespaces/): the name starts with the family prefix, which never repeats; where the
+    # rules give nothing usable (e.g. a long description) the namespace's own label for the item is used
+    table = namespaces.load(db_file)
+    for rec in new_entries:
+        found = [rec.get('Namespace', '').strip()] if rec.get('Namespace', '').strip() in table \
+            else namespaces.detect(rec, table)
+        if len(found) != 1:
+            continue
+        namespace, tag = table[found[0]], rec['Tag']
+        if candidates[tag] and not too_long(candidates[tag]):
+            candidates[tag] = namespace.apply(candidates[tag])
+        elif namespace.label(rec):
+            candidates[tag] = namespace.apply(' '.join(re.sub(r'[^a-z0-9]+', ' ', namespace.label(rec).lower()).split()))
 
     # Collision detection: count how many times each candidate appears (per enum scope)
     from collections import Counter

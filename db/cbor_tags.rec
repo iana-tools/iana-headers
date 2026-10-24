@@ -43,24 +43,28 @@ Words: cose single recipient encrypted data object
 Semantics: COSE Single Recipient Encrypted Data Object
 Reference: [RFC9052]
 Source: heuristic
+Namespace: cose
 
 Tag: 17
 Words: cose mac w o recipients object
 Semantics: COSE Mac w/o Recipients Object
 Reference: [RFC9052]
 Source: heuristic
+Namespace: cose
 
 Tag: 18
 Words: cose single signer data object
 Semantics: COSE Single Signer Data Object
 Reference: [RFC9052]
 Source: heuristic
+Namespace: cose
 
 Tag: 19
 Words: cose standalone v2 countersignature
 Semantics: COSE standalone V2 countersignature
 Reference: [RFC9338]
 Source: heuristic
+Namespace: cose
 
 Tag: 21
 Words: expected conversion to base64url encoding
@@ -199,30 +203,35 @@ Words: yang bits datatype
 Semantics: YANG bits datatype; see Section 6.7.
 Reference: [RFC9254]
 Source: heuristic
+Namespace: yang
 
 Tag: 44
 Words: yang enumeration datatype
 Semantics: YANG enumeration datatype; see Section 6.6.
 Reference: [RFC9254]
 Source: heuristic
+Namespace: yang
 
 Tag: 45
 Words: yang identityref datatype
 Semantics: YANG identityref datatype; see Section 6.10.
 Reference: [RFC9254]
 Source: heuristic
+Namespace: yang
 
 Tag: 46
 Words: yang instance id datatype
 Semantics: YANG instance-identifier datatype; see Section 6.13.
 Reference: [RFC9254]
 Source: heuristic
+Namespace: yang
 
 Tag: 47
 Words: yang schema item id
 Semantics: YANG Schema Item iDentifier (sid); see Section 3.2.
 Reference: [RFC9254]
 Source: heuristic
+Namespace: yang
 
 Tag: 48
 Words: ieee mac address
@@ -397,18 +406,21 @@ Words: cose encrypted data object
 Semantics: COSE Encrypted Data Object
 Reference: [RFC9052]
 Source: heuristic
+Namespace: cose
 
 Tag: 97
 Words: cose maced data object
 Semantics: COSE MACed Data Object
 Reference: [RFC9052]
 Source: heuristic
+Namespace: cose
 
 Tag: 98
 Words: cose signed data object
 Semantics: COSE Signed Data Object
 Reference: [RFC9052]
 Source: heuristic
+Namespace: cose
 
 Tag: 100
 Words: number of days since the epoch date 1970 01 01
@@ -439,6 +451,7 @@ Words: suit envelope
 Semantics: SUIT_Envelope as defined in Appendix A of [RFC-ietf-suit-manifest-33]
 Reference: [RFC-ietf-suit-manifest-33]
 Source: manual
+Namespace: suit
 
 Tag: 108
 Words: expected conversion base16 enc lowercase
@@ -733,12 +746,14 @@ Words: suit manifest
 Semantics: SUIT_Manifest as defined in Appendix A of [RFC-ietf-suit-manifest-33]
 Reference: [RFC-ietf-suit-manifest-33]
 Source: manual
+Namespace: suit
 
 Tag: 18556
 Words: cose algorithm id base hash value
 Semantics: [COSE algorithm identifier, Base Hash value]
 Reference: [draft-bormann-cbor-notable-tags-09, Section 3.1.1]
 Source: heuristic
+Namespace: cose
 
 Tag: 20853
 Words: description of val instead of val itself
@@ -799,288 +814,336 @@ Words: ur known value semantic signifier
 Semantics: ur:known-value, Semantic signifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40001
 Words: ur digest 32 byte sha 256 digest
 Semantics: ur:digest, 32-byte SHA-256 digest
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40002
 Words: ur encrypted ietf chacha20 poly1305 encrypted msg
 Semantics: ur:encrypted, IETF ChaCha20-Poly1305 ([RFC8439]) encrypted message
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40003
 Words: ur compressed deflate compressed msg
 Semantics: ur:compressed, [RFC1951] DEFLATE-compressed message
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40004
 Words: ur request transaction request id
 Semantics: ur:request, Transaction Request identifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40005
 Words: ur response transaction response id
 Semantics: ur:response, Transaction response identifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40006
 Words: ur function envelope expression function id
 Semantics: ur:function, Envelope expression function identifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40007
 Words: ur param envelope expression param id
 Semantics: ur:parameter, Envelope expression parameter identifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40008
 Words: ur placeholder envelope expression placeholder id
 Semantics: ur:placeholder, Envelope expression placeholder identifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40009
 Words: ur replacement envelope expression replacement id
 Semantics: ur:replacement, Envelope expression replacement identifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40010
 Words: ur agreement private key curve25519 private key for x25519 key agreement
 Semantics: ur:agreement-private-key, Curve25519 private key for X25519 key agreement
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40011
 Words: ur agreement public key curve25519 public key for x25519 key agreement
 Semantics: ur:agreement-public-key, Curve25519 public key for X25519 key agreement
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40012
 Words: ur arid apparently random id
 Semantics: ur:arid, Apparently Random Identifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40013
 Words: ur crypto prvkeys private keys for cryptographic op
 Semantics: ur:crypto-prvkeys, Private keys for cryptographic operations
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40014
 Words: ur nonce cryptographic nonce
 Semantics: ur:nonce, Cryptographic nonce
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40015
 Words: ur password scrypt hashed password
 Semantics: ur:password, Scrypt-hashed password
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40016
 Words: ur crypto prvkeys private key base
 Semantics: ur:crypto-prvkeys, Private key base (key material)
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40017
 Words: ur crypto pubkeys public key base
 Semantics: ur:crypto-pubkeys, Public key base (signing and agreement public key bundle)
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40018
 Words: ur salt random salt used for hash tree decorrelation
 Semantics: ur:salt, Random salt used for hash tree decorrelation
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40019
 Words: ur crypto sealed encrypted msg ephemeral public key
 Semantics: ur:crypto-sealed, Encrypted message and ephemeral public key
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40020
 Words: ur signature cryptographic signature
 Semantics: ur:signature, Cryptographic signature
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40021
 Words: ur signing private key cryptographic private key used for signing
 Semantics: ur:signing-private-key, Cryptographic private key used for signing
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40022
 Words: ur signing public key cryptographic public key used for signing
 Semantics: ur:signing-public-key, Cryptographic public key used for signing
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40023
 Words: ur crypto key cryptographic key used for symmetric encryption
 Semantics: ur:crypto-key, Cryptographic key used for symmetric encryption
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40024
 Words: ur xid extensible id or xid document
 Semantics: ur:xid, Extensible identifier or XID Document
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40025
 Words: ur ref cryptographically secure ref an obj
 Semantics: ur:reference, Cryptographically secure reference to an object
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40026
 Words: ur event event id
 Semantics: ur:event, Event identifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40027
 Words: ur encrypted key content key encrypted with derivation function
 Semantics: ur:encrypted-key, Content key encrypted with a derivation function
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40100
 Words: ur mlkem private key private key for mlkem key encapsulation
 Semantics: ur:mlkem-private-key, Private key for MLKEM key encapsulation
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40101
 Words: ur mlkem public key public key for mlkem key encapsulation
 Semantics: ur:mlkem-public-key, Public key for MLKEM key encapsulation
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40102
 Words: ur mlkem ciphertext ciphertext for mlkem key encapsulation
 Semantics: ur:mlkem-ciphertext, Ciphertext for MLKEM key encapsulation
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40103
 Words: ur mldsa private key private key for mldsa signature generation
 Semantics: ur:mldsa-private-key, Private key for MLDSA signature generation
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40104
 Words: ur mldsa public key public key for mldsa signature verification
 Semantics: ur:mldsa-public-key, Public key for MLDSA signature verification
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40105
 Words: ur mldsa signature mldsa signature
 Semantics: ur:mldsa-signature, MLDSA signature
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40300
 Words: ur seed cryptographic seed
 Semantics: ur:seed, Cryptographic seed
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40303
 Words: ur hdkey bitcoin bip 32 hd key
 Semantics: ur:hdkey, Bitcoin BIP-32 HD key
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40304
 Words: ur keypath bitcoin bip 32 key derivation path
 Semantics: ur:keypath, Bitcoin BIP-32 key derivation path
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40305
 Words: ur coin info cryptographic asset network specifier
 Semantics: ur:coin-info, Cryptographic asset and network specifier
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40306
 Words: ur eckey bitcoin elliptic curve key
 Semantics: ur:eckey, Bitcoin elliptic curve key (private or public)
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40307
 Words: ur address cryptocurrency address
 Semantics: ur:address, Cryptocurrency address
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40308
 Words: ur output descriptor bitcoin output descriptor
 Semantics: ur:output-descriptor, Bitcoin output descriptor
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40309
 Words: ur sskr sharded secret key reconstruction share
 Semantics: ur:sskr, Sharded Secret Key Reconstruction (SSKR) share
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40310
 Words: ur psbt partially signed bitcoin transaction
 Semantics: ur:psbt, Partially Signed Bitcoin Transaction
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40311
 Words: ur account descriptor bitcoin account descriptor
 Semantics: ur:account-descriptor, Bitcoin account descriptor
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40800
 Words: ur ssh private text format ssh private key
 Semantics: ur:ssh-private, Text format SSH private key
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40801
 Words: ur ssh public text format ssh public key
 Semantics: ur:ssh-public, Text format SSH public key
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40802
 Words: ur ssh signature text format ssh signature
 Semantics: ur:ssh-signature, Text format SSH signature
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 40803
 Words: ur ssh certificate txt format ssh certificate
 Semantics: ur:ssh-certificate, Text format SSH certificate
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 42600
 Words: confidentiality clearance
@@ -1117,78 +1180,91 @@ Words: platformv is id
 Semantics: PlatformV_IS_ID
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50001
 Words: platformv is name
 Semantics: PlatformV_IS_NAME
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50002
 Words: platformv is value
 Semantics: PlatformV_IS_VALUE
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50003
 Words: platformv has composite value
 Semantics: PlatformV_HAS_COMPOSITE_VALUE
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50004
 Words: platformv has mapped value
 Semantics: PlatformV_HAS_MAPPED_VALUE
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50005
 Words: platformv has obj id
 Semantics: PlatformV_HAS_OBJ_ID
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50006
 Words: platformv has obj tag
 Semantics: PlatformV_HAS_OBJ_TAG
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50007
 Words: platformv has child
 Semantics: PlatformV_HAS_CHILD
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50008
 Words: platformv has property
 Semantics: PlatformV_HAS_PROPERTY
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50009
 Words: platformv has meta
 Semantics: PlatformV_HAS_META
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50010
 Words: platformv has event
 Semantics: PlatformV_HAS_EVENT
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50011
 Words: platformv has action
 Semantics: PlatformV_HAS_ACTION
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 50012
 Words: platformv is type
 Semantics: PlatformV_IS_TYPE
 Reference: [https://github.com/arthurwangtz/platformv-cbor][Wang_Tongzhou]
 Source: heuristic
+Namespace: platformv
 
 Tag: 55799
 Words: self described cbor
@@ -1267,18 +1343,21 @@ Words: moat change of status marker
 Semantics: MoaT change-of-status marker
 Reference: [https://github.com/M-o-a-T/moat/blob/main/doc/common/cbor.rst][Matthias_Urlichs]
 Source: heuristic
+Namespace: moat
 
 Tag: 1298493254
 Words: moat end of file marker
 Semantics: MoaT end-of-file marker
 Reference: [https://github.com/M-o-a-T/moat-util/][Matthias_Urlichs]
 Source: heuristic
+Namespace: moat
 
 Tag: 1299145044
 Words: moat file id details
 Semantics: MoaT file identifier / details
 Reference: [https://github.com/M-o-a-T/moat-util/][Matthias_Urlichs]
 Source: heuristic
+Namespace: moat
 
 Tag: 1330664270
 Words: cbor enc openswan config file as stored on disk forunit test cases
@@ -1291,6 +1370,7 @@ Words: ur provenance provenance mark
 Semantics: ur:provenance, Provenance Mark
 Reference: [https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md][Wolf_McNally]
 Source: heuristic
+Namespace: ur
 
 Tag: 1398229316
 Words: concise software id

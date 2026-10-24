@@ -1,0 +1,47 @@
+%rec: CborTagNamespace
+%key: Namespace
+%doc: Families of CBOR tags that share a name prefix. A tag whose IANA Semantics (or Reference) matches a
+%doc: rule gets `Namespace: <name>`, and its Words must start with Prefix. A `label` group in the rule
+%doc: captures the item's own name from the IANA text. See DEVELOPMENT.md, "CBOR tag namespaces".
+
+Namespace: ur
+Prefix: ur
+Organization: Blockchain Commons
+Description: Uniform Resources (ur:<type>): CBOR data as text for QR codes and wallets
+Spec: https://github.com/BlockchainCommons/Research/blob/master/papers/bcr-2020-006-urtypes.md
+Semantics Match: ^ur:(?P<label>[a-z0-9-]+)
+
+Namespace: cose
+Prefix: cose
+Organization: IETF COSE working group
+Description: CBOR Object Signing and Encryption structures
+Spec: https://www.rfc-editor.org/rfc/rfc9052
+Semantics Match: ^\[?COSE\s
+
+Namespace: suit
+Prefix: suit
+Organization: IETF SUIT working group
+Description: Software Updates for Internet of Things manifests and reports
+Spec: https://datatracker.ietf.org/doc/draft-ietf-suit-manifest/
+Semantics Match: ^SUIT_(?P<label>[A-Za-z0-9_]+)
+
+Namespace: yang
+Prefix: yang
+Organization: IETF CORE working group
+Description: YANG data encoded in CBOR (RFC 9254)
+Spec: https://www.rfc-editor.org/rfc/rfc9254
+Semantics Match: ^YANG\s
+
+Namespace: platformv
+Prefix: platformv
+Organization: Wang Tongzhou
+Description: PlatformV object model
+Spec: https://github.com/arthurwangtz/platformv-cbor
+Semantics Match: ^PlatformV_(?P<label>[A-Za-z0-9_]+)
+
+Namespace: moat
+Prefix: moat
+Organization: Matthias Urlichs
+Description: MoaT file and status markers
+Spec: https://github.com/M-o-a-T/moat-util/
+Semantics Match: ^MoaT\s

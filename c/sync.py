@@ -22,6 +22,7 @@ import toml
 
 import iana_header_utils as utils
 import lifecycle
+import namespaces
 import recfile
 import registry
 
@@ -351,6 +352,7 @@ def _apply(db_file, rec_type, doc_url, entries, dry_run):
     if not dry_run:
         recfile.write_header(db_file, rec_type, 'Tag', doc_url)
     existing = _load_existing(db_file)
+    namespace_table = namespaces.load(db_file)
     added, warnings = [], []
 
     for entry in entries:
@@ -403,6 +405,9 @@ def _apply(db_file, rec_type, doc_url, entries, dry_run):
         if extra_fields and extra_fields[0]:
             record['Data Item'] = extra_fields[0]
         record['Source'] = 'new'
+        found = namespaces.detect(record, namespace_table)
+        if len(found) == 1:
+            record['Namespace'] = found[0]
         new_lifecycle = lifecycle.from_semantics(semantics)
         if new_lifecycle:
             record['Lifecycle'] = new_lifecycle

@@ -18,6 +18,7 @@ Source: heuristic
 - `Semantics` and `Reference` are copied from IANA and are what `sync` compares against; new CBOR tag records also preserve IANA's `Data Item` field separately for review. A `#` line may precede a record to explain an override. `Note` can record why an entry was skipped during interactive review.
 - `Lifecycle` records explicit IANA states such as `provisional`, `temporary`, or `under-review`. `Review: monitor` means the entry is still in that state; `Review: pending` blocks `make check`/generation until the IANA change is reviewed; sync stores IANA's new text in `IANA Semantics` next to the committed `Semantics`, and `make review` resolves it (see below).
 - `IANA Semantics` is IANA's current wording when it differs from the committed `Semantics`. For a stable entry it is informational (the name stays; copy the text into `Semantics` and delete `IANA Semantics` if the header comment should follow IANA). Sync reports each wording change once.
+- `Namespace` puts the entry in a family from `db/namespaces/<registry>.rec` (see "CBOR tag namespaces"); its `Words` must start with the family's prefix.
 - `Previous Words` documents an intended rename of an already-published name (see "Published names" below).
 - `Suggested Words` / `Suggested By` are written by `make name` and `make review` on every name they save: what the namer (`heuristic` or `llm`) proposed, or `(none)`. `Words` equal to `Suggested Words` means the suggestion was accepted; anything else is a human override. `python3 c/name.py --review-stats` reports the acceptance rate and lists the overrides, which are the cases to learn new heuristic rules from.
 
@@ -59,6 +60,26 @@ python3 c/experimental_namer.py --suggest-new
 The leave-one-out evaluation excludes each target record from its own training set.
 
 Lifecycle-aware sync preserves existing `Semantics` and `Words`. If IANA changes the description of a record with a `Lifecycle` marker, sync sets `Review: pending` and saves the new text as `IANA Semantics`; `make check` then blocks generation until the record is reconciled. `make review` shows the committed and the new IANA text, the lifecycle transition (e.g. `temporary -> stable`) and, when the new text names the entry differently, a rename suggestion. Keeping or renaming copies the new text into `Semantics`, removes `IANA Semantics`, and sets `Lifecycle`/`Review` to `<state>`/`monitor` while IANA still marks the entry, or `stable`/`resolved` once it does not. `[l]ater` leaves the record pending. Renaming a published identifier is a breaking change for users of the header; it is offered here because provisional and temporary registrations are expected to change.
+
+## CBOR tag namespaces
+
+`db/namespaces/cbor_tags.rec` lists the families of CBOR tags that share a name prefix, one record each: `Namespace`, `Prefix`, `Organization`, `Description`, `Spec`, and a `Semantics Match` and/or `Reference Match` regular expression that recognises the family's tags from their IANA fields. A named group `label` captures the item's own name from the IANA text (`^ur:(?P<label>[a-z0-9-]+)` gives `seed` for `ur:seed, Cryptographic seed`).
+
+| Namespace | Organization | Recognised by | Tags |
+| --- | --- | --- | --- |
+| `ur` | Blockchain Commons (Uniform Resources) | `ur:<type>` | 49 |
+| `platformv` | PlatformV | `PlatformV_<NAME>` | 13 |
+| `cose` | IETF COSE | `COSE ...` | 8 |
+| `yang` | IETF CORE (RFC 9254) | `YANG ...` | 5 |
+| `moat` | MoaT | `MoaT ...` | 3 |
+| `suit` | IETF SUIT | `SUIT_<Name>` | 2 (+3 in the next sync) |
+
+- `sync` sets `Namespace` on new records that a rule matches.
+- `make name` (and the v2 rules) start the name with the prefix and never repeat it (`cose cose key` → `cose key`). Where the text alone gives no usable name, a captured label is used: a `ur:` tag with a long description is still named `ur <type>`.
+- `make check` fails if a matching record lacks `Namespace`, names an unknown one, matches two, or has `Words` without the prefix.
+- After adding or changing a namespace, run `make namespaces` (`DRY_RUN=1` to preview) to assign existing records, then review the result like any other db change.
+
+Families without a recognised name scheme (one author's assorted tags, or self-describing names such as the RFC 8746 typed arrays) deliberately have no namespace. `c/experiments/cbor_tag_name_parts.rec` predates this table; only `c/experimental_namer.py` still reads it.
 
 ## CBOR tag names v2 (proposal)
 
